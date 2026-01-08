@@ -1,7 +1,8 @@
+import 'package:appshine/presentation/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; // Firebase engine import
 import 'data/firebase_options.dart'; // Firebase keys import
-import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/login_screen.dart';
 
 // Async main for waiting flutter widgets and Firebase initialize
 void main() async {
@@ -23,7 +24,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false, // Quita la etiqueta "Debug" de la esquina
-      home: HomeScreen(), // <--- ¡Aquí llamamos a tu nueva pantalla!
+      home: LoginScreen(), // Llamamos a la pantalla que queramos de inicio
     );
   }
 }
