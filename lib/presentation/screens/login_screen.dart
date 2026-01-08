@@ -13,7 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controladores para leer lo que escribe el usuario
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  
+
   // Instancia de nuestro repositorio de autenticación (la lógica)
   final authRepository = AuthRepository();
 
@@ -22,34 +22,26 @@ class _LoginScreenState extends State<LoginScreen> {
   // Función para registrarse
   void submit() async {
     try {
-      if (isLogin) { // Usamos el repositorio para iniciar sesión
-      await authRepository.signIn(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      } else { // Usamos el repositorio para registrarse
-      await authRepository.signUp(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      }
-      
-      // Si sale bien, vamos a la Home
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+      if (isLogin) {
+        // Usamos el repositorio para iniciar sesión
+        await authRepository.signIn(
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        );
+      } else {
+        // Usamos el repositorio para registrarse
+        await authRepository.signUp(
+          email: emailController.text.trim(),
+          password: passwordController.text,
         );
       }
     } catch (e) {
       // Si falla, mostramos un aviso abajo (SnackBar)
-     if (mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()), 
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
-     }
+      }
     }
   }
 
@@ -74,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            
+
             // Botón principal (El texto cambia)
             SizedBox(
               width: double.infinity, // Para que ocupe todo el ancho
@@ -83,9 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(isLogin ? 'Entrar' : 'Registrarse'),
               ),
             ),
-            
+
             const SizedBox(height: 10),
-            
+
             // Botón mágico para cambiar de modo
             TextButton(
               onPressed: () {
@@ -94,9 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   isLogin = !isLogin;
                 });
               },
-              child: Text(isLogin
-                  ? '¿No tienes cuenta? Regístrate aquí'
-                  : '¿Ya tienes cuenta? Inicia sesión'),
+              child: Text(
+                isLogin
+                    ? '¿No tienes cuenta? Regístrate aquí'
+                    : '¿Ya tienes cuenta? Inicia sesión',
+              ),
             ),
           ],
         ),
