@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,6 +10,16 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Appshine'),
         backgroundColor: Colors.indigo,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              // No hace falta navegar a ningún sitio. 
+              // ¡El AuthGate detectará que te has ido y te llevará al Login solo!
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
