@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "114097855392",
+    "project_id": "appshine",
+    "storage_bucket": "appshine.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114097855392:android:67c8b5582b997e383ca2c5",
+        "android_client_info": {
+          "package_name": "com.carlosvallejo.appshine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfnLPvwJRklX_2aEZ6hV2nSbXcJ1Xa238"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
