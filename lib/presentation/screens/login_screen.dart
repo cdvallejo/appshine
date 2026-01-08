@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/auth_repository.dart'; // Importamos la lógica de autenticación
-import 'home_screen.dart'; // La aplicamos en home_screen.dart
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,9 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // El título cambia según el modo
-      appBar: AppBar(title: Text(isLogin ? 'Iniciar Sesión' : 'Registro TFE')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: Text(isLogin ? 'Iniciar Sesión' : 'Registro Appshine'),
+        centerTitle: true,
+        toolbarHeight: 200,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(45.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
