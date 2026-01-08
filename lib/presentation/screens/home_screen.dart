@@ -8,7 +8,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Appshine'),
-        backgroundColor: Colors.indigo, // Un color para que destaque
+        backgroundColor: Colors.indigo,
       ),
       body: Center(
         child: Column(
