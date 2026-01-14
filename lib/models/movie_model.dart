@@ -14,4 +14,16 @@ class Movie {
       releaseDate: json['release_date'] ?? '',
     );
   }
+  
+  String get releaseYear {
+    if (releaseDate.length >= 4) {
+      return releaseDate.substring(0, 4); // Coge los 4 primeros dígitos (el año)
+    }
+    return 'N/A';
+  }
+
+  // Getter to obtain the full poster URL
+  String get fullPosterUrl => posterPath != null 
+      ? 'https://image.tmdb.org/t/p/w500$posterPath' 
+      : 'https://via.placeholder.com/500x750?text=No+Image';
 }

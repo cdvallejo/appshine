@@ -1,4 +1,5 @@
-import 'package:appshine/repositories/tmdb_repository.dart';
+import 'package:appshine/models/movie_model.dart';
+import 'package:appshine/widgets/movie_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -97,23 +98,22 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    // 1. Instanciamos el repositorio
-                    final tmdb = TMDBRepository();
+                    // Abrimos el buscador y esperamos a que el usuario elija una peli
+                    final Movie? movieSelected = await showSearch<Movie?>(
+                      context: context,
+                      delegate:
+                          MovieSearchDelegate(), // El archivo que creamos antes
+                    );
 
-                    // 2. Llamamos a la búsqueda
-                    print('Buscando en TMDB...');
-                    final movies = await tmdb.searchMovies('eternal sunshine of the spotless mind');
-
-                    // 3. Imprimimos los resultados en consola
-                    if (movies.isNotEmpty) {
-                      for (var movie in movies) {
-                        print('Película: ${movie.title} - ID: ${movie.id}');
-                      }
-                    } else {
-                      print('No se encontraron películas.');
+                    // Si el usuario eligió algo (no le dio a atrás), lo mostramos
+                    if (movieSelected != null) {
+                      print(
+                        'Has elegido en el buscador: ${movieSelected.title}',
+                      );
+                      // Aquí es donde más adelante navegaremos a la pantalla de crear Momento
                     }
                   },
-                  child: const Text('Probar API TMDB'),
+                  child: const Text('Buscar Película para mi Momento'),
                 ),
               ],
             ),
