@@ -1,4 +1,4 @@
-import 'package:appshine/presentation/auth_gate.dart';
+import 'package:appshine/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; // Firebase engine import
 import 'package:flutter_dotenv/flutter_dotenv.dart';

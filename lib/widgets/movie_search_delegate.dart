@@ -1,9 +1,9 @@
 import 'package:appshine/models/movie_model.dart';
-import 'package:appshine/repositories/tmdb_repository.dart';
+import 'package:appshine/repositories/movie_repository.dart';
 import 'package:flutter/material.dart';
 
 class MovieSearchDelegate extends SearchDelegate<Movie?> {
-  final TMDBRepository _repo = TMDBRepository();
+  final MovieRepository _repo = MovieRepository();
 
   @override
   List<Widget>? buildActions(BuildContext context) {

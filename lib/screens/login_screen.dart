@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/auth_repository.dart'; // Importamos la lógica de autenticación
+import '../data/auth_repository.dart'; // Importamos la lógica de autenticación
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
