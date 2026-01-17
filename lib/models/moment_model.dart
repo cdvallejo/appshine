@@ -62,7 +62,7 @@ factory Moment.fromMap(Map<String, dynamic> map, String docId) {
       status: map['status'],
       location: map['location'],
       imageUrl: map['imageUrl'],
-      tmdbId: map['tmdbId'],
+      tmdbId: map['tmdbId'] is String ? int.tryParse(map['tmdbId']) : map['tmdbId'], // Handle String to int conversion is not an int
       director: map['director'],
       author: map['author'],
       people: map['people'] != null ? List<String>.from(map['people']) : null,

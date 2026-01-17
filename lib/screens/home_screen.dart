@@ -1,4 +1,5 @@
 import 'package:appshine/models/movie_model.dart';
+import 'package:appshine/screens/add_moment_screen.dart';
 import 'package:appshine/widgets/movie_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +16,8 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appshine'),
+        title: const Text('Appshine'), 
+        foregroundColor: Colors.white,
         backgroundColor: Colors.indigo,
         actions: [
           // FutureBuilder to check if the user has administrative privileges
@@ -98,22 +100,25 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    // Abrimos el buscador y esperamos a que el usuario elija una peli
+                    // 1. Open the search ONCE ONLY
                     final Movie? movieSelected = await showSearch<Movie?>(
                       context: context,
-                      delegate:
-                          MovieSearchDelegate(), // El archivo que creamos antes
+                      delegate: MovieSearchDelegate(),
                     );
-
-                    // Si el usuario eligió algo (no le dio a atrás), lo mostramos
-                    if (movieSelected != null) {
-                      print(
-                        'Has elegido en el buscador: ${movieSelected.title}',
+                    
+                    // 2. If user selected a movie, proceed
+                    if (movieSelected != null && context.mounted) {
+                      // 3. Navigate directly to the add moment screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AddMomentScreen(movie: movieSelected),
+                        ),
                       );
-                      // Aquí es donde más adelante navegaremos a la pantalla de crear Momento
                     }
                   },
-                  child: const Text('Buscar Película para mi Momento'),
+                  child: const Text('Add a New Moment'),
                 ),
               ],
             ),
