@@ -1,3 +1,4 @@
+import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/movie_model.dart';
@@ -34,12 +35,39 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Añadir Momento'),
+        title: const Text('Add Movie Moment'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: () {
-              /* Guardar */
+            onPressed: () async {
+              // 1. Async function to save the moment
+              try {
+                // 2. Call the function with await
+                await DatabaseService().addMomentMovie(
+                  movie: widget.movie,
+                  date: _selectedDate,
+                  location: _location,
+                  notes: _notesController.text,
+                );
+
+                // 3. If everything goes well, notify the user and close
+                if (context.mounted) {
+                  // Extra safety in case the user closed the screen before
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Moment saved!'),
+                    ),
+                  );
+                  Navigator.pop(context);
+                }
+              } catch (error) {
+                // 4. If there was an error, show it
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error saving moment: $error')),
+                  );
+                }
+              }
             },
           ),
         ],
@@ -84,20 +112,21 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                               children: [
                                 const TextSpan(
                                   text: 'Year: ',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                  ),
+                                  style: TextStyle(color: Colors.grey),
                                 ),
                                 TextSpan(
                                   text: widget.movie.releaseYear,
                                   style: const TextStyle(
-                                    color: Colors
-                                        .black,
+                                    color: Colors.black,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
+                          ),
+                          Text(
+                            'Director: ${widget.movie.directors}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                           const SizedBox(height: 4),
                           Text(
