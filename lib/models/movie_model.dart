@@ -4,7 +4,7 @@ class Movie {
   final String? posterPath;
   final String releaseDate;
   // Cannot be final if we want to set it later in the details fetch
-  String? director; 
+  String? directors; 
   String? actors;
   String? country;
 
@@ -13,12 +13,12 @@ class Movie {
     required this.title,
     this.posterPath,
     required this.releaseDate,
-    this.director,
+    this.directors,
     this.actors,
     this.country,
   });
 
-  // Este crea la "cáscara" con lo que viene del buscador
+  // Factory method to create a Movie from JSON data
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
       id: json['id'],
@@ -30,7 +30,7 @@ class Movie {
 
    String get releaseYear {
     if (releaseDate.length >= 4) {
-      return releaseDate.substring(0, 4); // Coge los 4 primeros dígitos (el año)
+      return releaseDate.substring(0, 4); // Extract the year from the release date
     }
     return 'N/A';
   }

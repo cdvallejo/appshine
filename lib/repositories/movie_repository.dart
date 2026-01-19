@@ -9,23 +9,25 @@ class MovieRepository {
   final String _baseUrl = 'https://api.themoviedb.org/3';
 
   Future<List<Movie>> searchMovies(String query) async {
-  if (query.isEmpty) return [];
-  // Try-cast: if connection fails, return empty list. Automatically handles exceptions!
-  try {
-    final url = Uri.parse('$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=es-ES');
-    final response = await http.get(url);
-    
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      final results = data['results'] as List? ?? [];
-      return results.map((json) => Movie.fromJson(json)).toList();
-    } else {
+    if (query.isEmpty) return [];
+    // Try-cast: if connection fails, return empty list. Automatically handles exceptions!
+    try {
+      final url = Uri.parse(
+        '$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=es-ES',
+      );
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final results = data['results'] as List? ?? [];
+        return results.map((json) => Movie.fromJson(json)).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
       return [];
     }
-  } catch (e) {
-    return [];
   }
-}
 
   Future<void> fillExtraDetails(Movie movie) async {
     try {
@@ -60,22 +62,23 @@ class MovieRepository {
         final crew = data['crew'] as List? ?? []; // if null, assign empty list
         final cast = data['cast'] as List? ?? [];
 
-        final director = crew.firstWhere(
-          (p) => p['job'] == 'Director',
-          orElse: () => null,
-        );
+        final directorsList = crew
+            .where((p) => p['job'] == 'Director')
+            .toList();
 
-        movie.director = director?['name'] ?? 'Unknown director';
+        movie.directors = directorsList.isEmpty
+            ? 'Unknown director'
+            : directorsList.take(4).map((d) => d['name'] as String).join(', ');
         movie.actors = cast.isEmpty
             ? 'Unknown cast'
             : cast.take(3).map((a) => a['name'] as String).join(', ');
       } else {
-        movie.director = 'N/A';
+        movie.directors = 'N/A';
         movie.actors = 'N/A';
       }
     } catch (e) {
       movie.country = 'Error loading';
-      movie.director = 'Error loading';
+      movie.directors = 'Error loading';
       movie.actors = 'Error loading';
     }
   }
