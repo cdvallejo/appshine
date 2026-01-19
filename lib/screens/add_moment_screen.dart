@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/movie_model.dart';
+import '../repositories/movie_repository.dart';
 
 class AddMomentScreen extends StatefulWidget {
   final Movie movie;
@@ -12,6 +13,7 @@ class AddMomentScreen extends StatefulWidget {
 
 class _AddMomentScreenState extends State<AddMomentScreen> {
   final _notesController = TextEditingController();
+  final MovieRepository _movieRepository = MovieRepository();
   DateTime _selectedDate = DateTime.now();
   String _location = 'Home'; // Default value
 
@@ -53,25 +55,63 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 Image.network(widget.movie.fullPosterUrl, width: 100),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.movie.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Text(
-                        'Director: Christopher Nolan',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ), // Estático por ahora
-                      const Text(
-                        'Reparto: Leonardo DiCaprio, Cillian Murphy',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
+                  child: FutureBuilder(
+                    future: _movieRepository.fillExtraDetails(widget.movie),
+                    builder: (context, snapshot) {
+                      // 1. If the messenger is still on the way...
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child:
+                              CircularProgressIndicator(), // Shows the loading spinner
+                        );
+                      }
+
+                      // 2. If the messenger has arrived (we now have director, actors, and country)...
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.movie.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Text rich for different styles in the same line: name field grey, value black
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                const TextSpan(
+                                  text: 'Year: ',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: widget.movie.releaseYear,
+                                  style: const TextStyle(
+                                    color: Colors
+                                        .black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Cast: ${widget.movie.actors}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Country: ${widget.movie.country}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -99,7 +139,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                       child: DropdownButton<String>(
                         value: _location,
                         isExpanded: true,
-                        isDense: true, // Forces compact layout with the first ListTile
+                        isDense:
+                            true, // Forces compact layout with the first ListTile
                         items: <String>['Home', 'Cinema', 'Streaming', 'Other']
                             .map((String value) {
                               return DropdownMenuItem<String>(
