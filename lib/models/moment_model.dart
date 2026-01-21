@@ -6,6 +6,7 @@ enum MomentType {
   social
 }
 
+// Model class for a Moment
 class Moment {
   final String? id;
   final String userId;

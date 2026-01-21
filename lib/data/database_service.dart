@@ -44,7 +44,7 @@ class DatabaseService {
   // Query to get moments for the current user, ordered by creation date
   return _db.collection('moments')
       .where('userId', isEqualTo: user.uid)
-      .orderBy('createdAt', descending: true)
+      .orderBy('date', descending: true)
       .snapshots();
 }
 }
