@@ -5,124 +5,183 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'admin_screen.dart';
+import 'package:appshine/data/database_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Get the current authenticated user
     final user = FirebaseAuth.instance.currentUser;
 
+    // --- MAIN STRUCTURE OF THE SCREEN ---
     return Scaffold(
+      // --- APP BAR ---
       appBar: AppBar(
-        title: const Text('Appshine'), 
+        title: const Text('Appshine'),
         foregroundColor: Colors.white,
         backgroundColor: Colors.indigo,
         actions: [
-          // FutureBuilder to check if the user has administrative privileges
+          // AppBar admin button visibility based on user role
           FutureBuilder<DocumentSnapshot>(
             future: FirebaseFirestore.instance
                 .collection('users')
                 .doc(user?.uid)
                 .get(),
             builder: (context, snapshot) {
-              // 1. Connection check: While waiting for the "package", we return an empty space
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SizedBox.shrink();
               }
-
-              // 2. Data check: Once the snapshot is "crushed" with real data, we check for isAdmin
               if (snapshot.hasData && snapshot.data!.exists) {
                 final userData = snapshot.data!.data() as Map<String, dynamic>;
-
-                // If isAdmin is true, show the admin settings icon
                 if (userData['isAdmin'] == true) {
                   return IconButton(
                     icon: const Icon(Icons.admin_panel_settings),
-                    tooltip: 'Admin Panel',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AdminScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AdminScreen(),
+                      ),
+                    ),
                   );
                 }
               }
-              // Return an empty widget if the user is not an admin
               return const SizedBox.shrink();
             },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              // AuthGate will automatically handle the redirection to Login
-            },
+            onPressed: () async => await FirebaseAuth.instance.signOut(),
           ),
         ],
       ),
+
+      // --- BODY OF THE SCREEN ---
       body: FutureBuilder<DocumentSnapshot>(
-        // Fetch user data again to customize the welcome message
         future: FirebaseFirestore.instance
             .collection('users')
             .doc(user?.uid)
             .get(),
         builder: (context, snapshot) {
-          // 1. Connection check: Show a loading indicator while fetching data
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          String welcomeMessage = 'Welcome to Appshine';
-
-          // 2. Data check: The snapshot is updated with user info
+          bool isAdmin = false;
           if (snapshot.hasData && snapshot.data!.exists) {
             final userData = snapshot.data!.data() as Map<String, dynamic>;
-            // Customize message based on user role stored in Firestore
-            if (userData['isAdmin'] == true) {
-              welcomeMessage = 'Welcome, Admin!';
-            } else {
-              welcomeMessage = 'Hello, ${userData['email']}';
-            }
+            isAdmin = userData['isAdmin'] == true;
+          }
+          // If the user is an admin, show a special message
+          if (isAdmin) {
+            return const Center(
+              child: Text('Welcome, Admin', style: TextStyle(fontSize: 24)),
+            );
           }
 
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.movie, size: 80, color: Colors.indigo),
-                const SizedBox(height: 20),
-                Text(welcomeMessage, style: const TextStyle(fontSize: 24)),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    // 1. Open the search ONCE ONLY
-                    final Movie? movieSelected = await showSearch<Movie?>(
-                      context: context,
-                      delegate: MovieSearchDelegate(),
-                    );
-                    
-                    // 2. If user selected a movie, proceed
-                    if (movieSelected != null && context.mounted) {
-                      // 3. Navigate directly to the add moment screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              AddMomentScreen(movie: movieSelected),
+          // If user is not admin, show their moments
+          return StreamBuilder<QuerySnapshot>(
+            stream: DatabaseService().getMomentsStream(),
+            builder: (context, momentSnapshot) {
+              if (momentSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final docs = momentSnapshot.data?.docs ?? [];
+
+              if (docs.isEmpty) {
+                return const Center(
+                  child: Text('No moments added yet. Tap + to add one!'),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+
+                  // Card for each moment
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: data['posterUrl'] != null
+                              ? Image.network(
+                                  data['posterUrl'],
+                                  width: 50,
+                                  height: 75,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.movie, size: 50),
+                                )
+                              : const Icon(Icons.movie, size: 50),
                         ),
-                      );
-                    }
-                  },
-                  child: const Text('Add a New Moment'),
-                ),
-              ],
-            ),
+                        title: Text(
+                          data['title'] ?? 'Untitled',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text('Dir: ${data['director'] ?? 'N/A'}'),
+                            Text(
+                              'Año: ${data['year'] ?? 'N/A'}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: Colors.indigo,
+                        ),
+                        onTap: () {
+                          // Future detail screen
+                        },
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           );
+        },
+      ),
+      // --- FLOATING BUTTON TO ADD MOMENT ---
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.indigo,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () async {
+          final Movie? movieSelected = await showSearch<Movie?>(
+            context: context,
+            delegate: MovieSearchDelegate(),
+          );
+
+          if (movieSelected != null && context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddMomentScreen(movie: movieSelected),
+              ),
+            );
+          }
         },
       ),
     );
