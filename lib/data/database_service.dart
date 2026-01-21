@@ -36,4 +36,15 @@ class DatabaseService {
       rethrow; // Throws the error so the screen can show a message
     }
   }
+
+  Stream<QuerySnapshot> getMomentsStream() {
+  final user = _auth.currentUser;
+  if (user == null) throw Exception('User not identified');
+
+  // Query to get moments for the current user, ordered by creation date
+  return _db.collection('moments')
+      .where('userId', isEqualTo: user.uid)
+      .orderBy('createdAt', descending: true)
+      .snapshots();
+}
 }
