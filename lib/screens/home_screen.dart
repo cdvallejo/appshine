@@ -4,6 +4,7 @@ import 'package:appshine/widgets/movie_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
@@ -95,12 +96,51 @@ class HomeScreen extends StatelessWidget {
                 );
               }
 
-              return ListView.builder(
-                itemCount: docs.length,
-                itemBuilder: (context, index) {
-                  final data = docs[index].data() as Map<String, dynamic>;
+              // --- GROUPED LIST VIEW BY DATE ---
+              return GroupedListView<dynamic, DateTime>(
+                elements: docs,
+                groupBy: (doc) {
+                  // Extract date without time
+                  DateTime date = (doc.data()['date'] as Timestamp).toDate();
+                  return DateTime(date.year, date.month, date.day);
+                },
+                // --- GROUP HEADER DESIGN ---
+                groupSeparatorBuilder: (DateTime date) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Left side: weekday name
+                      Text(
+                        _getWeekdayName(date.weekday),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          color: Colors.indigo.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      // Right side: full date
+                      Text(
+                        "${date.day} de ${_getMonthName(date.month)} de ${date.year}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.1,
+                          color: Colors.indigo.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                  // Card for each moment
+                  // --- ITEM DESIGN WITHIN GROUP --
+                ),
+                itemBuilder: (context, dynamic doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  // Moment card design
                   return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -147,10 +187,12 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: Colors.indigo,
+                        // Traiing with icon moment and onTap for future detail
+                        trailing: Icon(
+                          _getMomentIcon(data['type']),
+                          size:
+                              20, // Lo subo a 20 para que se vea bien como acción
+                          color: Colors.indigo.withValues(alpha: 0.5),
                         ),
                         onTap: () {
                           // Future detail screen
@@ -159,6 +201,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 },
+                // Date comparator to order groups
+                itemComparator: (item1, item2) =>
+                    (item2.data()['date'] as Timestamp).compareTo(
+                      item1.data()['date'] as Timestamp,
+                    ),
+                useStickyGroupSeparators: true, // Enable sticky headers for group separators
+                floatingHeader: false, // No floating header for no transparency between DateTime
+                order: GroupedListOrder.DESC, 
               );
             },
           );
@@ -185,5 +235,51 @@ class HomeScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  // FUNCIONES PARA LOS MESES y DÍAS EN ESPAÑOL
+
+  String _getMonthName(int month) {
+    const months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    return months[month - 1];
+  }
+
+  String _getWeekdayName(int weekday) {
+    const days = [
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+      'Domingo',
+    ];
+    return days[weekday - 1];
+  }
+
+  IconData _getMomentIcon(String? type) {
+    switch (type) {
+      case 'movie':
+        return Icons.movie_outlined;
+      case 'book':
+        return Icons.book_outlined;
+      case 'place':
+        return Icons.place_outlined;
+      default:
+        return Icons.star_border; // Por si acaso
+    }
   }
 }
