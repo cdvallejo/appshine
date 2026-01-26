@@ -1,5 +1,6 @@
 import 'package:appshine/models/movie_model.dart';
 import 'package:appshine/screens/add_moment_screen.dart';
+import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/widgets/movie_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -195,7 +196,16 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.indigo.withValues(alpha: 0.5),
                         ),
                         onTap: () {
-                          // Future detail screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MomentDetailScreen(
+                                momentData: data,
+                                momentId: doc
+                                    .id, // <--- Usamos 'doc.id' en lugar de 'docs[index].id'
+                              ),
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -206,9 +216,11 @@ class HomeScreen extends StatelessWidget {
                     (item2.data()['date'] as Timestamp).compareTo(
                       item1.data()['date'] as Timestamp,
                     ),
-                useStickyGroupSeparators: true, // Enable sticky headers for group separators
-                floatingHeader: false, // No floating header for no transparency between DateTime
-                order: GroupedListOrder.DESC, 
+                useStickyGroupSeparators:
+                    true, // Enable sticky headers for group separators
+                floatingHeader:
+                    false, // No floating header for no transparency between DateTime
+                order: GroupedListOrder.DESC,
               );
             },
           );

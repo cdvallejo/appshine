@@ -1,6 +1,7 @@
 import 'package:appshine/models/movie_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -24,8 +25,10 @@ class DatabaseService {
         'type': 'movie',
         'movieId': movie.id,
         'title': movie.title,
-        'director': movie.directors,
         'year': movie.releaseYear,
+        'country': movie.country,
+        'director': movie.directors,
+        'actors': movie.actors,
         'posterUrl': movie.fullPosterUrl,
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
@@ -47,4 +50,14 @@ class DatabaseService {
       .orderBy('date', descending: true)
       .snapshots();
 }
+
+  // Function to delete a moment by its ID
+  Future<void> deleteMoment(String momentId) async {
+    try {
+      await _db.collection('moments').doc(momentId).delete();
+    } catch (e) {
+      debugPrint("Error deleting moment: $e");
+    rethrow;
+    }
+  }
 }

@@ -125,7 +125,12 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             ),
                           ),
                           Text(
-                            'Director: ${widget.movie.directors}',
+                            'Country: ${widget.movie.country}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Dirección: ${widget.movie.directors}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                           const SizedBox(height: 4),
@@ -133,11 +138,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             'Cast: ${widget.movie.actors}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Country: ${widget.movie.country}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
-                          ),
+                          
                         ],
                       );
                     },
