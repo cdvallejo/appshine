@@ -51,6 +51,16 @@ class DatabaseService {
       .snapshots();
 }
 
+  // Function to update a moment's notes
+  Future<void> updateMoment(String momentId, Map<String, dynamic> data) async {
+  try {
+    await _db.collection('moments').doc(momentId).update(data);
+  } catch (e) {
+    debugPrint("Error al actualizar: $e");
+    rethrow;
+  }
+}
+
   // Function to delete a moment by its ID
   Future<void> deleteMoment(String momentId) async {
     try {

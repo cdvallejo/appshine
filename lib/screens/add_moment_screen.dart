@@ -54,9 +54,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 if (context.mounted) {
                   // Extra safety in case the user closed the screen before
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Moment saved!'),
-                    ),
+                    const SnackBar(content: Text('Moment saved!')),
                   );
                   Navigator.pop(context);
                 }
@@ -138,7 +136,6 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             'Cast: ${widget.movie.actors}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
-                          
                         ],
                       );
                     },
@@ -150,8 +147,10 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
 
             // PART MIDDLE SECTION: DATEPICKER AND LOCATION
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
+                IntrinsicWidth(
+                  // To make the ListTile take only the space it needs
                   child: ListTile(
                     title: const Text("Date"),
                     subtitle: Text(
@@ -162,24 +161,18 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   ),
                 ),
                 Expanded(
+                  // Not IntrinsicWidth to take the rest of the space because TextField needs defined width
                   child: ListTile(
+                    contentPadding: const EdgeInsets.only(left: 0, right: 0),
                     leading: const Icon(Icons.location_on),
                     title: const Text("Location"),
-                    subtitle: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _location,
-                        isExpanded: true,
-                        isDense:
-                            true, // Forces compact layout with the first ListTile
-                        items: <String>['Home', 'Cinema', 'Streaming', 'Other']
-                            .map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            })
-                            .toList(),
-                        onChanged: (val) => setState(() => _location = val!),
+                    subtitle: TextField(
+                      onChanged: (val) => setState(() => _location = val),
+                      decoration: const InputDecoration(
+                        hintText: 'Cinema, Home...',
+                        isDense: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   ),
