@@ -34,7 +34,7 @@ class _UpdateMomentSheetState extends State<UpdateMomentSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(
           context,
-        ).viewInsets.bottom, // Para que el teclado no tape
+        ).viewInsets.bottom, // Adjust padding for keyboard
         left: 20,
         right: 20,
         top: 20,

@@ -230,54 +230,105 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.indigo,
         child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () async {
-          final Movie? movieSelected = await showSearch<Movie?>(
-            context: context,
-            delegate: MovieSearchDelegate(),
-          );
-
-          if (movieSelected != null && context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddMomentScreen(movie: movieSelected),
-              ),
-            );
-          }
-        },
+        onPressed: () =>
+            _showAddMomentMenu(context), // Call the Moment menu function
       ),
     );
   }
 
-  // FUNCIONES PARA LOS MESES y DÍAS EN ESPAÑOL
+  // Function to show the bottom sheet menu for adding moments
+  void _showAddMomentMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Wrap content height
+          children: [
+            const Text(
+              'ADD A NEW MOMENT',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 20),
 
+            // MOVIE OPTION
+            ListTile(
+              leading: const Icon(Icons.movie, color: Colors.indigo),
+              title: const Text('Movie'),
+              onTap: () async {
+                Navigator.pop(context); // Close the menu
+                final Movie? movieSelected = await showSearch<Movie?>(
+                  context: context,
+                  delegate: MovieSearchDelegate(),
+                );
+                if (movieSelected != null && context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddMomentScreen(movie: movieSelected),
+                    ),
+                  );
+                }
+              },
+            ),
+
+            // BOOK OPTION
+            ListTile(
+              leading: const Icon(Icons.book, color: Colors.indigo),
+              title: const Text('Book'),
+              onTap: () {
+                Navigator.pop(context);
+                // SOON..
+              },
+            ),
+
+            // EVENT OPTION
+            ListTile(
+              leading: const Icon(Icons.people, color: Colors.indigo),
+              title: const Text('Event'),
+              onTap: () {
+                Navigator.pop(context);
+                // SOON..
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Functions to get month and weekday names in English
   String _getMonthName(int month) {
     const months = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month - 1];
   }
 
   String _getWeekdayName(int weekday) {
     const days = [
-      'Lunes',
-      'Martes',
-      'Miércoles',
-      'Jueves',
-      'Viernes',
-      'Sábado',
-      'Domingo',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     return days[weekday - 1];
   }
@@ -291,7 +342,7 @@ class HomeScreen extends StatelessWidget {
       case 'place':
         return Icons.place_outlined;
       default:
-        return Icons.star_border; // Por si acaso
+        return Icons.question_mark_outlined; // Just in case
     }
   }
 }
