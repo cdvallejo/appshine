@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie_model.dart';
 
+/* TMDB API Repository is much HARDER than Google Books API because
+it's needed to make multiple requests to get all the details. */
 class MovieRepository {
   // TMDB API Key and base URL
   final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
@@ -29,17 +31,18 @@ class MovieRepository {
     }
   }
 
+  // Fetch extra details for a specific movie with two more requests
   Future<void> fillExtraDetails(Movie movie) async {
     try {
       // Faster in parallel requests
       final results = await Future.wait([
         http.get(
-          Uri.parse(
+          Uri.parse( // Country info - results[0]
             '$_baseUrl/movie/${movie.id}?api_key=$_apiKey&language=es-ES',
           ),
         ),
         http.get(
-          Uri.parse(
+          Uri.parse( // Credits info - results[1]
             '$_baseUrl/movie/${movie.id}/credits?api_key=$_apiKey&language=es-ES',
           ),
         ),
@@ -51,7 +54,7 @@ class MovieRepository {
         final countries = data['production_countries'] as List?;
         movie.country = (countries?.isNotEmpty ?? false)
             ? countries![0]['name']
-            : 'País desconocido';
+            : 'Unknown country';
       } else {
         movie.country = 'N/A';
       }
