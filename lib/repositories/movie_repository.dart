@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie_model.dart';
 
+// Repository is the engine that fetches data from TMDB API to models.
 /* TMDB API Repository is much HARDER than Google Books API because
 it's needed to make multiple requests to get all the details. */
 class MovieRepository {
