@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/book_model.dart';
 
+// Repository is the engine that fetches data from Google Books API to models.
 /* Google Books API Repository is much simpler than TMDB because
 Google returns more data in the search results directly. */
 
