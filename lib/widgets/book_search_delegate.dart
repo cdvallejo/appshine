@@ -1,10 +1,11 @@
-import 'package:appshine/models/movie_model.dart';
-import 'package:appshine/repositories/movie_repository.dart';
+import 'package:appshine/models/book_model.dart';
+import 'package:appshine/repositories/book_repository.dart';
 import 'package:flutter/material.dart';
 
-class MovieSearchDelegate extends SearchDelegate<Movie?> {
-  final MovieRepository _repo = MovieRepository();
+class BookSearchDelegate extends SearchDelegate<Book?> {
+  final BookRepository _repo = BookRepository();
 
+  // Clear query action button
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -12,6 +13,7 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
     ];
   }
 
+  // Leading icon on the left of the AppBar
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
@@ -20,24 +22,28 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
     );
   }
 
+  // Build the results based on the search query
   @override
   Widget buildResults(BuildContext context) {
     return _search(context);
   }
 
+  // Build suggestions as the user types
   @override
   Widget buildSuggestions(BuildContext context) {
     return _search(context);
   }
 
+  // Common search widget used by both results and suggestions
   Widget _search(BuildContext context) {
     // Control barriers for short queries. FilmAffinity starts searching from 2 characters.
     if (query.length < 2) {
       return const Center(child: Text('Type at least 2 characters.'));
     }
 
-    return FutureBuilder<List<Movie>>(
-      future: _repo.searchMovies(query),
+    // Use FutureBuilder to handle asynchronous search
+    return FutureBuilder<List<Book>>(
+      future: _repo.searchBooks(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -47,20 +53,20 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
-        final movies = snapshot.data ?? [];
+        final books = snapshot.data ?? [];
 
-        if (movies.isEmpty) {
-          return const Center(child: Text('No movies found'));
+        if (books.isEmpty) {
+          return const Center(child: Text('No books found'));
         }
 
         return ListView.builder(
-          itemCount: movies.length,
+          itemCount: books.length,
           itemBuilder: (context, index) {
-            final movie = movies[index];
+            final book = books[index];
 
-            // DESIGN MOVIE ITEM
+            // DESIGN SCREEN BOOK ITEM
             return InkWell(
-              onTap: () => close(context, movie),
+              onTap: () => close(context, book),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -70,9 +76,9 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Poster image
-                    movie.posterPath != null
+                    book.thumbnailUrl != null
                         ? Image.network(
-                            movie.fullPosterUrl,
+                            book.fullCoverUrl,
                             width: 80,
                             height: 120,
                             fit: BoxFit.cover,
@@ -89,7 +95,7 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
                             width: 80,
                             height: 120,
                             color: Colors.grey[200],
-                            child: const Icon(Icons.movie, color: Colors.grey),
+                            child: const Icon(Icons.book, color: Colors.grey),
                           ),
                     const SizedBox(width: 16),
                     // Title, year
@@ -99,7 +105,7 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
                         children: [
                           const SizedBox(height: 8),
                           Text(
-                            movie.title,
+                            book.title,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -109,7 +115,7 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            movie.releaseYear,
+                            book.releaseYear,
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 14,
