@@ -1,22 +1,18 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
-import '../models/movie_model.dart';
-import '../repositories/movie_repository.dart';
+import '../models/book_model.dart';
 
-/* Movies requieres additional details (director, actors, country), so we use the repository here.
-Lazy Loading */
-class AddMomentScreen extends StatefulWidget {
-  final Movie movie;
-  const AddMomentScreen({super.key, required this.movie});
+class AddMomentScreenBook extends StatefulWidget {
+  final Book book;
+  const AddMomentScreenBook({super.key, required this.book});
 
   @override
-  State<AddMomentScreen> createState() => _AddMomentScreenState();
+  State<AddMomentScreenBook> createState() => _AddMomentScreenBookState();
 }
 
-class _AddMomentScreenState extends State<AddMomentScreen> {
+class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   final _notesController = TextEditingController();
-  final MovieRepository _movieRepository = MovieRepository();
   DateTime _selectedDate = DateTime.now();
   String _location = 'Home'; // Default value
 
@@ -37,7 +33,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Movie Moment'),
+        title: const Text('Add Book Moment'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -45,8 +41,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
               // 1. Async function to save the moment
               try {
                 // 2. Call the function with await
-                await DatabaseService().addMomentMovie(
-                  movie: widget.movie,
+                await DatabaseService().addMomentBook(
+                  book: widget.book,
                   date: _selectedDate,
                   location: _location,
                   notes: _notesController.text,
@@ -79,68 +75,66 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
           children: [
             // PART UPPER SECTION: POSTER AND DETAILS
             Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start, // Para que el texto empiece arriba
               children: [
-                Image.network(widget.movie.fullPosterUrl, width: 100),
+                Image.network(widget.book.fullCoverUrl, width: 100),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: FutureBuilder(
-                    future: _movieRepository.fillExtraDetails(widget.movie),
-                    builder: (context, snapshot) {
-                      // 1. If the messenger is still on the way...
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child:
-                              CircularProgressIndicator(), // Shows the loading spinner
-                        );
-                      }
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.book.title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
 
-                      // 2. If the messenger has arrived (we now have director, actors, and country)...
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.movie.title,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                      // Año con Text.rich (Gris la etiqueta, negro el valor)
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Year: ',
+                              style: TextStyle(color: Colors.grey),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          // Text rich for different styles in the same line: name field grey, value black
-                          Text.rich(
                             TextSpan(
-                              children: [
-                                const TextSpan(
-                                  text: 'Year: ',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                TextSpan(
-                                  text: widget.movie.releaseYear,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                              text: widget.book.releaseYear,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Country: ${widget.movie.country}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Dirección: ${widget.movie.directors}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Cast: ${widget.movie.actors}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // Autores (usando join para que quede bonito: "Autor 1, Autor 2")
+                      Text(
+                        'Authors: ${widget.book.authors?.join(', ') ?? 'Unknown'}',
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // Páginas (un detalle extra que suele gustar)
+                      Text(
+                        widget.book.pageCount != null
+                            ? '~ ${widget.book.pageCount} pages'
+                            : 'Page count unknown',
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12,
+                          fontStyle: FontStyle
+                              .italic,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

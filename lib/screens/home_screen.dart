@@ -1,6 +1,9 @@
+import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/movie_model.dart';
 import 'package:appshine/screens/add_moment_screen.dart';
+import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
+import 'package:appshine/widgets/book_search_delegate.dart';
 import 'package:appshine/widgets/movie_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -259,17 +262,29 @@ class HomeScreen extends StatelessWidget {
               leading: const Icon(Icons.movie, color: Colors.indigo),
               title: const Text('Movie'),
               onTap: () async {
-                Navigator.pop(context); // Close the menu
-                final Movie? movieSelected = await showSearch<Movie?>(
+                // 1. Launch the search FIRST (using the current context)
+                final result = await showSearch<Movie?>(
                   context: context,
                   delegate: MovieSearchDelegate(),
                 );
-                if (movieSelected != null && context.mounted) {
+
+                // 2. If the user pressed back (result is null), also close the menu
+                if (result == null) {
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close the choice menu
+                  }
+                  return;
+                }
+
+                // 3. If the user DID choose a movie...
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  
+                  // And navigate to the add screen
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          AddMomentScreen(movie: movieSelected),
+                      builder: (context) => AddMomentScreen(movie: result),
                     ),
                   );
                 }
@@ -280,9 +295,28 @@ class HomeScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.book, color: Colors.indigo),
               title: const Text('Book'),
-              onTap: () {
-                Navigator.pop(context);
-                // SOON..
+              onTap: () async {
+                final result = await showSearch<Book?>(
+                  context: context,
+                  delegate: BookSearchDelegate(),
+                );
+
+                if (result == null) {
+                  if (context.mounted) {
+                    Navigator.pop(context); 
+                  }
+                  return;
+                }
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddMomentScreenBook(book: result),
+                    ),
+                  );
+                }
               },
             ),
 
