@@ -57,6 +57,22 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     }
   }
 
+  // Helper method to safely convert values to string
+  String _safeStringValue(dynamic value) {
+    try {
+      if (value == null) return 'Unknown';
+      if (value is List) {
+        if (value.isEmpty) return 'Unknown';
+        final filtered = value.whereType<String>().toList();
+        return filtered.isEmpty ? 'Unknown' : filtered.join(', ');
+      }
+      if (value is String && value.isNotEmpty) return value;
+      return 'Unknown';
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,9 +96,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 // Show a quick success message
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Changes saved successfully'),
-                    ),
+                    const SnackBar(content: Text('Changes saved successfully')),
                   );
                 }
               }
@@ -119,16 +133,16 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             // 1. Poster Section
             GestureDetector(
               onTap: () {
-                showImageGallery(context, [widget.momentData['posterUrl']]);
+                showImageGallery(context, [widget.momentData['imageUrl']]);
               },
               child: Container(
                 height: 300,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.cyan.withValues(alpha: 0.2),
-                  image: widget.momentData['posterUrl'] != null
+                  image: widget.momentData['imageUrl'] != null
                       ? DecorationImage(
-                          image: NetworkImage(widget.momentData['posterUrl']),
+                          image: NetworkImage(widget.momentData['imageUrl']),
                           fit: BoxFit.fitHeight,
                         )
                       : null,
@@ -151,19 +165,19 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Year: ${widget.momentData['year'] ?? 'Unknown'}',
+                    'Year: ${_safeStringValue(widget.momentData['year'])}',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   Text(
-                    'Country: ${widget.momentData['country'] ?? 'Unknown'}',
+                    'Country: ${_safeStringValue(widget.momentData['country'])}',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   Text(
-                    'Direction: ${widget.momentData['director'] ?? 'Unknown'}',
+                    'Direction: ${_safeStringValue(widget.momentData['director'])}',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   Text(
-                    'Actors: ${widget.momentData['actors'] ?? 'Unknown'}',
+                    'Actors: ${_safeStringValue(widget.momentData['actors'])}',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
 
@@ -323,26 +337,35 @@ void showImageGallery(
   showDialog(
     context: context,
     builder: (context) => Dialog.fullscreen(
-      child: PageView.builder(
-        controller: PageController(initialPage: initialIndex),
-        itemCount: urls.length,
-        itemBuilder: (context, index) => Stack(
-          fit: StackFit.expand,
-          children: [
-            InteractiveViewer(
+      backgroundColor: Colors.black, // Fondo negro para que resalten las fotos
+      child: Stack(
+        children: [
+          // 1. El carrusel de imágenes
+          PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: urls.length,
+            itemBuilder: (context, index) => InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
               child: Image.network(urls[index], fit: BoxFit.contain),
             ),
-            SafeArea(
-              child: Align(
-                alignment: Alignment.topRight,
+          ),
+
+          // 2. Botón de cerrar fijo arriba (fuera del PageView)
+          Positioned(
+            top: 10,
+            right: 10,
+            child: SafeArea(
+              child: CircleAvatar(
+                backgroundColor: Colors.black54, // Fondo oscuro para el botón
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ),
   );

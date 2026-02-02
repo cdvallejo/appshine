@@ -1,17 +1,17 @@
 class Movie {
   final int id;
   final String title;
-  final String? posterPath;
+  final String? imageUrl;
   final String releaseDate;
   // Cannot be final if we want to set it later in the details fetch
-  String? directors; 
-  String? actors;
+  List<String>? directors; 
+  List<String>? actors;
   String? country;
 
   Movie({
     required this.id,
     required this.title,
-    this.posterPath,
+    this.imageUrl,
     required this.releaseDate,
     this.directors,
     this.actors,
@@ -23,8 +23,13 @@ class Movie {
     return Movie(
       id: json['id'],
       title: json['title'],
-      posterPath: json['poster_path'],
+      imageUrl: json['poster_path'] != null 
+        ? 'https://image.tmdb.org/t/p/w500${json['poster_path']}' 
+        : null,
       releaseDate: json['release_date'] ?? '',
+      directors: (json['directors'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      actors: (json['actors'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      country: json['country'],
     );
   }
 
@@ -36,7 +41,7 @@ class Movie {
   }
 
   // Getter to obtain the full poster URL
-  String get fullPosterUrl => posterPath != null 
-      ? 'https://image.tmdb.org/t/p/w500$posterPath' 
+  String get fullPosterUrl => imageUrl != null 
+      ? 'https://image.tmdb.org/t/p/w500$imageUrl' 
       : 'https://via.placeholder.com/500x750?text=No+Image';
 }

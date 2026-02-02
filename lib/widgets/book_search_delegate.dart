@@ -76,7 +76,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Poster image
-                    book.thumbnailUrl != null
+                    book.fullCoverUrl.isNotEmpty
                         ? Image.network(
                             book.fullCoverUrl,
                             width: 80,

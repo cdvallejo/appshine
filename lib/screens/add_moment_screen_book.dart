@@ -13,8 +13,10 @@ class AddMomentScreenBook extends StatefulWidget {
 
 class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   final _notesController = TextEditingController();
+  final _locationController = TextEditingController(
+    text: 'Home',
+  ); // Default value
   DateTime _selectedDate = DateTime.now();
-  String _location = 'Home'; // Default value
 
   // Function to show the calendar
   Future<void> _selectDate(BuildContext context) async {
@@ -44,7 +46,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                 await DatabaseService().addMomentBook(
                   book: widget.book,
                   date: _selectedDate,
-                  location: _location,
+                  location: _locationController.text,
                   notes: _notesController.text,
                 );
 
@@ -116,22 +118,19 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
 
                       // Autores (usando join para que quede bonito: "Autor 1, Autor 2")
                       Text(
-                        'Authors: ${widget.book.authors?.join(', ') ?? 'Unknown'}',
+                        'Author: ${widget.book.authors?.join(', ') ?? 'Unknown'}',
                         style: const TextStyle(color: Colors.black87),
                       ),
 
                       const SizedBox(height: 4),
 
-                      // Páginas (un detalle extra que suele gustar)
+                      // Page count
                       Text(
-                        widget.book.pageCount != null
-                            ? '~ ${widget.book.pageCount} pages'
-                            : 'Page count unknown',
+                        widget.book.formattedPageCount,
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 12,
-                          fontStyle: FontStyle
-                              .italic,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
@@ -163,7 +162,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                     leading: const Icon(Icons.location_on),
                     title: const Text("Location"),
                     subtitle: TextField(
-                      onChanged: (val) => setState(() => _location = val),
+                      onChanged: (val) =>
+                          setState(() => _locationController.text = val),
                       decoration: const InputDecoration(
                         hintText: 'Cinema, Home...',
                         isDense: true,

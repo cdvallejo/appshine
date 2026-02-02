@@ -1,11 +1,9 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatear la fecha
+import 'package:intl/intl.dart'; // For date formatting
 import '../models/movie_model.dart';
 import '../repositories/movie_repository.dart';
 
-/* Movies requieres additional details (director, actors, country), so we use the repository here.
-Lazy Loading */
 class AddMomentScreen extends StatefulWidget {
   final Movie movie;
   const AddMomentScreen({super.key, required this.movie});
@@ -16,9 +14,12 @@ class AddMomentScreen extends StatefulWidget {
 
 class _AddMomentScreenState extends State<AddMomentScreen> {
   final _notesController = TextEditingController();
+  final _locationController = TextEditingController(
+    text: 'Home',
+  ); // Default value
+
   final MovieRepository _movieRepository = MovieRepository();
   DateTime _selectedDate = DateTime.now();
-  String _location = 'Home'; // Default value
 
   // Function to show the calendar
   Future<void> _selectDate(BuildContext context) async {
@@ -48,7 +49,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 await DatabaseService().addMomentMovie(
                   movie: widget.movie,
                   date: _selectedDate,
-                  location: _location,
+                  location: _locationController.text,
                   notes: _notesController.text,
                 );
 
@@ -83,6 +84,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 Image.network(widget.movie.fullPosterUrl, width: 100),
                 const SizedBox(width: 20),
                 Expanded(
+                  /* Movies requieres additional details (director, actors, country), so we use the repository here.
+                  Lazy Loading */
                   child: FutureBuilder(
                     future: _movieRepository.fillExtraDetails(widget.movie),
                     builder: (context, snapshot) {
@@ -130,12 +133,12 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Dirección: ${widget.movie.directors}',
+                            'Dirección: ${widget.movie.directors?.join(', ') ?? 'Unknown'}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Cast: ${widget.movie.actors}',
+                            'Cast: ${widget.movie.actors?.join(', ') ?? 'Unknown'}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                         ],
@@ -169,7 +172,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                     leading: const Icon(Icons.location_on),
                     title: const Text("Location"),
                     subtitle: TextField(
-                      onChanged: (val) => setState(() => _location = val),
+                      onChanged: (val) =>
+                          setState(() => _locationController.text = val),
                       decoration: const InputDecoration(
                         hintText: 'Cinema, Home...',
                         isDense: true,
