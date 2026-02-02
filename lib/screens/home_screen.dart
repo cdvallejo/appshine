@@ -159,9 +159,9 @@ class HomeScreen extends StatelessWidget {
                       child: ListTile(
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: data['posterUrl'] != null
+                          child: data['imageUrl'] != null
                               ? Image.network(
-                                  data['posterUrl'],
+                                  data['imageUrl'],
                                   width: 50,
                                   height: 75,
                                   fit: BoxFit.cover,
@@ -181,7 +181,9 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 4),
-                            Text('Dir: ${data['director'] ?? 'N/A'}'),
+                            Text(
+                              'Dir: ${(data['director'] is List && (data['director'] as List).isNotEmpty) ? (data['director'] as List).join(', ') : 'N/A'}',
+                            ),
                             Text(
                               'Año: ${data['year'] ?? 'N/A'}',
                               style: const TextStyle(
@@ -195,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                         trailing: Icon(
                           _getMomentIcon(data['type']),
                           size:
-                              20, // Lo subo a 20 para que se vea bien como acción
+                              20,
                           color: Colors.indigo.withValues(alpha: 0.5),
                         ),
                         onTap: () {
@@ -279,7 +281,7 @@ class HomeScreen extends StatelessWidget {
                 // 3. If the user DID choose a movie...
                 if (context.mounted) {
                   Navigator.pop(context);
-                  
+
                   // And navigate to the add screen
                   Navigator.push(
                     context,
@@ -303,7 +305,7 @@ class HomeScreen extends StatelessWidget {
 
                 if (result == null) {
                   if (context.mounted) {
-                    Navigator.pop(context); 
+                    Navigator.pop(context);
                   }
                   return;
                 }

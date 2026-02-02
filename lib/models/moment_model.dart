@@ -20,9 +20,9 @@ class Moment {
 
   // Specific fields for different moment types
   final int? tmdbId;
-  final String? director;
+  final List<String>? director;
   final String? author;
-  final List<String>? people;
+  final List<String>? actors;
 
   Moment({
     this.id,
@@ -37,7 +37,7 @@ class Moment {
     this.tmdbId,
     this.director,
     this.author,
-    this.people,
+    this.actors,
   });
 
 factory Moment.fromMap(Map<String, dynamic> map, String docId) {
@@ -64,9 +64,9 @@ factory Moment.fromMap(Map<String, dynamic> map, String docId) {
       location: map['location'],
       imageUrl: map['imageUrl'],
       tmdbId: map['tmdbId'] is String ? int.tryParse(map['tmdbId']) : map['tmdbId'], // Handle String to int conversion is not an int
-      director: map['director'],
+      director: map['director'] != null ? List<String>.from(map['director'] is List ? map['director'] : [map['director'].toString()]) : null,
       author: map['author'],
-      people: map['people'] != null ? List<String>.from(map['people']) : null,
+      actors: map['actors'] != null ? List<String>.from(map['actors']) : null,
     );
   }
 
@@ -83,7 +83,7 @@ factory Moment.fromMap(Map<String, dynamic> map, String docId) {
       'tmdbId': tmdbId,
       'director': director,
       'author': author,
-      'people': people,
+      'actors': actors,
     };
   }
 }

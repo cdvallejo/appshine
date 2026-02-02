@@ -1,3 +1,4 @@
+import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/movie_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,7 +30,38 @@ class DatabaseService {
         'country': movie.country,
         'director': movie.directors,
         'actors': movie.actors,
-        'posterUrl': movie.fullPosterUrl,
+        'imageUrl': movie.imageUrl,
+        'date': Timestamp.fromDate(date), // Firebase format
+        'location': location,
+        'notes': notes,
+        'createdAt': FieldValue.serverTimestamp(), // Official server time
+      });
+    } catch (e) {
+      rethrow; // Throws the error so the screen can show a message
+    }
+  }
+
+  Future<void> addMomentBook({
+    required Book book, 
+    required DateTime date, 
+    required String location, 
+    required String notes
+    }) async {
+      // Checking if user is logged in
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not identified');
+
+    try {
+      // 2. Sending data to Firestore
+      await _db.collection('moments').add({
+        'userId': user.uid, // Security: who saves it
+        'type': 'book',
+        'bookId': book.id,
+        'title': book.title,
+        'authors': book.authors,
+        'publishedDate': book.publishedDate,
+        'imageUrl': book.fullCoverUrl,
+        'pageCount': book.pageCount,
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
         'notes': notes,

@@ -13,12 +13,22 @@ class MovieRepository {
 
   Future<List<Movie>> searchMovies(String query) async {
     if (query.isEmpty) return [];
-    // Try-cast: if connection fails, return empty list. Automatically handles exceptions!
     try {
-      final url = Uri.parse(
-        '$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=es-ES',
+      // Uri.parse with queryParameters to handle spaces and special characters, more secure.
+      final url = Uri.parse(_baseUrl).replace(
+        path: '/3/search/movie',
+        queryParameters: {
+          'api_key': _apiKey,
+          'query': query,
+          'language': 'es-ES',
+        },
       );
-      final response = await http.get(url);
+      // HTTP GET request with timeout
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () =>
+            throw Exception('Timeout en la búsqueda de libros'),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -38,13 +48,23 @@ class MovieRepository {
       // Faster in parallel requests
       final results = await Future.wait([
         http.get(
-          Uri.parse( // Country info - results[0]
-            '$_baseUrl/movie/${movie.id}?api_key=$_apiKey&language=es-ES',
+          Uri.parse(_baseUrl).replace(
+            // Country info - results[0]
+            path: '/3/movie/${movie.id}',
+            queryParameters: {
+              'api_key': _apiKey,
+              'language': 'es-ES',
+            },
           ),
         ),
         http.get(
-          Uri.parse( // Credits info - results[1]
-            '$_baseUrl/movie/${movie.id}/credits?api_key=$_apiKey&language=es-ES',
+          Uri.parse(_baseUrl).replace(
+            // Credits info - results[1]
+            path: '/3/movie/${movie.id}/credits',
+            queryParameters: {
+              'api_key': _apiKey,
+              'language': 'es-ES',
+            },
           ),
         ),
       ]);
@@ -70,20 +90,28 @@ class MovieRepository {
             .where((p) => p['job'] == 'Director')
             .toList();
 
+        // CAMBIO: Ahora asignamos una LISTA, no un String con comas
         movie.directors = directorsList.isEmpty
-            ? 'Unknown director'
-            : directorsList.take(4).map((d) => d['name'] as String).join(', ');
+            ? [] // Lista vacía en lugar de 'Unknown'
+            : directorsList
+                  .take(4)
+                  .map((d) => d['name'] as String)
+                  .toList(); // .toList() al final!
+
         movie.actors = cast.isEmpty
-            ? 'Unknown cast'
-            : cast.take(3).map((a) => a['name'] as String).join(', ');
+            ? []
+            : cast
+                  .take(3)
+                  .map((a) => a['name'] as String)
+                  .toList(); // .toList() al final!
       } else {
-        movie.directors = 'N/A';
-        movie.actors = 'N/A';
+        movie.directors = [];
+        movie.actors = [];
       }
     } catch (e) {
       movie.country = 'Error loading';
-      movie.directors = 'Error loading';
-      movie.actors = 'Error loading';
+      movie.directors = ['Error loading'];
+      movie.actors = ['Error loading'];
     }
   }
 }

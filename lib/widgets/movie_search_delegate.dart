@@ -70,9 +70,9 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Poster image
-                    movie.posterPath != null
+                    movie.imageUrl != null && movie.imageUrl!.isNotEmpty
                         ? Image.network(
-                            movie.fullPosterUrl,
+                            movie.imageUrl!,
                             width: 80,
                             height: 120,
                             fit: BoxFit.cover,
