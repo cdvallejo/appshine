@@ -87,7 +87,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   /* Movies requieres additional details (director, actors, country), so we use the repository here.
                   Lazy Loading */
                   child: FutureBuilder(
-                    future: _movieRepository.fillExtraDetails(widget.movie),
+                    future: _movieRepository.movieExtraDetails(widget.movie),
                     builder: (context, snapshot) {
                       // 1. If the messenger is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
