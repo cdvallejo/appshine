@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie_model.dart';
 
 // Repository is the engine that fetches data from TMDB API to models.
-/* TMDB API Repository is much HARDER than Google Books API because
+/* TMDB API Repository is much HARDER
 it's needed to make multiple requests to get all the details. */
 class MovieRepository {
   // TMDB API Key and base URL
@@ -43,7 +43,7 @@ class MovieRepository {
   }
 
   // Fetch extra details for a specific movie with two more requests
-  Future<void> fillExtraDetails(Movie movie) async {
+  Future<void> movieExtraDetails(Movie movie) async {
     try {
       // Faster in parallel requests
       final results = await Future.wait([

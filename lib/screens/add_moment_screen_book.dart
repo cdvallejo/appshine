@@ -1,4 +1,5 @@
 import 'package:appshine/data/database_service.dart';
+import 'package:appshine/repositories/book_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/book_model.dart';
@@ -17,6 +18,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
     text: 'Home',
   ); // Default value
   DateTime _selectedDate = DateTime.now();
+  final BookRepository _bookRepository = BookRepository();
 
   // Function to show the calendar
   Future<void> _selectDate(BuildContext context) async {
@@ -75,65 +77,76 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // PART UPPER SECTION: POSTER AND DETAILS
+            // PART UPPER SECTION: COVER AND DETAILS
             Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start, // Para que el texto empiece arriba
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Image.network(widget.book.fullCoverUrl, width: 100),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.book.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                  /* Books require additional details, so we use the repository here.
+                  Lazy Loading */
+                  child: FutureBuilder(
+                    future: _bookRepository.getBookDetails(widget.book),
+                    builder: (context, snapshot) {
+                      // 1. If the request is still on the way...
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                      // Año con Text.rich (Gris la etiqueta, negro el valor)
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            const TextSpan(
-                              text: 'Year: ',
-                              style: TextStyle(color: Colors.grey),
+                      // 2. If the request has arrived (we now have extra details)...
+                      final book = snapshot.data ?? widget.book;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            book.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Year with Text.rich (Grey label, black value)
+                          Text.rich(
                             TextSpan(
-                              text: widget.book.releaseYear,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              children: [
+                                const TextSpan(
+                                  text: 'Year: ',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                TextSpan(
+                                  text: book.releaseYear,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
 
-                      const SizedBox(height: 4),
+                          const SizedBox(height: 4),
 
-                      // Autores (usando join para que quede bonito: "Autor 1, Autor 2")
-                      Text(
-                        'Author: ${widget.book.authors?.join(', ') ?? 'Unknown'}',
-                        style: const TextStyle(color: Colors.black87),
-                      ),
+                          // Authors
+                          Text(
+                            'Authors: ${book.authors?.join(', ') ?? 'Unknown'}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
 
-                      const SizedBox(height: 4),
+                          const SizedBox(height: 4),
 
-                      // Page count
-                      Text(
-                        widget.book.formattedPageCount,
-                        style: const TextStyle(
-                          color: Colors.black54,
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
+                          // Pages
+                          Text(
+                            book.formattedPageCount,
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -145,7 +158,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 IntrinsicWidth(
-                  // To make the ListTile take only the space it needs
                   child: ListTile(
                     title: const Text("Date"),
                     subtitle: Text(
@@ -156,7 +168,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                   ),
                 ),
                 Expanded(
-                  // Not IntrinsicWidth to take the rest of the space because TextField needs defined width
                   child: ListTile(
                     contentPadding: const EdgeInsets.only(left: 0, right: 0),
                     leading: const Icon(Icons.location_on),
@@ -165,7 +176,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                       onChanged: (val) =>
                           setState(() => _locationController.text = val),
                       decoration: const InputDecoration(
-                        hintText: 'Cinema, Home...',
+                        hintText: 'Library, Home...',
                         isDense: true,
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
