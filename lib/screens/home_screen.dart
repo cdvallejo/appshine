@@ -1,6 +1,6 @@
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/movie_model.dart';
-import 'package:appshine/screens/add_moment_screen.dart';
+import 'package:appshine/screens/add_moment_screen_movie.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/widgets/book_search_delegate.dart';
