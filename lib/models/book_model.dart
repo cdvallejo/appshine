@@ -5,7 +5,7 @@ class Book {
   final String? imageUrl;
   final int? pageCount;
   final String? isbn;
-  final String? editionKey; // OLID for direct edition API access
+  final String? editionKey; // Open Library ID for direct edition API access
   List<String>? authors;
   String? description;
 
@@ -16,7 +16,7 @@ class Book {
     this.imageUrl,
     this.pageCount,
     this.isbn,
-    this.editionKey,
+    this.editionKey, // Open Library ID for direct edition API access
     this.authors,
     this.description,
   });

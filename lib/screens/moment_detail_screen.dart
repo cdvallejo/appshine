@@ -1,5 +1,7 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/widgets/delete_confirm_dialog.dart';
+import 'package:appshine/widgets/moment_detail_row.dart';
+import 'package:appshine/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -54,22 +56,6 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       setState(() {
         _selectedDate = picked;
       });
-    }
-  }
-
-  // Helper method to safely convert values to string
-  String _safeStringValue(dynamic value) {
-    try {
-      if (value == null) return 'Unknown';
-      if (value is List) {
-        if (value.isEmpty) return 'Unknown';
-        final filtered = value.whereType<String>().toList();
-        return filtered.isEmpty ? 'Unknown' : filtered.join(', ');
-      }
-      if (value is String && value.isNotEmpty) return value;
-      return 'Unknown';
-    } catch (e) {
-      return 'Unknown';
     }
   }
 
@@ -157,29 +143,23 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 children: [
                   // 2. Title and Technical Details
                   Text(
-                    widget.momentData['title'] ?? 'Untitled',
+                    safeStringValue(widget.momentData['title']),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Year: ${_safeStringValue(widget.momentData['year'])}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Text(
-                    'Country: ${_safeStringValue(widget.momentData['country'])}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Text(
-                    'Direction: ${_safeStringValue(widget.momentData['director'])}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Text(
-                    'Actors: ${_safeStringValue(widget.momentData['actors'])}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
+                  if (widget.momentData['type'] == 'movie') ...[
+                    buildDetailRow('Year', widget.momentData['year']),
+                    buildDetailRow('Direction', widget.momentData['director']),
+                    buildDetailRow('Actors', widget.momentData['actors']),
+                  ] else if (widget.momentData['type'] == 'book') ...[
+                    buildDetailRow('Year', widget.momentData['year']),
+                    buildDetailRow('Author', widget.momentData['authors']),
+                    buildDetailRow('Published', widget.momentData['publishedDate']),
+                    buildDetailRow('Pages', widget.momentData['pageCount']),
+                  ],
 
                   const Divider(height: 40),
 
