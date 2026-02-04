@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                                   data['imageUrl'],
                                   width: 50,
                                   height: 75,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) =>
                                       const Icon(Icons.movie, size: 50),
                                 )
@@ -181,23 +181,21 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 4),
-                            Text(
-                              'Dir: ${(data['director'] is List && (data['director'] as List).isNotEmpty) ? (data['director'] as List).join(', ') : 'N/A'}',
-                            ),
-                            Text(
+                            Text(_capitalize(data['type'] ?? 'N/A')),
+
+                            /*Text(
                               'Año: ${data['year'] ?? 'N/A'}',
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
                               ),
-                            ),
+                            ),*/
                           ],
                         ),
                         // Traiing with icon moment and onTap for future detail
                         trailing: Icon(
                           _getMomentIcon(data['type']),
-                          size:
-                              20,
+                          size: 20,
                           color: Colors.indigo.withValues(alpha: 0.5),
                         ),
                         onTap: () {
@@ -380,5 +378,9 @@ class HomeScreen extends StatelessWidget {
       default:
         return Icons.question_mark_outlined; // Just in case
     }
+  }
+
+  String _capitalize(String text) {
+    return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
   }
 }
