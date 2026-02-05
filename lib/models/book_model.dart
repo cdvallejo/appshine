@@ -7,7 +7,6 @@ class Book {
   final String? isbn;
   final String? editionKey; // Open Library ID for direct edition API access
   List<String>? authors;
-  String? description;
 
   Book({
     required this.id,
@@ -18,7 +17,6 @@ class Book {
     this.isbn,
     this.editionKey, // Open Library ID for direct edition API access
     this.authors,
-    this.description,
   });
 
   // Factory method to create a Book from JSON data (Open Library API format)
@@ -63,9 +61,6 @@ class Book {
       isbn: isbn,
       editionKey: editionKey,
       authors: authors,
-      description: json['description'] is Map 
-          ? (json['description'] as Map)['value']?.toString()
-          : json['description']?.toString(),
       publishedDate: publishedDate,
       pageCount: null,
     );

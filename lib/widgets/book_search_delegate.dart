@@ -31,7 +31,9 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
   // Build suggestions as the user types
   @override
   Widget buildSuggestions(BuildContext context) {
-    return _search(context);
+    return const Center(
+      child: Text('Type to search and press the search button'),
+    );
   }
 
   // Common search widget used by both results and suggestions

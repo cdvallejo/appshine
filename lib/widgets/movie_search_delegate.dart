@@ -27,7 +27,9 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return _search(context);
+    return const Center(
+      child: Text('Type to search and press the search button'),
+    );
   }
 
   Widget _search(BuildContext context) {
