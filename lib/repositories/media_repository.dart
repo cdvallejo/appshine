@@ -1,22 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/movie_model.dart';
+import '../models/media_model.dart';
 
 // Repository is the engine that fetches data from TMDB API to models.
 /* TMDB API Repository is much HARDER
 it's needed to make multiple requests to get all the details. */
-class MovieRepository {
+class MediaRepository {
   // TMDB API Key and base URL
   final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
   final String _baseUrl = 'https://api.themoviedb.org/3';
 
-  Future<List<Movie>> searchMovies(String query) async {
+  Future<List<Media>> searchMedia(String query) async {
     if (query.isEmpty) return [];
     try {
       // Uri.parse with queryParameters to handle spaces and special characters, more secure.
       final url = Uri.parse(_baseUrl).replace(
-        path: '/3/search/movie',
+        path: '/3/search/multi',
         queryParameters: {
           'api_key': _apiKey,
           'query': query,
@@ -33,7 +33,11 @@ class MovieRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final results = data['results'] as List? ?? [];
-        return results.map((json) => Movie.fromJson(json)).toList();
+        // Filter to only include movies and TV shows, exclude people
+        final filtered = results
+            .where((item) => item['media_type'] == 'movie' || item['media_type'] == 'tv')
+            .toList();
+        return filtered.map((json) => Media.fromJson(json)).toList();
       } else {
         return [];
       }
@@ -42,15 +46,18 @@ class MovieRepository {
     }
   }
 
-  // Fetch extra details for a specific movie with two more requests
-  Future<void> movieExtraDetails(Movie movie) async {
+  // Fetch extra details for a specific movie or TV show with two more requests
+  Future<void> movieExtraDetails(Media media) async {
     try {
+      // Determine the correct endpoint based on media type
+      final String mediaType = media.type == 'tv' ? 'tv' : 'movie';
+      
       // Faster in parallel requests
       final results = await Future.wait([
         http.get(
           Uri.parse(_baseUrl).replace(
             // Country info - results[0]
-            path: '/3/movie/${movie.id}',
+            path: '/3/$mediaType/${media.id}',
             queryParameters: {
               'api_key': _apiKey,
               'language': 'es-ES',
@@ -60,7 +67,7 @@ class MovieRepository {
         http.get(
           Uri.parse(_baseUrl).replace(
             // Credits info - results[1]
-            path: '/3/movie/${movie.id}/credits',
+            path: '/3/$mediaType/${media.id}/credits',
             queryParameters: {
               'api_key': _apiKey,
               'language': 'es-ES',
@@ -73,11 +80,22 @@ class MovieRepository {
       if (results[0].statusCode == 200) {
         final data = json.decode(results[0].body);
         final countries = data['production_countries'] as List?;
-        movie.country = (countries?.isNotEmpty ?? false)
+        media.country = (countries?.isNotEmpty ?? false)
             ? countries![0]['name']
             : 'Unknown country';
+        
+        // For TV shows, also get creators from here
+        if (mediaType == 'tv') {
+          final createdBy = data['created_by'] as List? ?? [];
+          media.creators = createdBy.isEmpty
+              ? []
+              : createdBy
+                    .take(4)
+                    .map((c) => c['name'] as String)
+                    .toList();
+        }
       } else {
-        movie.country = 'N/A';
+        media.country = 'N/A';
       }
 
       // 2. Director and actors
@@ -86,32 +104,54 @@ class MovieRepository {
         final crew = data['crew'] as List? ?? []; // if null, assign empty list
         final cast = data['cast'] as List? ?? [];
 
+        // Get directors by their known_for_department (more reliable)
         final directorsList = crew
-            .where((p) => p['job'] == 'Director')
+            .where((p) => p['known_for_department'] == 'Directing')
             .toList();
 
-        // CAMBIO: Ahora asignamos una LISTA, no un String con comas
-        movie.directors = directorsList.isEmpty
-            ? [] // Lista vacía en lugar de 'Unknown'
+        // Get creators for movies only
+        List<dynamic> creatorsList = [];
+        if (mediaType == 'movie') {
+          creatorsList = crew
+              .where((p) => p['job'] == 'Creator')
+              .toList();
+        }
+
+        media.directors = directorsList.isEmpty
+            ? []
             : directorsList
                   .take(4)
                   .map((d) => d['name'] as String)
-                  .toList(); // .toList() al final!
+                  .toList();
 
-        movie.actors = cast.isEmpty
+        // Only set creators for movies if not already set from the first request
+        if (mediaType == 'movie' && media.creators == null) {
+          media.creators = creatorsList.isEmpty
+              ? []
+              : creatorsList
+                    .take(4)
+                    .map((c) => c['name'] as String)
+                    .toList();
+        }
+
+        media.actors = cast.isEmpty
             ? []
             : cast
                   .take(3)
                   .map((a) => a['name'] as String)
-                  .toList(); // .toList() al final!
+                  .toList();
       } else {
-        movie.directors = [];
-        movie.actors = [];
+        media.directors = [];
+        if (media.creators == null) {
+          media.creators = [];
+        }
+        media.actors = [];
       }
     } catch (e) {
-      movie.country = 'Error loading';
-      movie.directors = ['Error loading'];
-      movie.actors = ['Error loading'];
+      media.country = 'Error loading';
+      media.directors = ['Error loading'];
+      media.creators = ['Error loading'];
+      media.actors = ['Error loading'];
     }
   }
 }

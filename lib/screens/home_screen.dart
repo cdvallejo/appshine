@@ -1,10 +1,10 @@
 import 'package:appshine/models/book_model.dart';
-import 'package:appshine/models/movie_model.dart';
-import 'package:appshine/screens/add_moment_screen_movie.dart';
+import 'package:appshine/models/media_model.dart';
+import 'package:appshine/screens/add_moment_screen_media.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/widgets/book_search_delegate.dart';
-import 'package:appshine/widgets/movie_search_delegate.dart';
+import 'package:appshine/widgets/media_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -181,7 +181,7 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 4),
-                            Text(_capitalize(data['type'] ?? 'N/A')),
+                            Text(_capitalize(data['type'] ?? 'N/A'), style: TextStyle(color: Colors.indigo)),
 
                             /*Text(
                               'Año: ${data['year'] ?? 'N/A'}',
@@ -205,7 +205,7 @@ class HomeScreen extends StatelessWidget {
                               builder: (context) => MomentDetailScreen(
                                 momentData: data,
                                 momentId: doc
-                                    .id, // <--- Usamos 'doc.id' en lugar de 'docs[index].id'
+                                    .id, // Pass the document ID for future reference (e.g., deletion)
                               ),
                             ),
                           );
@@ -263,9 +263,9 @@ class HomeScreen extends StatelessWidget {
               title: const Text('Movie'),
               onTap: () async {
                 // 1. Launch the search FIRST (using the current context)
-                final result = await showSearch<Movie?>(
+                final result = await showSearch<Media?>(
                   context: context,
-                  delegate: MovieSearchDelegate(),
+                  delegate: MediaSearchDelegate(),
                 );
 
                 // 2. If the user pressed back (result is null), also close the menu
@@ -284,7 +284,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddMomentScreen(movie: result),
+                      builder: (context) => AddMomentScreen(media: result),
                     ),
                   );
                 }
@@ -371,6 +371,8 @@ class HomeScreen extends StatelessWidget {
     switch (type) {
       case 'movie':
         return Icons.movie_outlined;
+      case 'tv':
+        return Icons.tv_outlined;
       case 'book':
         return Icons.book_outlined;
       case 'place':

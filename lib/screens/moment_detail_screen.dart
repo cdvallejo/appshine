@@ -148,16 +148,29 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   // Text details depending on Moment type
-                  if (widget.momentData['type'] == 'movie') ...[
-                    buildDetailRow('Year', widget.momentData['year']),
-                    buildDetailRow('Direction', widget.momentData['director']),
-                    buildDetailRow('Actors', widget.momentData['actors']),
+                  if (widget.momentData['type'] == 'movie' || widget.momentData['type'] == 'tv') ...[
+                    Text(
+                      widget.momentData['type'].toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    buildDetailRow(widget.momentData['year'], 'Year'),
+                    if (widget.momentData['type'] == 'tv') ...[
+                      buildDetailRow(widget.momentData['creators'], 'Creator'),
+                    ],
+                    buildDetailRow(widget.momentData['director'], 'Direction'),
+                    buildDetailRow(widget.momentData['actors'], 'Cast'),
+                    buildDetailRow(widget.momentData['country'], 'Country'),
                   ] else if (widget.momentData['type'] == 'book') ...[
-                    buildDetailRow('Year', widget.momentData['publishedDate']),
-                    buildDetailRow('Author', widget.momentData['authors']),
-                    buildDetailRow('Pages', widget.momentData['pageCount']),
+                    buildDetailRow(widget.momentData['publishedDate'], 'Year'),
+                    buildDetailRow(widget.momentData['authors'], 'Author'),
+                    buildDetailRow(widget.momentData['pageCount'], 'Pages'),
                   ],
 
                   const Divider(height: 40),
