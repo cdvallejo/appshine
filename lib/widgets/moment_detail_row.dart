@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /* A reusable widget to display a label and its corresponding value in a row.
 Safe data rendering for lists and null values. */
-Widget buildDetailRow(String label, dynamic value) {
+Widget buildDetailRow(dynamic value, [String? label]) {
   String displayValue = 'Unknown';
   
   if (value != null) {
@@ -24,7 +24,7 @@ Widget buildDetailRow(String label, dynamic value) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 4.0),
     child: Text(
-      '$label: $displayValue',
+      label != null ? '$label: $displayValue' : displayValue,
       style: TextStyle(color: Colors.grey[600], fontSize: 14),
     ),
   );

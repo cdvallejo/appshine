@@ -1,5 +1,5 @@
 import 'package:appshine/models/book_model.dart';
-import 'package:appshine/models/movie_model.dart';
+import 'package:appshine/models/media_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +8,9 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Function to add a movie moment to Firestore
-  Future<void> addMomentMovie({
-    required Movie movie,
+  // Function to add a media moment to Firestore
+  Future<void> addMomentMedia({
+    required Media media,
     required DateTime date,
     required String location,
     required String notes,
@@ -23,14 +23,15 @@ class DatabaseService {
       // 2. Sending data to Firestore
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
-        'type': 'movie',
-        'movieId': movie.id,
-        'title': movie.title,
-        'year': movie.releaseYear,
-        'country': movie.country,
-        'director': movie.directors,
-        'actors': movie.actors,
-        'imageUrl': movie.imageUrl,
+        'type': media.type, // 'movie' or 'tv'
+        'mediaId': media.id,
+        'title': media.title,
+        'year': media.releaseYear,
+        'country': media.country,
+        'director': media.directors,
+        'creators': media.creators,
+        'actors': media.actors,
+        'imageUrl': media.imageUrl,
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
         'notes': notes,

@@ -1,9 +1,9 @@
-import 'package:appshine/models/movie_model.dart';
-import 'package:appshine/repositories/movie_repository.dart';
+import 'package:appshine/models/media_model.dart';
+import 'package:appshine/repositories/media_repository.dart';
 import 'package:flutter/material.dart';
 
-class MovieSearchDelegate extends SearchDelegate<Movie?> {
-  final MovieRepository _repo = MovieRepository();
+class MediaSearchDelegate extends SearchDelegate<Media?> {
+  final MediaRepository _repo = MediaRepository();
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -38,8 +38,8 @@ class MovieSearchDelegate extends SearchDelegate<Movie?> {
       return const Center(child: Text('Type at least 2 characters.'));
     }
 
-    return FutureBuilder<List<Movie>>(
-      future: _repo.searchMovies(query),
+    return FutureBuilder<List<Media>>(
+      future: _repo.searchMedia(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

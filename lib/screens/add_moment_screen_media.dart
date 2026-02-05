@@ -1,12 +1,12 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import '../models/movie_model.dart';
-import '../repositories/movie_repository.dart';
+import '../models/media_model.dart';
+import '../repositories/media_repository.dart';
 
 class AddMomentScreen extends StatefulWidget {
-  final Movie movie;
-  const AddMomentScreen({super.key, required this.movie});
+  final Media media;
+  const AddMomentScreen({super.key, required this.media});
 
   @override
   State<AddMomentScreen> createState() => _AddMomentScreenState();
@@ -18,7 +18,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
     text: 'Home',
   ); // Default value
 
-  final MovieRepository _movieRepository = MovieRepository();
+  final MediaRepository _mediaRepository = MediaRepository();
   DateTime _selectedDate = DateTime.now();
 
   // Function to show the calendar
@@ -46,8 +46,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
               // 1. Async function to save the moment
               try {
                 // 2. Call the function with await
-                await DatabaseService().addMomentMovie(
-                  movie: widget.movie,
+                await DatabaseService().addMomentMedia(
+                  media: widget.media,
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,
@@ -81,13 +81,13 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
             // PART UPPER SECTION: POSTER AND DETAILS
             Row(
               children: [
-                Image.network(widget.movie.fullPosterUrl, width: 100),
+                Image.network(widget.media.fullPosterUrl, width: 100),
                 const SizedBox(width: 20),
                 Expanded(
                   /* Movies requieres additional details (director, actors, country), so we use the repository here.
                   Lazy Loading */
                   child: FutureBuilder(
-                    future: _movieRepository.movieExtraDetails(widget.movie),
+                    future: _mediaRepository.movieExtraDetails(widget.media),
                     builder: (context, snapshot) {
                       // 1. If the messenger is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -102,11 +102,29 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.movie.title,
+                            widget.media.title,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          Chip(
+                            label: Text(
+                              widget.media.type.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                            backgroundColor: Colors.transparent,
+                            side: const BorderSide(color: Colors.blue),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 0,
+                            ),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           const SizedBox(height: 4),
                           // Text rich for different styles in the same line: name field grey, value black
@@ -118,7 +136,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                   style: TextStyle(color: Colors.grey),
                                 ),
                                 TextSpan(
-                                  text: widget.movie.releaseYear,
+                                  text: widget.media.releaseYear,
                                   style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500,
@@ -128,17 +146,24 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             ),
                           ),
                           Text(
-                            'Country: ${widget.movie.country}',
+                            'Country: ${widget.media.country}',
+                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          ),
+                          const SizedBox(height: 4),
+                          if (widget.media.type == 'tv') ...[
+                            Text(
+                              'Created by: ${widget.media.creators?.join(', ') ?? 'Unknown'}',
+                              style: const TextStyle(fontStyle: FontStyle.normal),
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                          Text(
+                            'Direction: ${widget.media.directors?.join(', ') ?? 'Unknown'}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Dirección: ${widget.movie.directors?.join(', ') ?? 'Unknown'}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Cast: ${widget.movie.actors?.join(', ') ?? 'Unknown'}',
+                            'Cast: ${widget.media.actors?.join(', ') ?? 'Unknown'}',
                             style: const TextStyle(fontStyle: FontStyle.normal),
                           ),
                         ],
