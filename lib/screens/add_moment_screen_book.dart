@@ -19,6 +19,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   ); // Default value
   DateTime _selectedDate = DateTime.now();
   final BookRepository _bookRepository = BookRepository();
+  late Book _bookWithDetails;
 
   // Function to show the calendar
   Future<void> _selectDate(BuildContext context) async {
@@ -46,7 +47,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
               try {
                 // 2. Call the function with await
                 await DatabaseService().addMomentBook(
-                  book: widget.book,
+                  book: _bookWithDetails,
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,
@@ -98,6 +99,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
 
                       // 2. If the request has arrived (we now have extra details)...
                       final book = snapshot.data ?? widget.book;
+                      // Save the updated book for later use
+                      _bookWithDetails = book;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -138,7 +141,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                           ),
 
                           const SizedBox(height: 4),
-
                           // Pages
                           Text(
                             book.formattedPageCount,

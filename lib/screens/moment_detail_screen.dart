@@ -1,7 +1,6 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/widgets/delete_confirm_dialog.dart';
 import 'package:appshine/widgets/moment_detail_row.dart';
-import 'package:appshine/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -143,21 +142,21 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 children: [
                   // 2. Title and Technical Details
                   Text(
-                    safeStringValue(widget.momentData['title']),
+                    widget.momentData['title']?.toString() ?? 'Unknown',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
+                  // Text details depending on Moment type
                   if (widget.momentData['type'] == 'movie') ...[
                     buildDetailRow('Year', widget.momentData['year']),
                     buildDetailRow('Direction', widget.momentData['director']),
                     buildDetailRow('Actors', widget.momentData['actors']),
                   ] else if (widget.momentData['type'] == 'book') ...[
-                    buildDetailRow('Year', widget.momentData['year']),
+                    buildDetailRow('Year', widget.momentData['publishedDate']),
                     buildDetailRow('Author', widget.momentData['authors']),
-                    buildDetailRow('Published', widget.momentData['publishedDate']),
                     buildDetailRow('Pages', widget.momentData['pageCount']),
                   ],
 

@@ -77,7 +77,6 @@ class BookRepository {
             isbn: book.isbn,
             editionKey: book.editionKey,
             authors: book.authors,
-            description: book.description,
           );
         }
       }
@@ -101,12 +100,7 @@ class BookRepository {
       );
 
       if (workResponse.statusCode == 200) {
-        final workData = json.decode(workResponse.body) as Map<String, dynamic>;
         
-        final updatedDescription = workData['description'] is Map
-            ? (workData['description'] as Map)['value']?.toString()
-            : workData['description']?.toString();
-
         return Book(
           id: book.id,
           title: book.title,
@@ -115,9 +109,8 @@ class BookRepository {
           pageCount: book.pageCount,
           isbn: book.isbn,
           editionKey: book.editionKey,
-          authors: book.authors,
-          description: updatedDescription ?? book.description,
-        );
+          authors: book.authors        
+          );
       }
       return book;
     } catch (e) {
