@@ -15,24 +15,17 @@ class AddMomentScreen extends StatefulWidget {
 class _AddMomentScreenState extends State<AddMomentScreen> {
   final _notesController = TextEditingController();
   final _locationController = TextEditingController(
-    text: 'Home',
+    text: 'Cinema, Home...',
   ); // Default value
+  final _titleController = TextEditingController();
+  final _yearController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _directorsController = TextEditingController();
+  final _creatorsController = TextEditingController();
+  final _actorsController = TextEditingController();
 
   final MediaRepository _mediaRepository = MediaRepository();
   DateTime _selectedDate = DateTime.now();
-
-  // Function to show the calendar
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() => _selectedDate = picked);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +38,26 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
             onPressed: () async {
               // 1. Async function to save the moment
               try {
-                // 2. Call the function with await
+                // 2. Update the media with edited values and call the function with await
+                final editedMedia = widget.media.copyWith(
+                  title: _titleController.text,
+                  releaseDate: _yearController.text,
+                  country: _countryController.text,
+                  directors: _directorsController.text
+                      .split(',')
+                      .map((director) => director.trim())
+                      .toList(),
+                  creators: _creatorsController.text
+                      .split(',')
+                      .map((creator) => creator.trim())
+                      .toList(),
+                  actors: _actorsController.text
+                      .split(',')
+                      .map((actor) => actor.trim())
+                      .toList(),
+                );
                 await DatabaseService().addMomentMedia(
-                  media: widget.media,
+                  media: editedMedia,
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,
@@ -74,156 +84,277 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // PART UPPER SECTION: POSTER AND DETAILS
-            Row(
-              children: [
-                Image.network(widget.media.fullPosterUrl, width: 100),
-                const SizedBox(width: 20),
-                Expanded(
-                  /* Movies requieres additional details (director, actors, country), so we use the repository here.
-                  Lazy Loading */
-                  child: FutureBuilder(
-                    future: _mediaRepository.movieExtraDetails(widget.media),
+            // PART UPPER SECTION: POSTER
+            Image.network(
+              widget.media.fullPosterUrl,
+              width: double.infinity,
+              height: 250,
+              fit: BoxFit.scaleDown,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // PART MEDIA DETAILS SECTION: EDITABLE
+                  FutureBuilder(
+                    future: _mediaRepository.getMovieDetails(widget.media),
                     builder: (context, snapshot) {
                       // 1. If the messenger is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child:
-                              CircularProgressIndicator(), // Shows the loading spinner
-                        );
+                        return const Center(child: CircularProgressIndicator());
                       }
 
                       // 2. If the messenger has arrived (we now have director, actors, and country)...
+                      // Initialize controllers with API data (only once)
+                      if (_titleController.text.isEmpty) {
+                        _titleController.text = widget.media.title;
+                        _yearController.text = widget.media.releaseYear;
+                        _countryController.text = widget.media.country ?? '';
+                        _directorsController.text =
+                            widget.media.directors?.join(', ') ?? 'Unknown';
+                        _creatorsController.text =
+                            widget.media.creators?.join(', ') ?? 'Unknown';
+                        _actorsController.text =
+                            widget.media.actors?.join(', ') ?? 'Unknown';
+                      }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            widget.media.title,
+                          // Title field (editable)
+                          TextField(
+                            controller: _titleController,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Chip(
-                            label: Text(
-                              widget.media.type.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                              ),
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
                             ),
-                            backgroundColor: Colors.transparent,
-                            side: const BorderSide(color: Colors.blue),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 0,
-                            ),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.media.type.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+
                           const SizedBox(height: 4),
-                          // Text rich for different styles in the same line: name field grey, value black
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                const TextSpan(
-                                  text: 'Year: ',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                TextSpan(
-                                  text: widget.media.releaseYear,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
+
+                          // Year field (editable)
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: TextField(
+                                  controller: _yearController,
+                                  decoration: const InputDecoration(
+                                    label: Text('Year'),
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 0,
+                                      vertical: 8,
+                                    ),
+                                    border: UnderlineInputBorder(),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            'Country: ${widget.media.country}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
+                              ),
+                              const SizedBox(
+                                width: 20,
+                              ), // Un poco de espacio de separación entre ellos
+                              Expanded(
+                                flex: 7,
+                                child: TextField(
+                                  controller: _countryController,
+                                  decoration: const InputDecoration(
+                                    label: Text('Country'),
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 0,
+                                      vertical: 8,
+                                    ),
+                                    border: UnderlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           if (widget.media.type == 'tv') ...[
-                            Text(
-                              'Created by: ${widget.media.creators?.join(', ') ?? 'Unknown'}',
-                              style: const TextStyle(fontStyle: FontStyle.normal),
+                            TextField(
+                              controller: _creatorsController,
+                              decoration: const InputDecoration(
+                                label: Text('Created by'),
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 0,
+                                  vertical: 8,
+                                ),
+                                border: UnderlineInputBorder(),
+                              ),
                             ),
                             const SizedBox(height: 4),
                           ],
-                          Text(
-                            'Direction: ${widget.media.directors?.join(', ') ?? 'Unknown'}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          TextField(
+                            controller: _directorsController,
+                            decoration: const InputDecoration(
+                              label: Text('Directors'),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 0,
+                                vertical: 8,
+                              ),
+                              border: UnderlineInputBorder(),
+                            ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Cast: ${widget.media.actors?.join(', ') ?? 'Unknown'}',
-                            style: const TextStyle(fontStyle: FontStyle.normal),
+                          TextField(
+                            controller: _actorsController,
+                            decoration: const InputDecoration(
+                              label: Text('Cast'),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 0,
+                                vertical: 8,
+                              ),
+                              border: UnderlineInputBorder(),
+                            ),
                           ),
                         ],
                       );
                     },
                   ),
-                ),
-              ],
-            ),
-            const Divider(height: 40),
+                  const Divider(height: 40),
 
-            // PART MIDDLE SECTION: DATEPICKER AND LOCATION
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IntrinsicWidth(
-                  // To make the ListTile take only the space it needs
-                  child: ListTile(
-                    title: const Text("Date"),
-                    subtitle: Text(
-                      DateFormat('dd/MM/yyyy').format(_selectedDate),
-                    ),
-                    leading: const Icon(Icons.calendar_today),
-                    onTap: () => _selectDate(context),
+                  // PART MIDDLE SECTION: DATEPICKER AND LOCATION
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return Row(
+                        children: [
+                          // Date field (flex 1)
+                          Expanded(
+                            flex: 1,
+                            child: InkWell(
+                              onTap: () async {
+                                final DateTime? picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: _selectedDate,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null && picked != _selectedDate) {
+                                  setState(() => _selectedDate = picked);
+                                }
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Date',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  SizedBox(
+                                    height: 24,
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.calendar_month,
+                                          size: 16,
+                                          color: Colors.indigo,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          DateFormat(
+                                            'dd/MM/yyyy',
+                                          ).format(_selectedDate),
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          // Location field (flex 2)
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Location',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                SizedBox(
+                                  height: 24,
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.location_pin,
+                                        size: 16,
+                                        color: Colors.indigo,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _locationController,
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                  horizontal: 0,
+                                                  vertical: 0,
+                                                ),
+                                            border: UnderlineInputBorder(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                ),
-                Expanded(
-                  // Not IntrinsicWidth to take the rest of the space because TextField needs defined width
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.only(left: 0, right: 0),
-                    leading: const Icon(Icons.location_on),
-                    title: const Text("Location"),
-                    subtitle: TextField(
-                      onChanged: (val) =>
-                          setState(() => _locationController.text = val),
-                      decoration: const InputDecoration(
-                        hintText: 'Cinema, Home...',
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
+                  // PART BOTTOM SECTION: NOTES
+                  const SizedBox(height: 20),
+                  const Text(
+                    "My Notes",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _notesController,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'Write here a note.',
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            // PART BOTTOM SECTION: NOTES
-            const SizedBox(height: 20),
-            const Text(
-              "My Notes",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _notesController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Write here a note.',
-                border: OutlineInputBorder(),
+                ],
               ),
             ),
           ],

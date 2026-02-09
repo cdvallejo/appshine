@@ -5,7 +5,6 @@ import '../models/book_model.dart';
 // Repository using Open Library API - free, unlimited, no API key needed
 class BookRepository {
   final String _searchBaseUrl = 'https://openlibrary.org/search.json';
-  final String _detailsBaseUrl = 'https://openlibrary.org';
 
   Future<List<Book>> searchBooks(String query) async {
     if (query.isEmpty) return [];
@@ -41,9 +40,6 @@ class BookRepository {
   // Fetch additional details for a book using edition key
   Future<Book> getBookDetails(Book book) async {
     // If no edition key, try to get description from work
-    if (book.editionKey == null || book.editionKey!.isEmpty) {
-      return _getBookDetailsFromWork(book);
-    }
 
     try {
       // Use the Books API with the edition key (OLID)
@@ -68,50 +64,31 @@ class BookRepository {
           final bookData = data[key] as Map<String, dynamic>;
           int? pageCount = bookData['number_of_pages'] as int?;
           
+          // Extract ISBN from identifiers
+          String? isbn = book.isbn;
+          if (bookData['identifiers'] is Map) {
+            final identifiers = bookData['identifiers'] as Map<String, dynamic>;
+            if (identifiers['isbn_13'] is List && (identifiers['isbn_13'] as List).isNotEmpty) {
+              isbn = (identifiers['isbn_13'] as List)[0].toString();
+            } else if (identifiers['isbn_10'] is List && (identifiers['isbn_10'] as List).isNotEmpty) {
+              isbn = (identifiers['isbn_10'] as List)[0].toString();
+            }
+          }
+          
           return Book(
             id: book.id,
             title: book.title,
             publishedDate: book.publishedDate,
             imageUrl: book.imageUrl,
             pageCount: pageCount,
-            isbn: book.isbn,
+            isbn: isbn,
             editionKey: book.editionKey,
             authors: book.authors,
           );
         }
       }
       
-      // If Books API fails, try work details
-      return _getBookDetailsFromWork(book);
-    } catch (e) {
-      return _getBookDetailsFromWork(book);
-    }
-  }
-
-  // Helper method to fetch description from work endpoint
-  Future<Book> _getBookDetailsFromWork(Book book) async {
-    if (book.id.isEmpty) return book;
-    try {
-      final workUrl = Uri.parse('$_detailsBaseUrl${book.id}.json');
-      
-      final workResponse = await http.get(workUrl).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Timeout fetching book details'),
-      );
-
-      if (workResponse.statusCode == 200) {
-        
-        return Book(
-          id: book.id,
-          title: book.title,
-          publishedDate: book.publishedDate,
-          imageUrl: book.imageUrl,
-          pageCount: book.pageCount,
-          isbn: book.isbn,
-          editionKey: book.editionKey,
-          authors: book.authors        
-          );
-      }
+      // If Books API fails, return the book as-is
       return book;
     } catch (e) {
       return book;
