@@ -5,6 +5,7 @@ class Book {
   final String? imageUrl;
   final int? pageCount;
   final String? isbn;
+  final String? publisher;
   final String? editionKey; // Open Library ID for direct edition API access
   List<String>? authors;
 
@@ -15,6 +16,7 @@ class Book {
     this.imageUrl,
     this.pageCount,
     this.isbn,
+    this.publisher,
     this.editionKey, // Open Library ID for direct edition API access
     this.authors,
   });
@@ -101,8 +103,32 @@ class Book {
 
   String get formattedPageCount {
     if (pageCount == null || pageCount! <= 0) {
-      return 'Pages not available';
+      return 'N/A';
     }
-    return '~ $pageCount pages';
+    return '$pageCount';
+  }
+
+  Book copyWith({
+    String? id,
+    String? title,
+    String? publishedDate,
+    String? imageUrl,
+    int? pageCount,
+    String? isbn,
+    String? publisher,
+    String? editionKey,
+    List<String>? authors,
+  }) {
+    return Book(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      publishedDate: publishedDate ?? this.publishedDate,
+      imageUrl: imageUrl ?? this.imageUrl,
+      pageCount: pageCount ?? this.pageCount,
+      isbn: isbn ?? this.isbn,
+      publisher: publisher ?? this.publisher,
+      editionKey: editionKey ?? this.editionKey,
+      authors: authors ?? this.authors,
+    );
   }
 }

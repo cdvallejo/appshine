@@ -47,7 +47,7 @@ class MediaRepository {
   }
 
   // Fetch extra details for a specific movie or TV show with two more requests
-  Future<void> movieExtraDetails(Media media) async {
+  Future<void> getMovieDetails(Media media) async {
     try {
       // Determine the correct endpoint based on media type
       final String mediaType = media.type == 'tv' ? 'tv' : 'movie';
@@ -142,9 +142,7 @@ class MediaRepository {
                   .toList();
       } else {
         media.directors = [];
-        if (media.creators == null) {
-          media.creators = [];
-        }
+        media.creators ??= [];
         media.actors = [];
       }
     } catch (e) {

@@ -58,4 +58,28 @@ class Media {
   String get fullPosterUrl => imageUrl != null
       ? 'https://image.tmdb.org/t/p/w500$imageUrl'
       : 'https://via.placeholder.com/500x750?text=No+Image';
+
+  Media copyWith({
+    int? id,
+    String? title,
+    String? imageUrl,
+    String? releaseDate,
+    String? type,
+    List<String>? directors,
+    List<String>? creators,
+    List<String>? actors,
+    String? country,
+  }) {
+    return Media(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      imageUrl: imageUrl ?? this.imageUrl,
+      releaseDate: releaseDate ?? this.releaseDate,
+      type: type ?? this.type,
+      directors: directors ?? this.directors,
+      creators: creators ?? this.creators,
+      actors: actors ?? this.actors,
+      country: country ?? this.country,
+    );
+  }
 }
