@@ -46,7 +46,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                   authors: _authorsController.text.split(',').map((author) => author.trim()).toList(),
                   pageCount: int.tryParse(_pagesController.text),
                   publisher: _publisherController.text,
-                  isbn: _bookWithDetails.isbn,
+                  isbn: _isbnController.text,
                 );
                 await DatabaseService().addMomentBook(
                   book: _bookWithDetails,
@@ -133,6 +133,21 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                               contentPadding: EdgeInsets.zero,
                             ),
                             
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Authors field (editable)
+                          TextField(
+                            controller: _authorsController,
+                            decoration: const InputDecoration(
+                              label: Text('Author/s'),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 0,
+                                vertical: 8,
+                              ),
+                              border: UnderlineInputBorder(),
+                            ),
                           ),
                           const SizedBox(height: 8),
 
