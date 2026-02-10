@@ -61,6 +61,8 @@ class DatabaseService {
         'title': book.title,
         'authors': book.authors,
         'publishedDate': book.publishedDate,
+        'isbn': book.isbn,
+        'publisher': book.publisher,
         'imageUrl': book.fullCoverUrl,
         'pageCount': book.pageCount,
         'date': Timestamp.fromDate(date), // Firebase format

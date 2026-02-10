@@ -21,25 +21,82 @@ class MomentDetailScreen extends StatefulWidget {
 
 class _MomentDetailScreenState extends State<MomentDetailScreen> {
   bool isEditing = false;
+  late TextEditingController _titleController;
   late TextEditingController _notesController;
   late TextEditingController _locationController;
+  late TextEditingController _authorsController;
+  late TextEditingController _yearController;
+  late TextEditingController _publisherController;
+  late TextEditingController _isbnController;
+  late TextEditingController _pageCountController;
+  late TextEditingController _creatorsController;
+  late TextEditingController _directionController;
+  late TextEditingController _actorsController;
+  late TextEditingController _countryController;
   DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
     // Initialize controllers with existing data
+    _titleController = TextEditingController(text: widget.momentData['title'] ?? '');
     _notesController = TextEditingController(text: widget.momentData['notes']);
     _locationController = TextEditingController(
       text: widget.momentData['location'],
     );
+    _authorsController = TextEditingController(
+      text: _formatList(widget.momentData['authors']),
+    );
+    _yearController = TextEditingController(
+      text: widget.momentData['year'] ?? widget.momentData['publishedDate'] ?? '',
+    );
+    _publisherController = TextEditingController(
+      text: widget.momentData['publisher'] ?? '',
+    );
+    _isbnController = TextEditingController(
+      text: widget.momentData['isbn'] ?? '',
+    );
+    _pageCountController = TextEditingController(
+      text: widget.momentData['pageCount']?.toString() ?? widget.momentData['pages']?.toString() ?? '',
+    );
+    _creatorsController = TextEditingController(
+      text: _formatList(widget.momentData['creators']),
+    );
+    _directionController = TextEditingController(
+      text: _formatList(widget.momentData['director']),
+    );
+    _actorsController = TextEditingController(
+      text: _formatList(widget.momentData['actors']),
+    );
+    _countryController = TextEditingController(
+      text: widget.momentData['country'] ?? '',
+    );
     _selectedDate = (widget.momentData['date'] as Timestamp).toDate();
+  }
+
+  String _formatList(dynamic value) {
+    if (value is List) {
+      return value.join(', ');
+    } else if (value is String) {
+      return value;
+    }
+    return '';
   }
 
   @override
   void dispose() {
+    _titleController.dispose();
     _notesController.dispose();
     _locationController.dispose();
+    _authorsController.dispose();
+    _yearController.dispose();
+    _publisherController.dispose();
+    _isbnController.dispose();
+    _pageCountController.dispose();
+    _creatorsController.dispose();
+    _directionController.dispose();
+    _actorsController.dispose();
+    _countryController.dispose();
     super.dispose();
   }
 
@@ -58,38 +115,388 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     }
   }
 
+  // Save changes to Firestore
+  Future<void> _saveChanges() async {
+    final updateData = {
+      'title': _titleController.text.trim(),
+      'notes': _notesController.text.trim(),
+      'location': _locationController.text.trim(),
+      'date': Timestamp.fromDate(_selectedDate!),
+    };
+    
+    if (_authorsController.text.trim().isNotEmpty) {
+      updateData['authors'] = _authorsController.text.split(',').map((a) => a.trim()).toList();
+    }
+    if (_yearController.text.trim().isNotEmpty) {
+      if (widget.momentData['type'] == 'book') {
+        updateData['publishedDate'] = _yearController.text.trim();
+      } else {
+        updateData['year'] = _yearController.text.trim();
+      }
+    }
+    if (_publisherController.text.trim().isNotEmpty) {
+      updateData['publisher'] = _publisherController.text.trim();
+    }
+    if (_isbnController.text.trim().isNotEmpty) {
+      updateData['isbn'] = _isbnController.text.trim();
+    }
+    if (_pageCountController.text.trim().isNotEmpty) {
+      updateData['pageCount'] = int.tryParse(_pageCountController.text.trim()) as Object;
+    }
+    if (_creatorsController.text.trim().isNotEmpty) {
+      updateData['creators'] = _creatorsController.text.split(',').map((a) => a.trim()).toList();
+    }
+    if (_directionController.text.trim().isNotEmpty) {
+      updateData['director'] = _directionController.text.split(',').map((a) => a.trim()).toList();
+    }
+    if (_actorsController.text.trim().isNotEmpty) {
+      updateData['actors'] = _actorsController.text.split(',').map((a) => a.trim()).toList();
+    }
+    if (_countryController.text.trim().isNotEmpty) {
+      updateData['country'] = _countryController.text.trim();
+    }
+    
+    await DatabaseService().updateMoment(widget.momentId, updateData);
+  }
+
+  // Build the title section (read/edit mode)
+  Widget _buildTitleSection() {
+    if (isEditing) {
+      return TextField(
+        controller: _titleController,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+        decoration: const InputDecoration(
+          border: UnderlineInputBorder(),
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+      );
+    }
+    return Text(
+      _titleController.text.isEmpty ? 'Unknown' : _titleController.text,
+      style: const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  // Build book details section
+  Widget _buildBookDetails() {
+    if (isEditing) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _yearController,
+            decoration: const InputDecoration(
+              label: Text('Year'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _authorsController,
+            decoration: const InputDecoration(
+              label: Text('Author/s'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _pageCountController,
+            decoration: const InputDecoration(
+              label: Text('Pages'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _publisherController,
+            decoration: const InputDecoration(
+              label: Text('Publisher'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _isbnController,
+            decoration: const InputDecoration(
+              label: Text('ISBN'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, 'Year'),
+        buildDetailRow(_authorsController.text.isEmpty ? null : _authorsController.text, 'Author/s'),
+        buildDetailRow(_pageCountController.text.isEmpty ? null : _pageCountController.text, 'Pages'),
+        buildDetailRow(_publisherController.text.isEmpty ? null : _publisherController.text, 'Publisher'),
+        buildDetailRow(_isbnController.text.isEmpty ? null : _isbnController.text, 'ISBN'),
+      ],
+    );
+  }
+
+  // Build movie/TV details section
+  Widget _buildMovieDetails() {
+    if (isEditing) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _yearController,
+            decoration: const InputDecoration(
+              label: Text('Year'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (widget.momentData['type'] == 'tv') ...[
+            TextField(
+              controller: _creatorsController,
+              decoration: const InputDecoration(
+                label: Text('Creator/s'),
+                isDense: true,
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          TextField(
+            controller: _directionController,
+            decoration: const InputDecoration(
+              label: Text('Direction'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _actorsController,
+            decoration: const InputDecoration(
+              label: Text('Cast'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _countryController,
+            decoration: const InputDecoration(
+              label: Text('Country'),
+              isDense: true,
+              border: UnderlineInputBorder(),
+            ),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, 'Year'),
+        if (widget.momentData['type'] == 'tv') ...[
+          buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, 'Creator/s'),
+        ],
+        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, 'Direction'),
+        buildDetailRow(_actorsController.text.isEmpty ? null : _actorsController.text, 'Cast'),
+        buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, 'Country'),
+      ],
+    );
+  }
+
+  // Build type-specific details
+  Widget _buildTypeSpecificDetails() {
+    // Blue Uppercase label + details below (with edit mode support)
+    if (widget.momentData['type'] == 'movie' || widget.momentData['type'] == 'tv') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.momentData['type'].toUpperCase(),
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildMovieDetails(),
+        ],
+      );
+    } else if (widget.momentData['type'] == 'book') {
+      return _buildBookDetails();
+    }
+    return const SizedBox.shrink();
+  }
+
+  // Build date and location section
+  Widget _buildDateAndLocationSection() {
+    return Row(
+      children: [
+        // WHEN section
+        Expanded(
+          child: InkWell(
+            onTap: isEditing ? () => _selectDate(context) : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'WHEN',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_month,
+                      size: 16,
+                      color: isEditing ? Colors.orange : Colors.indigo,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: isEditing ? Colors.orange : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        // WHERE section
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'WHERE',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (isEditing)
+                TextField(
+                  controller: _locationController,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_pin,
+                      size: 16,
+                      color: Colors.indigo,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _locationController.text.isEmpty ? 'Unknown' : _locationController.text,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build notes section
+  Widget _buildNotesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'MY NOTES',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: isEditing
+              ? TextField(
+                  controller: _notesController,
+                  maxLines: null,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                )
+              : Text(
+                  _notesController.text.trim().isEmpty ? 'No comments...' : _notesController.text,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black87,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.momentData['title'] ?? 'Detalle'),
+        title: Text(_titleController.text.isEmpty ? 'Detalle' : _titleController.text),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
         actions: [
-          // EDIT / SAVE BUTTON (Dynamic)
           IconButton(
-            // Change icon depending on editing state
             icon: Icon(isEditing ? Icons.check : Icons.edit),
             onPressed: () async {
               if (isEditing) {
-                // 1. Save changes to Firestore
-                await DatabaseService().updateMoment(widget.momentId, {
-                  'notes': _notesController.text.trim(),
-                  'location': _locationController.text.trim(),
-                  'date': Timestamp.fromDate(_selectedDate!),
-                });
-                // Show a quick success message
+                await _saveChanges();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Changes saved successfully')),
                   );
                 }
               }
-              // 2. Change the editing mode
               setState(() => isEditing = !isEditing);
             },
           ),
-          // Only show delete if not editing
           if (!isEditing)
             IconButton(
               icon: const Icon(Icons.delete),
@@ -98,10 +505,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   context: context,
                   builder: (context) => DeleteConfirmDialog(
                     onConfirm: () async {
-                      // 1. Delete the moment from Firestore
                       await DatabaseService().deleteMoment(widget.momentId);
-
-                      // 2. Close the detail screen
                       if (context.mounted) {
                         Navigator.pop(context);
                       }
@@ -115,7 +519,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 1. Poster Section
+            // Image section
             GestureDetector(
               onTap: () {
                 showImageGallery(context, [widget.momentData['imageUrl']]);
@@ -134,181 +538,19 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 ),
               ),
             ),
-            // 2. Details Section
+            // Details section
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 2. Title and Technical Details
-                  Text(
-                    widget.momentData['title']?.toString() ?? 'Unknown',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  _buildTitleSection(),
                   const SizedBox(height: 4),
-                  // Text details depending on Moment type
-                  if (widget.momentData['type'] == 'movie' || widget.momentData['type'] == 'tv') ...[
-                    Text(
-                      widget.momentData['type'].toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    buildDetailRow(widget.momentData['year'], 'Year'),
-                    if (widget.momentData['type'] == 'tv') ...[
-                      buildDetailRow(widget.momentData['creators'], 'Creator'),
-                    ],
-                    buildDetailRow(widget.momentData['director'], 'Direction'),
-                    buildDetailRow(widget.momentData['actors'], 'Cast'),
-                    buildDetailRow(widget.momentData['country'], 'Country'),
-                  ] else if (widget.momentData['type'] == 'book') ...[
-                    buildDetailRow(widget.momentData['publishedDate'], 'Year'),
-                    buildDetailRow(widget.momentData['authors'], 'Author'),
-                    buildDetailRow(widget.momentData['pageCount'], 'Pages'),
-                  ],
-
+                  _buildTypeSpecificDetails(),
                   const Divider(height: 40),
-
-                  // 3. Details Section (Location and Date)
-                  Row(
-                    children: [
-                      // LEFT COLUMN: WHEN (Editable with DatePicker)
-                      Expanded(
-                        child: InkWell(
-                          // If editing, allow date selection
-                          onTap: isEditing ? () => _selectDate(context) : null,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'WHEN',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_month,
-                                    size: 16,
-                                    color: isEditing
-                                        ? Colors.orange
-                                        : Colors.indigo,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: isEditing
-                                          ? Colors.orange
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // RIGHT COLUMN: WHERE (Editable with TextField)
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'WHERE',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            // If editing, allow location input
-                            isEditing
-                                ? TextField(
-                                    controller: _locationController,
-                                    style: const TextStyle(fontSize: 14),
-                                    decoration: const InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.location_pin,
-                                        size: 16,
-                                        color: Colors.indigo,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _locationController.text.isEmpty
-                                            ? 'Unknown'
-                                            : _locationController.text,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildDateAndLocationSection(),
                   const SizedBox(height: 30),
-
-                  // 4. Your Notes (Editable with TextField)
-                  const Text(
-                    'MY NOTES',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: isEditing
-                        ? TextField(
-                            controller: _notesController,
-                            maxLines: null,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                            ),
-                          )
-                        : Text(
-                            _notesController.text.trim().isEmpty
-                                ? 'No comments...'
-                                : _notesController.text,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              height: 1.5,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.black87,
-                            ),
-                          ),
-                  ),
+                  _buildNotesSection(),
                   const Divider(height: 40),
                 ],
               ),
@@ -329,10 +571,10 @@ void showImageGallery(
   showDialog(
     context: context,
     builder: (context) => Dialog.fullscreen(
-      backgroundColor: Colors.black, // Fondo negro para que resalten las fotos
+      backgroundColor: Colors.black,
       child: Stack(
         children: [
-          // 1. El carrusel de imágenes
+          // 1. Carrousel of images with pinch-to-zoom
           PageView.builder(
             controller: PageController(initialPage: initialIndex),
             itemCount: urls.length,
@@ -343,13 +585,13 @@ void showImageGallery(
             ),
           ),
 
-          // 2. Botón de cerrar fijo arriba (fuera del PageView)
+          // 2. Close button fixed at the top (outside the PageView)
           Positioned(
             top: 10,
             right: 10,
             child: SafeArea(
               child: CircleAvatar(
-                backgroundColor: Colors.black54, // Fondo oscuro para el botón
+                backgroundColor: Colors.black54,
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),

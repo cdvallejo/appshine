@@ -192,7 +192,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             TextField(
                               controller: _creatorsController,
                               decoration: const InputDecoration(
-                                label: Text('Created by'),
+                                label: Text('Creator/s'),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 0,
