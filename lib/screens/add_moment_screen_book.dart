@@ -3,6 +3,7 @@ import 'package:appshine/repositories/book_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/book_model.dart';
+import '../models/moment_model.dart';
 
 class AddMomentScreenBook extends StatefulWidget {
   final Book book;
@@ -26,6 +27,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   DateTime _selectedDate = DateTime.now();
   final BookRepository _bookRepository = BookRepository();
   late Book _bookWithDetails;
+  String? _selectedSubtype;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +38,17 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () async {
-              // 1. Async function to save the moment
+              // 1. Validate subtype is selected
+              if (_selectedSubtype == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please select a book type')),
+                );
+                return;
+              }
+
+              // 2. Async function to save the moment
               try {
-                // 2. Update the book with edited values and call the function with await
+                // 3. Update the book with edited values and call the function with await
                 _bookWithDetails = _bookWithDetails.copyWith(
                   title: _titleController.text,
                   publishedDate: _yearController.text,
@@ -53,9 +63,10 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,
+                  subtype: _selectedSubtype!,
                 );
 
-                // 3. If everything goes well, notify the user and close
+                // 4. If everything goes well, notify the user and close
                 if (context.mounted) {
                   // Extra safety in case the user closed the screen before
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +75,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                   Navigator.pop(context);
                 }
               } catch (error) {
-                // 4. If there was an error, show it
+                // 5. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error saving moment: $error')),
@@ -133,6 +144,25 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                               contentPadding: EdgeInsets.zero,
                             ),
                             
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Subtype dropdown
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            hint: const Text('Select book type'),
+                            value: _selectedSubtype,
+                            items: Moment.defaultSubtypes[MomentType.book]
+                                ?.map((subtype) => DropdownMenuItem(
+                                      value: subtype,
+                                      child: Text(subtype),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedSubtype = value;
+                              });
+                            },
                           ),
                           const SizedBox(height: 8),
 

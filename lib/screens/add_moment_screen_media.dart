@@ -2,6 +2,7 @@ import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import '../models/media_model.dart';
+import '../models/moment_model.dart';
 import '../repositories/media_repository.dart';
 
 class AddMomentScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
 
   final MediaRepository _mediaRepository = MediaRepository();
   DateTime _selectedDate = DateTime.now();
+  String? _selectedSubtype;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +38,17 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () async {
-              // 1. Async function to save the moment
+              // 1. Validate subtype is selected
+              if (_selectedSubtype == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please select a subtype')),
+                );
+                return;
+              }
+
+              // 2. Async function to save the moment
               try {
-                // 2. Update the media with edited values and call the function with await
+                // 3. Update the media with edited values and call the function with await
                 final editedMedia = widget.media.copyWith(
                   title: _titleController.text,
                   releaseDate: _yearController.text,
@@ -61,9 +71,10 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,
+                  subtype: _selectedSubtype!,
                 );
 
-                // 3. If everything goes well, notify the user and close
+                // 4. If everything goes well, notify the user and close
                 if (context.mounted) {
                   // Extra safety in case the user closed the screen before
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -103,12 +114,12 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   FutureBuilder(
                     future: _mediaRepository.getMovieDetails(widget.media),
                     builder: (context, snapshot) {
-                      // 1. If the messenger is still on the way...
+                      // 1. If the request is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      // 2. If the messenger has arrived (we now have director, actors, and country)...
+                      // 2. If the request has arrived (we now have director, actors, and country)...
                       // Initialize controllers with API data (only once)
                       if (_titleController.text.isEmpty) {
                         _titleController.text = widget.media.title;
@@ -138,13 +149,23 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            widget.media.type.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
+                          
+                          // Subtype dropdown
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            hint: const Text('Select subtype'),
+                            value: _selectedSubtype,
+                            items: Moment.defaultSubtypes[MomentType.audiovisual]
+                                ?.map((subtype) => DropdownMenuItem(
+                                      value: subtype,
+                                      child: Text(subtype),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedSubtype = value;
+                              });
+                            },
                           ),
 
                           const SizedBox(height: 4),

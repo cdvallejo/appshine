@@ -1,6 +1,7 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/widgets/delete_confirm_dialog.dart';
 import 'package:appshine/widgets/moment_detail_row.dart';
+import 'package:appshine/models/moment_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -34,6 +35,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   late TextEditingController _actorsController;
   late TextEditingController _countryController;
   DateTime? _selectedDate;
+  late String _selectedSubtype;
 
   @override
   void initState() {
@@ -72,6 +74,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       text: widget.momentData['country'] ?? '',
     );
     _selectedDate = (widget.momentData['date'] as Timestamp).toDate();
+    _selectedSubtype = widget.momentData['subtype'] ?? '';
   }
 
   String _formatList(dynamic value) {
@@ -106,7 +109,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime.now(),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -156,6 +159,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       updateData['country'] = _countryController.text.trim();
     }
     
+    updateData['subtype'] = _selectedSubtype;
+    
     await DatabaseService().updateMoment(widget.momentId, updateData);
   }
 
@@ -190,6 +195,23 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Book type dropdown
+          DropdownButton<String>(
+            isExpanded: true,
+            value: _selectedSubtype,
+            items: Moment.defaultSubtypes[MomentType.book]
+                ?.map((subtype) => DropdownMenuItem(
+                      value: subtype,
+                      child: Text(subtype),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedSubtype = value ?? '';
+              });
+            },
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _yearController,
             decoration: const InputDecoration(
@@ -255,6 +277,23 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Media type dropdown
+          DropdownButton<String>(
+            isExpanded: true,
+            value: _selectedSubtype,
+            items: Moment.defaultSubtypes[MomentType.audiovisual]
+                ?.map((subtype) => DropdownMenuItem(
+                      value: subtype,
+                      child: Text(subtype),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedSubtype = value ?? '';
+              });
+            },
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _yearController,
             decoration: const InputDecoration(
@@ -264,7 +303,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          if (widget.momentData['type'] == 'tv') ...[
+          if (_selectedSubtype.toLowerCase().contains('tv series')) ...[
             TextField(
               controller: _creatorsController,
               decoration: const InputDecoration(
@@ -308,7 +347,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, 'Year'),
-        if (widget.momentData['type'] == 'tv') ...[
+        if (widget.momentData['subtype'] == 'TV Series') ...[
           buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, 'Creator/s'),
         ],
         buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, 'Direction'),
@@ -321,12 +360,12 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   // Build type-specific details
   Widget _buildTypeSpecificDetails() {
     // Blue Uppercase label + details below (with edit mode support)
-    if (widget.momentData['type'] == 'movie' || widget.momentData['type'] == 'tv') {
+    if (widget.momentData['type'] == 'audiovisual') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.momentData['type'].toUpperCase(),
+            _selectedSubtype.toUpperCase(),
             style: const TextStyle(
               color: Colors.blue,
               fontWeight: FontWeight.bold,
@@ -338,7 +377,21 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         ],
       );
     } else if (widget.momentData['type'] == 'book') {
-      return _buildBookDetails();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _selectedSubtype.toUpperCase(),
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildBookDetails(),
+        ],
+      );
     }
     return const SizedBox.shrink();
   }

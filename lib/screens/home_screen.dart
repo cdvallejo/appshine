@@ -181,7 +181,10 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 4),
-                            Text(_capitalize(data['type'] ?? 'N/A'), style: TextStyle(color: Colors.indigo)),
+                            Text(
+                              _capitalize(data['subtype']),
+                              style: const TextStyle(color: Colors.indigo),
+                            ),
 
                             /*Text(
                               'Año: ${data['year'] ?? 'N/A'}',
@@ -194,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         // Traiing with icon moment and onTap for future detail
                         trailing: Icon(
-                          _getMomentIcon(data['type']),
+                          _getMomentIcon(data['type'], data['subtype']),
                           size: 20,
                           color: Colors.indigo.withValues(alpha: 0.5),
                         ),
@@ -367,16 +370,18 @@ class HomeScreen extends StatelessWidget {
     return days[weekday - 1];
   }
 
-  IconData _getMomentIcon(String? type) {
+  IconData _getMomentIcon(String type, String subtype) {
     switch (type) {
-      case 'movie':
-        return Icons.movie_outlined;
-      case 'tv':
-        return Icons.tv_outlined;
+      case 'audiovisual':
+        // For audiovisual, check subtype to differentiate between TV and Movies
+        if (subtype.toLowerCase().contains('tv')) {
+          return Icons.tv_outlined;
+        }
+        return Icons.movie_outlined; // Default to movie for other subtypes
       case 'book':
         return Icons.book_outlined;
-      case 'place':
-        return Icons.place_outlined;
+      case 'socialEvent':
+        return Icons.people_outlined;
       default:
         return Icons.question_mark_outlined; // Just in case
     }
