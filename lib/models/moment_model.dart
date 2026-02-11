@@ -18,7 +18,7 @@ class Moment {
 
   // Tus subtipos iniciales
   static const Map<MomentType, List<String>> defaultSubtypes = {
-    MomentType.media: ['Movie', 'TV Series', 'Anime'],
+    MomentType.media: ['Movie', 'TV Series'],
     MomentType.book: [
       'Novel',
       'Manga',
