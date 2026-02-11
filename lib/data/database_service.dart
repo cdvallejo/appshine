@@ -14,6 +14,7 @@ class DatabaseService {
     required DateTime date,
     required String location,
     required String notes,
+    required String subtype,
   }) async {
     // Checking if user is logged in
     final user = _auth.currentUser;
@@ -23,7 +24,8 @@ class DatabaseService {
       // 2. Sending data to Firestore
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
-        'type': media.type, // 'movie' or 'tv'
+        'type': 'audiovisual', // Moment type
+        'subtype': subtype,
         'mediaId': media.id,
         'title': media.title,
         'year': media.releaseYear,
@@ -46,7 +48,8 @@ class DatabaseService {
     required Book book, 
     required DateTime date, 
     required String location, 
-    required String notes
+    required String notes,
+    required String subtype,
     }) async {
       // Checking if user is logged in
     final user = _auth.currentUser;
@@ -57,6 +60,7 @@ class DatabaseService {
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
         'type': 'book',
+        'subtype': subtype,
         'bookId': book.id,
         'title': book.title,
         'authors': book.authors,

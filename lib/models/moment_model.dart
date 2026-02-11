@@ -1,72 +1,71 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum MomentType {
-  movie,
-  book,
-  social
-}
+enum MomentType { audiovisual, book, socialEvent }
 
 // Model class for a Moment
 class Moment {
   final String? id;
   final String userId;
   final MomentType type;
+  final String subtype; // FUTURE ADD - book type, media type, event type, etc.
   final String title;
   final DateTime date;
   final String? notes;
   final String? status;
   final String? location;
   final String? imageUrl;
+  // Future ADD - hashtags, states, rating, etc.
 
-  // Specific fields for different moment types
-  final int? tmdbId;
-  final List<String>? director;
-  final String? author;
-  final List<String>? actors;
+  // Tus subtipos iniciales
+  static const Map<MomentType, List<String>> defaultSubtypes = {
+    MomentType.audiovisual: ['Movie', 'TV Series'],
+    MomentType.book: [
+      'Novel',
+      'Manga',
+      'Comic',
+      'Essay',
+      'Technical',
+      'Sheet music',
+    ],
+    MomentType.socialEvent: ['Dinner', 'Concert', 'Exhibition', 'Workshop', 'Trip'],
+  };
 
   Moment({
     this.id,
     required this.userId,
     required this.type, // Enum for type
+    required this.subtype, // Subtype for specific moment types
     required this.title,
     required this.date,
     this.notes,
     this.status,
     this.location,
     this.imageUrl,
-    this.tmdbId,
-    this.director,
-    this.author,
-    this.actors,
   });
 
-factory Moment.fromMap(Map<String, dynamic> map, String docId) {
+  factory Moment.fromMap(Map<String, dynamic> map, String docId) {
     return Moment(
       id: docId,
       userId: map['userId'] ?? '',
-      
+      subtype: map['subtype'] ?? '',
       // Safe enum parsing with fallback
       type: MomentType.values.firstWhere(
-        (e) => e.name == map['type'], 
-        orElse: () => MomentType.social
+        (e) => e.name == map['type'],
+        orElse: () => MomentType.socialEvent, // Default to socialEvent if type is missing or unrecognized
       ),
-      
-      title: map['title'] ?? 'Untitled',
-      
-      // If 'date' is missing or null, use current date as fallback
-      date: map['date'] != null 
-          ? (map['date'] as Timestamp).toDate() 
-          : DateTime.now(),
-      // ----------------------------------------------------
 
+      title: map['title'] ?? 'Untitled',
+
+      // If 'date' is missing or null, use current date as fallback
+      date: map['date'] != null
+          ? (map['date'] as Timestamp).toDate()
+          : DateTime.now(),
+
+      // ----------------------------------------------------
       notes: map['notes'],
       status: map['status'],
       location: map['location'],
       imageUrl: map['imageUrl'],
-      tmdbId: map['tmdbId'] is String ? int.tryParse(map['tmdbId']) : map['tmdbId'], // Handle String to int conversion is not an int
-      director: map['director'] != null ? List<String>.from(map['director'] is List ? map['director'] : [map['director'].toString()]) : null,
-      author: map['author'],
-      actors: map['actors'] != null ? List<String>.from(map['actors']) : null,
     );
   }
 
@@ -80,10 +79,7 @@ factory Moment.fromMap(Map<String, dynamic> map, String docId) {
       'status': status,
       'location': location,
       'imageUrl': imageUrl,
-      'tmdbId': tmdbId,
-      'director': director,
-      'author': author,
-      'actors': actors,
+      'subtype': subtype,
     };
   }
 }
