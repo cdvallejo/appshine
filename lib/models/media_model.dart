@@ -1,3 +1,7 @@
+/* Generic model for both movies, TV shows, etc, with common fields and some optional ones for details
+Audiovisual type - subtypes: Movie, TV Series
+FUTURE: Videogame type */
+
 class Media {
   final int id;
   final String title;

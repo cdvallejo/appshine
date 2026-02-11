@@ -24,7 +24,7 @@ class DatabaseService {
       // 2. Sending data to Firestore
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
-        'type': 'audiovisual', // Moment type
+        'type': 'media', // Moment type
         'subtype': subtype,
         'mediaId': media.id,
         'title': media.title,

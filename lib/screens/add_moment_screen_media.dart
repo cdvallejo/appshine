@@ -155,7 +155,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             isExpanded: true,
                             hint: const Text('Select subtype'),
                             value: _selectedSubtype,
-                            items: Moment.defaultSubtypes[MomentType.audiovisual]
+                            items: Moment.defaultSubtypes[MomentType.media]
                                 ?.map((subtype) => DropdownMenuItem(
                                       value: subtype,
                                       child: Text(subtype),
