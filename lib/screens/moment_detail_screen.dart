@@ -281,7 +281,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           DropdownButton<String>(
             isExpanded: true,
             value: _selectedSubtype,
-            items: Moment.defaultSubtypes[MomentType.audiovisual]
+            items: Moment.defaultSubtypes[MomentType.media]
                 ?.map((subtype) => DropdownMenuItem(
                       value: subtype,
                       child: Text(subtype),
@@ -360,7 +360,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   // Build type-specific details
   Widget _buildTypeSpecificDetails() {
     // Blue Uppercase label + details below (with edit mode support)
-    if (widget.momentData['type'] == 'audiovisual') {
+    if (widget.momentData['type'] == 'media') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -372,8 +372,8 @@ class HomeScreen extends StatelessWidget {
 
   IconData _getMomentIcon(String type, String subtype) {
     switch (type) {
-      case 'audiovisual':
-        // For audiovisual, check subtype to differentiate between TV and Movies
+      case 'media':
+        // For media, check subtype to differentiate between TV and Movies
         if (subtype.toLowerCase().contains('tv')) {
           return Icons.tv_outlined;
         }

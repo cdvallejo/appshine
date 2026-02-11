@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum MomentType { audiovisual, book, socialEvent }
+enum MomentType { media, book, socialEvent }
 
 // Model class for a Moment
 class Moment {
@@ -18,7 +18,7 @@ class Moment {
 
   // Tus subtipos iniciales
   static const Map<MomentType, List<String>> defaultSubtypes = {
-    MomentType.audiovisual: ['Movie', 'TV Series'],
+    MomentType.media: ['Movie', 'TV Series', 'Anime'],
     MomentType.book: [
       'Novel',
       'Manga',
