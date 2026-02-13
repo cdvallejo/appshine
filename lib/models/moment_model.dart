@@ -7,7 +7,6 @@ class Moment {
   final String? id;
   final String userId;
   final MomentType type;
-  final String subtype; // FUTURE ADD - book type, media type, event type, etc.
   final String title;
   final DateTime date;
   final String? notes;
@@ -16,25 +15,10 @@ class Moment {
   final String? imageUrl;
   // Future ADD - hashtags, states, rating, etc.
 
-  // Tus subtipos iniciales
-  static const Map<MomentType, List<String>> defaultSubtypes = {
-    MomentType.media: ['Movie', 'TV Series'],
-    MomentType.book: [
-      'Novel',
-      'Manga',
-      'Comic',
-      'Essay',
-      'Technical',
-      'Sheet music',
-    ],
-    MomentType.socialEvent: ['Dinner', 'Concert', 'Exhibition', 'Workshop', 'Trip'],
-  };
-
   Moment({
     this.id,
     required this.userId,
     required this.type, // Enum for type
-    required this.subtype, // Subtype for specific moment types
     required this.title,
     required this.date,
     this.notes,
@@ -43,24 +27,21 @@ class Moment {
     this.imageUrl,
   });
 
+  // Factory constructor to create a Moment instance from a Firestore document
   factory Moment.fromMap(Map<String, dynamic> map, String docId) {
     return Moment(
       id: docId,
       userId: map['userId'] ?? '',
-      subtype: map['subtype'] ?? '',
       // Safe enum parsing with fallback
       type: MomentType.values.firstWhere(
         (e) => e.name == map['type'],
         orElse: () => MomentType.socialEvent, // Default to socialEvent if type is missing or unrecognized
       ),
-
       title: map['title'] ?? 'Untitled',
-
       // If 'date' is missing or null, use current date as fallback
       date: map['date'] != null
           ? (map['date'] as Timestamp).toDate()
           : DateTime.now(),
-
       // ----------------------------------------------------
       notes: map['notes'],
       status: map['status'],
@@ -69,6 +50,7 @@ class Moment {
     );
   }
 
+  // Method to convert a Moment instance to a map for Firestore storage
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
@@ -79,7 +61,6 @@ class Moment {
       'status': status,
       'location': location,
       'imageUrl': imageUrl,
-      'subtype': subtype,
     };
   }
 }

@@ -3,11 +3,14 @@ Audiovisual type - subtypes: Movie, TV Series
 FUTURE: Videogame type */
 
 class Media {
+  static const List<String> subtypes = ['Movie', 'TV Series'];
+
   final int id;
   final String title;
   final String? imageUrl;
   final String? releaseDate;
   final String type; // movie or tv
+  final String subtype; // 'Movie' or 'TV Series'
   // Cannot be final if we want to set it later in the details fetch
   List<String>? directors;
   List<String>? creators;
@@ -24,6 +27,7 @@ class Media {
     this.actors,
     this.country,
     required this.type,
+    required this.subtype,
   });
 
   // Factory method to create a Media from JSON data
@@ -47,6 +51,7 @@ class Media {
           .toList(),
       country: json['country'],
       type: json['media_type'],
+      subtype: json['media_type'] == 'tv' ? 'TV Series' : 'Movie',
     );
   }
 
@@ -69,6 +74,7 @@ class Media {
     String? imageUrl,
     String? releaseDate,
     String? type,
+    String? subtype,
     List<String>? directors,
     List<String>? creators,
     List<String>? actors,
@@ -80,6 +86,7 @@ class Media {
       imageUrl: imageUrl ?? this.imageUrl,
       releaseDate: releaseDate ?? this.releaseDate,
       type: type ?? this.type,
+      subtype: subtype ?? this.subtype,
       directors: directors ?? this.directors,
       creators: creators ?? this.creators,
       actors: actors ?? this.actors,

@@ -84,6 +84,7 @@ class BookRepository {
             isbn: isbn,
             editionKey: book.editionKey,
             authors: book.authors,
+            subtype: 'Novel',
           );
         }
       }

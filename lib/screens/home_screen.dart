@@ -1,7 +1,9 @@
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
+import 'package:appshine/models/social_event_model.dart';
 import 'package:appshine/screens/add_moment_screen_media.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
+import 'package:appshine/screens/add_moment_screen_social_event.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/widgets/book_search_delegate.dart';
 import 'package:appshine/widgets/media_search_delegate.dart';
@@ -260,10 +262,10 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // MOVIE OPTION
+            // MEDIA OPTION
             ListTile(
               leading: const Icon(Icons.movie, color: Colors.indigo),
-              title: const Text('Movie'),
+              title: const Text('Movie | TV Series'),
               onTap: () async {
                 // 1. Launch the search FIRST (using the current context)
                 final result = await showSearch<Media?>(
@@ -323,13 +325,24 @@ class HomeScreen extends StatelessWidget {
               },
             ),
 
-            // EVENT OPTION
+            // SOCIAL EVENT OPTION
             ListTile(
               leading: const Icon(Icons.people, color: Colors.indigo),
               title: const Text('Event'),
-              onTap: () {
+              onTap: () { // No ASYNC needed here because we are not calling any API, just navigating to a form screen with empty fields for the user to fill in (no search delegate needed)
                 Navigator.pop(context);
-                // SOON..
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddMomentScreenSocialEvent(
+                      socialEvent: SocialEvent(
+                        title: 'New Event',
+                        subtype: 'Dinner',
+                        images: [],
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
           ],

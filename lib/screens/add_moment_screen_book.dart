@@ -3,7 +3,6 @@ import 'package:appshine/repositories/book_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/book_model.dart';
-import '../models/moment_model.dart';
 
 class AddMomentScreenBook extends StatefulWidget {
   final Book book;
@@ -152,8 +151,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                             isExpanded: true,
                             hint: const Text('Select book type'),
                             value: _selectedSubtype,
-                            items: Moment.defaultSubtypes[MomentType.book]
-                                ?.map((subtype) => DropdownMenuItem(
+                            items: Book.subtypes
+                                .map((subtype) => DropdownMenuItem(
                                       value: subtype,
                                       child: Text(subtype),
                                     ))

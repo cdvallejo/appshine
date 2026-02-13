@@ -2,7 +2,6 @@ import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import '../models/media_model.dart';
-import '../models/moment_model.dart';
 import '../repositories/media_repository.dart';
 
 class AddMomentScreen extends StatefulWidget {
@@ -155,8 +154,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             isExpanded: true,
                             hint: const Text('Select subtype'),
                             value: _selectedSubtype,
-                            items: Moment.defaultSubtypes[MomentType.media]
-                                ?.map((subtype) => DropdownMenuItem(
+                            items: Media.subtypes
+                                .map((subtype) => DropdownMenuItem(
                                       value: subtype,
                                       child: Text(subtype),
                                     ))
