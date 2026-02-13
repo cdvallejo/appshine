@@ -1,7 +1,8 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/widgets/delete_confirm_dialog.dart';
 import 'package:appshine/widgets/moment_detail_row.dart';
-import 'package:appshine/models/moment_model.dart';
+import 'package:appshine/models/book_model.dart';
+import 'package:appshine/models/media_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -199,8 +200,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           DropdownButton<String>(
             isExpanded: true,
             value: _selectedSubtype,
-            items: Moment.defaultSubtypes[MomentType.book]
-                ?.map((subtype) => DropdownMenuItem(
+            items: Book.subtypes
+                .map((subtype) => DropdownMenuItem(
                       value: subtype,
                       child: Text(subtype),
                     ))
@@ -281,8 +282,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           DropdownButton<String>(
             isExpanded: true,
             value: _selectedSubtype,
-            items: Moment.defaultSubtypes[MomentType.media]
-                ?.map((subtype) => DropdownMenuItem(
+            items: Media.subtypes
+                .map((subtype) => DropdownMenuItem(
                       value: subtype,
                       child: Text(subtype),
                     ))

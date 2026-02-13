@@ -1,4 +1,13 @@
 class Book {
+  static const List<String> subtypes = [
+    'Novel',
+    'Manga',
+    'Comic',
+    'Essay',
+    'Technical',
+    'Sheet music',
+  ];
+
   final String id;
   final String title;
   final String? publishedDate;
@@ -7,6 +16,7 @@ class Book {
   final String? isbn;
   final String? publisher;
   final String? editionKey; // Open Library ID for direct edition API access
+  final String subtype; // 'Novel', 'Manga', 'Comic', 'Essay', 'Technical', 'Sheet music'
   List<String>? authors;
 
   Book({
@@ -19,6 +29,7 @@ class Book {
     this.publisher,
     this.editionKey, // Open Library ID for direct edition API access
     this.authors,
+    required this.subtype,
   });
 
   // Factory method to create a Book from JSON data (Open Library API format)
@@ -65,6 +76,7 @@ class Book {
       authors: authors,
       publishedDate: publishedDate,
       pageCount: null,
+      subtype: 'Novel', // Default subtype, can be updated later
     );
   }
 
@@ -117,6 +129,7 @@ class Book {
     String? isbn,
     String? publisher,
     String? editionKey,
+    String? subtype,
     List<String>? authors,
   }) {
     return Book(
@@ -128,6 +141,7 @@ class Book {
       isbn: isbn ?? this.isbn,
       publisher: publisher ?? this.publisher,
       editionKey: editionKey ?? this.editionKey,
+      subtype: subtype ?? this.subtype,
       authors: authors ?? this.authors,
     );
   }

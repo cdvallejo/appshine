@@ -1,5 +1,6 @@
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
+import 'package:appshine/models/social_event_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -45,13 +46,13 @@ class DatabaseService {
   }
 
   Future<void> addMomentBook({
-    required Book book, 
-    required DateTime date, 
-    required String location, 
+    required Book book,
+    required DateTime date,
+    required String location,
     required String notes,
     required String subtype,
-    }) async {
-      // Checking if user is logged in
+  }) async {
+    // Checking if user is logged in
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not identified');
 
@@ -79,26 +80,57 @@ class DatabaseService {
     }
   }
 
-  Stream<QuerySnapshot> getMomentsStream() {
-  final user = _auth.currentUser;
-  if (user == null) throw Exception('User not identified');
+  Future<void> addMomentSocialEvent({
+    required SocialEvent socialEvent,
+    required DateTime date,
+    required String location,
+    required String notes,
+    required String subtype,
+  }) async {
+    // Checking if user is logged in
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not identified');
 
-  // Query to get moments for the current user, ordered by creation date
-  return _db.collection('moments')
-      .where('userId', isEqualTo: user.uid)
-      .orderBy('date', descending: true)
-      .snapshots();
-}
+    try {
+      // 2. Sending data to Firestore
+      await _db.collection('moments').add({
+        'userId': user.uid, // Security: who saves it
+        'type': 'socialEvent',
+        'subtype': socialEvent.subtype,
+        'title': socialEvent.title,
+        'date': Timestamp.fromDate(date),
+        'location': location,
+        'notes': notes,
+        'images': socialEvent.images,
+        'createdAt': FieldValue.serverTimestamp(), // Official server time
+      });
+    } catch (e) {
+      rethrow; // Throws the error so the screen can show a message
+    }
+  }
+
+  // Function to get a stream of moments for the current user
+  Stream<QuerySnapshot> getMomentsStream() {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not identified');
+
+    // Query to get moments for the current user, ordered by creation date
+    return _db
+        .collection('moments')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('date', descending: true)
+        .snapshots();
+  }
 
   // Function to update a moment's notes
   Future<void> updateMoment(String momentId, Map<String, dynamic> data) async {
-  try {
-    await _db.collection('moments').doc(momentId).update(data);
-  } catch (e) {
-    debugPrint("Error al actualizar: $e");
-    rethrow;
+    try {
+      await _db.collection('moments').doc(momentId).update(data);
+    } catch (e) {
+      debugPrint("Error al actualizar: $e");
+      rethrow;
+    }
   }
-}
 
   // Function to delete a moment by its ID
   Future<void> deleteMoment(String momentId) async {
@@ -106,7 +138,7 @@ class DatabaseService {
       await _db.collection('moments').doc(momentId).delete();
     } catch (e) {
       debugPrint("Error deleting moment: $e");
-    rethrow;
+      rethrow;
     }
   }
 }
