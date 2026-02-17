@@ -168,9 +168,9 @@ class HomeScreen extends StatelessWidget {
                                   height: 75,
                                   fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.movie, size: 50),
+                                      Icon(_getMomentIconBig(data['type'], data['subtype']), size: 50),
                                 )
-                              : const Icon(Icons.movie, size: 50),
+                              : Icon(_getMomentIconBig(data['type'], data['subtype']), size: 50),
                         ),
                         title: Text(
                           data['title'] ?? 'Untitled',
@@ -329,7 +329,7 @@ class HomeScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.people, color: Colors.indigo),
               title: const Text('Event'),
-              onTap: () { // No ASYNC needed here because we are not calling any API, just navigating to a form screen with empty fields for the user to fill in (no search delegate needed)
+              onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
@@ -338,7 +338,6 @@ class HomeScreen extends StatelessWidget {
                       socialEvent: SocialEvent(
                         title: 'New Event',
                         subtype: 'Dinner',
-                        images: [],
                       ),
                     ),
                   ),
@@ -381,6 +380,23 @@ class HomeScreen extends StatelessWidget {
       'Sunday',
     ];
     return days[weekday - 1];
+  }
+
+  IconData _getMomentIconBig(String type, String subtype) {
+    switch (type) {
+      case 'media':
+        // For media, check subtype to differentiate between TV and Movies
+        if (subtype.toLowerCase().contains('tv')) {
+          return Icons.tv;
+        }
+        return Icons.movie; // Default to movie for other subtypes
+      case 'book':
+        return Icons.book;
+      case 'socialEvent':
+        return Icons.people;
+      default:
+        return Icons.question_mark_outlined; // Just in case
+    }
   }
 
   IconData _getMomentIcon(String type, String subtype) {

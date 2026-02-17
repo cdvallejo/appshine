@@ -101,7 +101,6 @@ class DatabaseService {
         'date': Timestamp.fromDate(date),
         'location': location,
         'notes': notes,
-        'images': socialEvent.images,
         'createdAt': FieldValue.serverTimestamp(), // Official server time
       });
     } catch (e) {
