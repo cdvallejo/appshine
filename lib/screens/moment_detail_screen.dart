@@ -1,10 +1,13 @@
 import 'package:appshine/data/database_service.dart';
-import 'package:appshine/widgets/delete_confirm_dialog.dart';
-import 'package:appshine/widgets/moment_detail_row.dart';
+import 'package:appshine/widgets_extra/delete_confirm_dialog.dart';
+import 'package:appshine/widgets_extra/moment_detail_row.dart';
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
+import 'package:appshine/models/social_event_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class MomentDetailScreen extends StatefulWidget {
   // StatefulWidget to manage editing state
@@ -163,6 +166,104 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     updateData['subtype'] = _selectedSubtype;
     
     await DatabaseService().updateMoment(widget.momentId, updateData);
+  }
+
+  // Build main image based on moment type
+  Widget _buildMainImage() {
+    if (widget.momentData['type'] == 'socialEvent') {
+      final imageNames = widget.momentData['imageNames'] as List<dynamic>? ?? [];
+      if (imageNames.isEmpty) {
+        return Container(
+          height: 300,
+          width: double.infinity,
+          color: Colors.cyan.withValues(alpha: 0.2),
+          child: const Center(child: Icon(Icons.image, size: 64, color: Colors.grey)),
+        );
+      }
+      // Show first image as preview with image count badge
+      return FutureBuilder<String>(
+        future: _getImagePathForGallery(imageNames[0] as String),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container(
+              height: 300,
+              width: double.infinity,
+              color: Colors.cyan.withValues(alpha: 0.2),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          final imagePath = snapshot.data!;
+          final imageFile = File(imagePath);
+          
+          if (!imageFile.existsSync()) {
+            return Container(
+              height: 300,
+              width: double.infinity,
+              color: Colors.cyan.withValues(alpha: 0.2),
+              child: const Center(child: Icon(Icons.image_not_supported, size: 64, color: Colors.grey)),
+            );
+          }
+          
+          return Stack(
+            children: [
+              Container(
+                height: 300,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.cyan.withValues(alpha: 0.2),
+                  image: DecorationImage(
+                    image: FileImage(imageFile),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              // Image count badge
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.image, size: 16, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${imageNames.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // For books, media, etc., show network image
+      return Container(
+        height: 300,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.cyan.withValues(alpha: 0.2),
+          image: widget.momentData['imageUrl'] != null
+              ? DecorationImage(
+                  image: NetworkImage(widget.momentData['imageUrl']),
+                  fit: BoxFit.fitHeight,
+                )
+              : null,
+        ),
+      );
+    }
   }
 
   // Build the title section (read/edit mode)
@@ -358,6 +459,43 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
+  // Build social event details section
+  Widget _buildSocialEventDetails() {
+    if (isEditing) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Event type dropdown
+          DropdownButton<String>(
+            isExpanded: true,
+            value: _selectedSubtype,
+            items: SocialEvent.subtypes
+                .map((subtype) => DropdownMenuItem(
+                      value: subtype,
+                      child: Text(subtype),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedSubtype = value ?? '';
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Images',
+            style: TextStyle(fontWeight: FontWeight.bold),
+            // SOON: Edit image gallery
+          ),
+          const SizedBox(height: 8),
+        ],
+      );
+    }
+
+    // For social events, we currently only show the subtype blue label, maybe later we can add more details.
+    return const SizedBox.shrink();
+  }
+
   // Build type-specific details
   Widget _buildTypeSpecificDetails() {
     // Blue Uppercase label + details below (with edit mode support)
@@ -391,6 +529,22 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           ),
           const SizedBox(height: 4),
           _buildBookDetails(),
+        ],
+      );
+    } else if (widget.momentData['type'] == 'socialEvent') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _selectedSubtype.toUpperCase(),
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildSocialEventDetails(),
         ],
       );
     }
@@ -529,6 +683,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
+  // MAIN build method with Scaffold, AppBar, and body containing image and details sections
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -576,21 +731,35 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             // Image section
             GestureDetector(
               onTap: () {
-                showImageGallery(context, [widget.momentData['imageUrl']]);
+                // For social events, show local images; for others, show network image
+                if (widget.momentData['type'] == 'socialEvent') {
+                  final imageNames = widget.momentData['imageNames'] as List<dynamic>? ?? [];
+                  if (imageNames.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => _ImageGalleryScreen(
+                          imagePathsOrUrls: imageNames.cast<String>(),
+                          initialIndex: 0,
+                          localImageFileNames: imageNames.cast<String>(),
+                        ),
+                      ),
+                    );
+                  }
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => _ImageGalleryScreen(
+                        imagePathsOrUrls: [widget.momentData['imageUrl'] ?? ''],
+                        initialIndex: 0,
+                        localImageFileNames: null,
+                      ),
+                    ),
+                  );
+                }
               },
-              child: Container(
-                height: 300,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.cyan.withValues(alpha: 0.2),
-                  image: widget.momentData['imageUrl'] != null
-                      ? DecorationImage(
-                          image: NetworkImage(widget.momentData['imageUrl']),
-                          fit: BoxFit.fitHeight,
-                        )
-                      : null,
-                ),
-              ),
+              child: _buildMainImage(),
             ),
             // Details section
             Padding(
@@ -616,45 +785,122 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   }
 }
 
-// Function to show a dialog image gallery
-void showImageGallery(
-  BuildContext context,
-  List<String> urls, {
-  int initialIndex = 0,
-}) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog.fullscreen(
+/* Image gallery screen (full-screen image viewer). Before was a showDialog, 
+now a full screen push for better UX and pinch-to-zoom support. */
+class _ImageGalleryScreen extends StatefulWidget { // StatefulWidget to manage page controller for carousel
+  final List<String> imagePathsOrUrls;
+  final int initialIndex;
+  final List<String>? localImageFileNames;
+
+  const _ImageGalleryScreen({
+    required this.imagePathsOrUrls,
+    required this.initialIndex,
+    this.localImageFileNames,
+  });
+
+  @override
+  State<_ImageGalleryScreen> createState() => _ImageGalleryScreenState();
+}
+
+class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<String> _getImagePath(String fileName) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return '${appDir.path}/social_events/$fileName';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       backgroundColor: Colors.black,
-      child: Stack(
+      body: Stack(
         children: [
-          // 1. Carrousel of images with pinch-to-zoom
+          // Image carousel with pinch-to-zoom
           PageView.builder(
-            controller: PageController(initialPage: initialIndex),
-            itemCount: urls.length,
-            itemBuilder: (context, index) => InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.network(urls[index], fit: BoxFit.contain),
-            ),
+            controller: _pageController,
+            itemCount: widget.imagePathsOrUrls.length,
+            itemBuilder: (context, index) {
+              final pathOrUrl = widget.imagePathsOrUrls[index];
+              final isUrl = pathOrUrl.startsWith('http');
+
+              if (isUrl) {
+                // Network image
+                return InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Image.network(pathOrUrl, fit: BoxFit.contain),
+                );
+              } else if (widget.localImageFileNames != null && index < widget.localImageFileNames!.length) {
+                // Local file image (social events)
+                return FutureBuilder<String>(
+                  future: _getImagePath(widget.localImageFileNames![index]),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final imagePath = snapshot.data!;
+                    final imageFile = File(imagePath);
+
+                    return InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: imageFile.existsSync()
+                          ? Image.file(imageFile, fit: BoxFit.contain)
+                          : const Center(
+                              child: Icon(Icons.image_not_supported, color: Colors.white),
+                            ),
+                    );
+                  },
+                );
+              } else {
+                // Fallback: try as local file directly
+                return InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Image.file(File(pathOrUrl), fit: BoxFit.contain),
+                );
+              }
+            },
           ),
 
-          // 2. Close button fixed at the top (outside the PageView)
-          Positioned(
-            top: 10,
-            right: 10,
-            child: SafeArea(
-              child: CircleAvatar(
-                backgroundColor: Colors.black54,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
+          // Close button at the top
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
               ),
             ),
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
+}
+
+// Helper method to get image path for gallery (accessible from global function)
+Future<String> _getImagePathForGallery(String fileName) async {
+  final appDir = await getApplicationDocumentsDirectory();
+  return '${appDir.path}/social_events/$fileName';
 }
