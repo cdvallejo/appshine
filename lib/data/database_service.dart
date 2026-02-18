@@ -96,11 +96,12 @@ class DatabaseService {
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
         'type': 'socialEvent',
-        'subtype': socialEvent.subtype,
+        'subtype': subtype,
         'title': socialEvent.title,
         'date': Timestamp.fromDate(date),
         'location': location,
         'notes': notes,
+        'imageNames': socialEvent.imageNames, // Image filenames from model
         'createdAt': FieldValue.serverTimestamp(), // Official server time
       });
     } catch (e) {

@@ -11,6 +11,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
@@ -161,16 +163,7 @@ class HomeScreen extends StatelessWidget {
                       child: ListTile(
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: data['imageUrl'] != null
-                              ? Image.network(
-                                  data['imageUrl'],
-                                  width: 50,
-                                  height: 75,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Icon(_getMomentIconBig(data['type'], data['subtype']), size: 50),
-                                )
-                              : Icon(_getMomentIconBig(data['type'], data['subtype']), size: 50),
+                          child: _buildMomentImage(data['type'], data['imageNames'], data['imageUrl'], data['subtype']),
                         ),
                         title: Text(
                           data['title'] ?? 'Untitled',
@@ -418,5 +411,51 @@ class HomeScreen extends StatelessWidget {
 
   String _capitalize(String text) {
     return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+  }
+
+  /// Build the moment image widget based on type
+  /// For social events: shows image from local storage using filename
+  /// For media/books: shows network image from imageUrl
+  Widget _buildMomentImage(String type, dynamic imageNames, String? imageUrl, String subtype) {
+    // For social events, reconstruct path from filename and show local image
+    if (type == 'socialEvent' && imageNames != null && (imageNames as List).isNotEmpty) {
+      return FutureBuilder<String>(
+        future: _getImagePath(imageNames[0]),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && File(snapshot.data!).existsSync()) {
+            return Image.file(
+              File(snapshot.data!),
+              width: 50,
+              height: 75,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(_getMomentIconBig(type, subtype), size: 50),
+            );
+          }
+          return Icon(_getMomentIconBig(type, subtype), size: 50);
+        },
+      );
+    }
+
+    // For media and books, show network image from imageUrl
+    if (imageUrl != null) {
+      return Image.network(
+        imageUrl,
+        width: 50,
+        height: 75,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(_getMomentIconBig(type, subtype), size: 50),
+      );
+    }
+
+    // Fallback: show icon
+    return Icon(_getMomentIconBig(type, subtype), size: 50);
+  }
+
+  /// Reconstruct the full path to a social event image from its filename
+  Future<String> _getImagePath(String fileName) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return '${appDir.path}/social_events/$fileName';
   }
 }

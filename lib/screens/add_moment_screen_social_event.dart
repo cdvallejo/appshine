@@ -25,6 +25,7 @@ class _AddMomentScreenSocialEventState
   final _imagePicker = ImagePicker();
   final List<String> _selectedImages = [];
   final List<XFile> _selectedImageFiles = [];
+  final List<String> _selectedImageNames = []; // Only filenames (for backup compatibility)
 
   DateTime _selectedDate = DateTime.now();
   String? _selectedSubtype;
@@ -84,10 +85,12 @@ class _AddMomentScreenSocialEventState
         // Copy the file to the new location
         await sourceFile.copy(localPath);
 
-        // Add local path to the list of selected images
-        // This path only exists on the user's device and is not uploaded to Firebase
+        // Add local path and filename to lists
+        // _selectedImages: full path for UI display
+        // _selectedImageNames: only filename for Firestore (backup compatible)
         setState(() {
           _selectedImages.add(localPath);
+          _selectedImageNames.add(fileName);
         });
       }
 
@@ -143,9 +146,15 @@ class _AddMomentScreenSocialEventState
 
               // 3. Async function to save the moment
               try {
-                // NO local path in Firestore, only the moment data. Images are only stored locally on the device, not in Firestore or Firebase Storage.
+                // Create a new SocialEvent with the image names before saving
+                final socialEventWithImages = SocialEvent(
+                  title: _titleController.text,
+                  subtype: _selectedSubtype!,
+                  imageNames: _selectedImageNames.isNotEmpty ? _selectedImageNames : null,
+                );
+
                 await DatabaseService().addMomentSocialEvent(
-                  socialEvent: widget.socialEvent,
+                  socialEvent: socialEventWithImages,
                   date: _selectedDate,
                   location: _locationController.text,
                   notes: _notesController.text,

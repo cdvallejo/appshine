@@ -3,7 +3,6 @@ import 'package:appshine/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; // Firebase engine import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
- // Firebase keys import
 
 // Async main for waiting flutter widgets and Firebase initialize
 void main() async {
