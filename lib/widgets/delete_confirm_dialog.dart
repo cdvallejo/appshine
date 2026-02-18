@@ -8,21 +8,21 @@ class DeleteConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('¿Eliminar este Momento?'),
+      title: const Text('Delete Moment'),
       content: const Text(
-        'Esta acción borrará el Momento de forma permanente.',
+        'This action cannot be undone. Are you sure you want to delete this moment?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('CANCELAR'),
+          child: const Text('CANCEL'),
         ),
         TextButton(
           onPressed: () async {
             await onConfirm();
             if (context.mounted) Navigator.pop(context);
           },
-          child: const Text('BORRAR', style: TextStyle(color: Colors.red)),
+          child: const Text('DELETE', style: TextStyle(color: Colors.red)),
         ),
       ],
     );
