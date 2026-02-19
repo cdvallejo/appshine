@@ -32,8 +32,17 @@ class Book {
     required this.subtype,
   });
 
-  // Factory method to create a Book from JSON data (Open Library API format)
+  /// Factory method to create a Book from Open Library API JSON data
+  /// Throws [FormatException] if required fields are missing
   factory Book.fromJson(Map<String, dynamic> json) {
+    // Validate required fields
+    if (json['key'] == null || (json['key'] is String && (json['key'] as String).isEmpty)) {
+      throw FormatException('Missing required field: key (Open Library ID)');
+    }
+    if (json['title'] == null || (json['title'] is String && (json['title'] as String).isEmpty)) {
+      throw FormatException('Missing required field: title');
+    }
+
     // Open Library covers: https://covers.openlibrary.org/b/$key/$value-$size.jpg
     String? coverUrl;
     
@@ -47,7 +56,7 @@ class Book {
     }
 
     List<String>? authors;
-    if (json['author_name'] is List) {
+    if (json['author_name'] is List && (json['author_name'] as List).isNotEmpty) {
       authors = (json['author_name'] as List<dynamic>)
           .map((author) => author.toString())
           .toList();
@@ -68,8 +77,8 @@ class Book {
     String? editionKey = json['cover_edition_key'] as String?;
 
     return Book(
-      id: json['key'] ?? '',
-      title: json['title'] ?? 'Unknown Title',
+      id: (json['key'] as String).trim(),
+      title: (json['title'] as String).trim(),
       imageUrl: coverUrl,
       isbn: isbn,
       editionKey: editionKey,

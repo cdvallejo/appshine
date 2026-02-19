@@ -27,26 +27,51 @@ class Moment {
     this.imageUrl,
   });
 
-  // Factory constructor to create a Moment instance from a Firestore document
+  /// Factory constructor to create a Moment instance from a Firestore document
+  /// Throws [FormatException] if required fields are missing or invalid
   factory Moment.fromMap(Map<String, dynamic> map, String docId) {
+    // Validate required fields
+    if (map['userId'] == null || (map['userId'] is String && (map['userId'] as String).isEmpty)) {
+      throw FormatException('Missing required field: userId');
+    }
+    if (map['type'] == null || (map['type'] is String && (map['type'] as String).isEmpty)) {
+      throw FormatException('Missing required field: type');
+    }
+    if (map['title'] == null || (map['title'] is String && (map['title'] as String).isEmpty)) {
+      throw FormatException('Missing required field: title');
+    }
+    if (map['date'] == null) {
+      throw FormatException('Missing required field: date');
+    }
+
+    // Safe enum parsing with validation
+    final typeString = map['type'] as String;
+    final type = MomentType.values.cast<MomentType?>().firstWhere(
+      (e) => e?.name == typeString,
+      orElse: () => null,
+    );
+    if (type == null) {
+      throw FormatException('Invalid type: $typeString. Must be one of: ${MomentType.values.map((e) => e.name).join(", ")}');
+    }
+
+    // Validate and parse date
+    DateTime date;
+    try {
+      date = (map['date'] as Timestamp).toDate();
+    } catch (e) {
+      throw FormatException('Invalid date format: expected Timestamp');
+    }
+
     return Moment(
       id: docId,
-      userId: map['userId'] ?? '',
-      // Safe enum parsing with fallback
-      type: MomentType.values.firstWhere(
-        (e) => e.name == map['type'],
-        orElse: () => MomentType.socialEvent, // Default to socialEvent if type is missing or unrecognized
-      ),
-      title: map['title'] ?? 'Untitled',
-      // If 'date' is missing or null, use current date as fallback
-      date: map['date'] != null
-          ? (map['date'] as Timestamp).toDate()
-          : DateTime.now(),
-      // ----------------------------------------------------
-      notes: map['notes'],
-      status: map['status'],
-      location: map['location'],
-      imageUrl: map['imageUrl'],
+      userId: (map['userId'] as String).trim(),
+      type: type,
+      title: (map['title'] as String).trim(),
+      date: date,
+      notes: map['notes'] as String?,
+      status: map['status'] as String?,
+      location: map['location'] as String?,
+      imageUrl: map['imageUrl'] as String?,
     );
   }
 
