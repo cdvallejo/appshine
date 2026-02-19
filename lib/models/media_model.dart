@@ -30,16 +30,31 @@ class Media {
     required this.subtype,
   });
 
-  // Factory method to create a Media from JSON data
+  /// Factory method to create a Media from TMDB API JSON data
+  /// Throws [FormatException] if required fields are missing
   factory Media.fromJson(Map<String, dynamic> json) {
+    // Validate required fields
+    if (json['id'] == null) {
+      throw FormatException('Missing required field: id');
+    }
+    if (json['media_type'] == null) {
+      throw FormatException('Missing required field: media_type');
+    }
+
+    final mediaType = json['media_type'] as String;
+    final title = mediaType == 'tv' ? json['name'] : json['title'];
+    if (title == null || (title is String && title.isEmpty)) {
+      throw FormatException('Missing required field: title (name for TV, title for movies)');
+    }
+
     return Media(
-      id: json['id'],
-      title: json['media_type'] == 'tv' ? json['name'] : json['title'],
+      id: (json['id'] as num).toInt(),
+      title: title.toString(),
       imageUrl: json['poster_path'] != null
           ? 'https://image.tmdb.org/t/p/w500${json['poster_path']}'
           : null,
       releaseDate:
-          (json['media_type'] == 'tv'
+          (mediaType == 'tv'
               ? json['first_air_date']
               : json['release_date']) ??
           '',
@@ -49,9 +64,9 @@ class Media {
       actors: (json['actors'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
-      country: json['country'],
-      type: json['media_type'],
-      subtype: json['media_type'] == 'tv' ? 'TV Series' : 'Movie',
+      country: json['country'] as String?,
+      type: mediaType,
+      subtype: mediaType == 'tv' ? 'TV Series' : 'Movie',
     );
   }
 
