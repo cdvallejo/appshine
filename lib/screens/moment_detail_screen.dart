@@ -1,6 +1,7 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/widgets_extra/delete_confirm_dialog.dart';
 import 'package:appshine/widgets_extra/moment_detail_row.dart';
+import 'package:appshine/widgets_extra/social_event_image_gallery.dart';
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
 import 'package:appshine/models/social_event_model.dart';
@@ -40,6 +41,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   late TextEditingController _countryController;
   DateTime? _selectedDate;
   late String _selectedSubtype;
+  
+  // For editing social event images
+  final GlobalKey _imageGalleryKey = GlobalKey();
 
   @override
   void initState() {
@@ -81,6 +85,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     _selectedSubtype = widget.momentData['subtype'] ?? '';
   }
 
+  // Helper function to format list fields as comma-separated strings for editing
   String _formatList(dynamic value) {
     if (value is List) {
       return value.join(', ');
@@ -121,9 +126,33 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       });
     }
   }
-
   // Save changes to Firestore
   Future<void> _saveChanges() async {
+    List<String> finalImageNames = [];
+    
+    // 1. Upload new images first if any
+    if (widget.momentData['type'] == 'socialEvent') {
+      final galleryState = _imageGalleryKey.currentState;
+      if (galleryState != null) {
+        final newFiles = (galleryState as dynamic).getNewImageFiles() as List;
+        if (newFiles.isNotEmpty) {
+          try {
+            finalImageNames = await (galleryState as dynamic).uploadNewImages() as List<String>;
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error saving images: $e')),
+              );
+            }
+            return;
+          }
+        } else {
+          // No new images, get current ones
+          finalImageNames = (galleryState as dynamic).getCurrentImageNames() as List<String>;
+        }
+      }
+    }
+
     final updateData = {
       'title': _titleController.text.trim(),
       'notes': _notesController.text.trim(),
@@ -165,7 +194,17 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     
     updateData['subtype'] = _selectedSubtype;
     
+    // 2. Update imageNames for social events
+    if (widget.momentData['type'] == 'socialEvent' && finalImageNames.isNotEmpty) {
+      updateData['imageNames'] = finalImageNames;
+    }
+    
     await DatabaseService().updateMoment(widget.momentId, updateData);
+    
+    // 3. Update local data with the same data that was saved to Firebase and exit edit mode
+    setState(() {
+      widget.momentData.addAll(updateData);
+    });
   }
 
   // Build main image based on moment type
@@ -482,12 +521,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             },
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Images',
-            style: TextStyle(fontWeight: FontWeight.bold),
-            // SOON: Edit image gallery
+          SocialEventImageGallery(
+            key: _imageGalleryKey,
+            initialImageNames: (widget.momentData['imageNames'] as List<dynamic>?)?.cast<String>() ?? [],
           ),
-          const SizedBox(height: 8),
         ],
       );
     }
