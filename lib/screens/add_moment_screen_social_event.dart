@@ -35,9 +35,9 @@ class _AddMomentScreenSocialEventState
     super.initState();
     _titleController.text = widget.socialEvent.title;
   }
-
+  
+  // Let user pick an image from camera or gallery, and add it to the pending list (_selectedImageFiles)
   Future<void> _pickImage(ImageSource source) async {
-    // Let user pick an image from camera or gallery, and add it to the pending list (_selectedImageFiles)
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(source: source);
       if (pickedFile != null) {
@@ -56,12 +56,11 @@ class _AddMomentScreenSocialEventState
 
   Future<void> _uploadImages() async {
     // Saves selected images to local cache and updates _selectedImages with their local paths
-    // Images are NOT uploaded to Firebase Storage, they are only saved locally on the device.
+    // Images are NOT uploaded to Firebase Storage, only their names. Saved locally on the device.
     if (_selectedImageFiles.isEmpty) return;
 
     try {
-      // Obtén el directorio de documentos de la aplicación
-      // (más compatible que caché en algunos devices)
+      // Obtain the app's documents directory to save images locally
       final appDir = await getApplicationDocumentsDirectory();
       
       // Create a subdirectory for social event images if it doesn't exist
@@ -94,7 +93,7 @@ class _AddMomentScreenSocialEventState
         });
       }
 
-      // Limpia la lista de archivos pendientes (ya están guardados)
+      // Clean the pending list of selected image files since they are now saved
       setState(() {
         _selectedImageFiles.clear();
       });

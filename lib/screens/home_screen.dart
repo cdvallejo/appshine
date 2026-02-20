@@ -88,7 +88,10 @@ class HomeScreen extends StatelessWidget {
             );
           }
 
-          // If user is not admin, show their moments
+          /* If USER is NOT ADMIN, show their moments
+            StreamBuilder watches Firestore and auto-rebuilds.
+            But when EDITING a moment in moment_detail_screen, to see changes immediately (without leaving the screen),
+            we use setState() to update widget.momentData after saving to Firestore. */
           return StreamBuilder<QuerySnapshot>(
             stream: DatabaseService().getMomentsStream(),
             builder: (context, momentSnapshot) {
@@ -163,7 +166,12 @@ class HomeScreen extends StatelessWidget {
                       child: ListTile(
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: _buildMomentImage(data['type'], data['imageNames'], data['imageUrl'], data['subtype']),
+                          child: _buildMomentImage(
+                            data['type'],
+                            data['imageNames'],
+                            data['imageUrl'],
+                            data['subtype'],
+                          ),
                         ),
                         title: Text(
                           data['title'] ?? 'Untitled',
@@ -416,9 +424,17 @@ class HomeScreen extends StatelessWidget {
   /// Build the moment image widget based on type
   /// For social events: shows image from local storage using filename
   /// For media/books: shows network image from imageUrl
-  Widget _buildMomentImage(String type, dynamic imageNames, String? imageUrl, String subtype) {
-    // For social events, reconstruct path from filename and show local image
-    if (type == 'socialEvent' && imageNames != null && (imageNames as List).isNotEmpty) {
+  Widget _buildMomentImage(
+    String type,
+    dynamic imageNames,
+    String? imageUrl,
+    String subtype,
+  ) {
+    /* For social events, reconstruct path from filename and show local image.
+    Not null and empty list check */
+    if (type == 'socialEvent' &&
+        imageNames != null &&
+        (imageNames as List).isNotEmpty) {
       return FutureBuilder<String>(
         future: _getImagePath(imageNames[0]),
         builder: (context, snapshot) {
