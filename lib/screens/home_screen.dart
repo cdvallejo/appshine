@@ -5,6 +5,7 @@ import 'package:appshine/screens/add_moment_screen_media.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/add_moment_screen_social_event.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
+import 'package:appshine/screens/settings_screen.dart';
 import 'package:appshine/widgets_extra/book_search_delegate.dart';
 import 'package:appshine/widgets_extra/media_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -59,8 +60,13 @@ class HomeScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async => await FirebaseAuth.instance.signOut(),
+            icon: const Icon(Icons.menu),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SettingsScreen(),
+              ),
+            ),
           ),
         ],
       ),
