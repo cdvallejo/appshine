@@ -122,62 +122,72 @@ class HomeScreen extends StatelessWidget {
                   return DateTime(date.year, date.month, date.day);
                 },
                 // --- GROUP HEADER DESIGN ---
-                groupSeparatorBuilder: (DateTime date) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Left side: weekday name
-                      Text(
-                        _getWeekdayName(date.weekday),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          color: Colors.indigo.withValues(alpha: 0.8),
-                        ),
+                groupSeparatorBuilder: (DateTime date) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withValues(alpha: 0.05),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                        width: 1,
                       ),
-                      // Right side: full date
-                      Text(
-                        "${date.day} de ${_getMonthName(date.month)} de ${date.year}",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.1,
-                          color: Colors.indigo.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-
-                  // --- ITEM DESIGN WITHIN GROUP --
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Left side: weekday name
+                        Text(
+                          _getWeekdayName(date.weekday),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                            color: Colors.indigo.withValues(alpha: 0.8),
+                          ),
+                        ),
+                        // Right side: full date
+                        Text(
+                          "${date.day} de ${_getMonthName(date.month)} de ${date.year}",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.1,
+                            color: Colors.indigo.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 itemBuilder: (context, dynamic doc) {
                   final data = doc.data() as Map<String, dynamic>;
-                  // Moment card design
-                  return Card(
+                  // Moment item design
+                  return Container(
                     margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
+                      horizontal: 8,
                       vertical: 6,
                     ),
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: _buildMomentImage(
-                            data['type'],
-                            data['imageNames'],
-                            data['imageUrl'],
-                            data['subtype'],
-                          ),
+                        leading: _buildMomentImage(
+                          data['type'],
+                          data['imageNames'],
+                          data['imageUrl'],
+                          data['subtype'],
                         ),
                         title: Text(
                           data['title'] ?? 'Untitled',
