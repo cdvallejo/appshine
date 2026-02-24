@@ -347,6 +347,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                       Expanded(
                                         child: TextField(
                                           controller: _locationController,
+                                          onTap: () => _locationController.clear(),
                                           decoration: const InputDecoration(
                                             isDense: true,
                                             contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),

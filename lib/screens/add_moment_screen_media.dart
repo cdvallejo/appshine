@@ -338,6 +338,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                       Expanded(
                                         child: TextField(
                                           controller: _locationController,
+                                          onTap: () => _locationController.clear(),
                                           decoration: const InputDecoration(
                                             isDense: true,
                                             contentPadding:
