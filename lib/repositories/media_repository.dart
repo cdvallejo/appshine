@@ -27,7 +27,7 @@ class MediaRepository {
       final response = await http.get(url).timeout(
         const Duration(seconds: 10),
         onTimeout: () =>
-            throw Exception('Timeout en la búsqueda de libros'),
+            throw Exception('Timeout while searching for media from TMDB API'),
       );
 
       if (response.statusCode == 200) {
@@ -80,12 +80,12 @@ class MediaRepository {
       if (results[0].statusCode == 200) {
         final data = json.decode(results[0].body);
         final countries = data['production_countries'] as List?;
-        final productionCompanies = data['production_companies'] as List?;
+        final originCountries = data['origin_country'] as List?;
         
-        // Get the origin country from the first production company
+        // Get the first origin country code from the root level
         String countryCode = '';
-        if (productionCompanies?.isNotEmpty ?? false) {
-          countryCode = productionCompanies![0]['origin_country'] as String? ?? '';
+        if (originCountries?.isNotEmpty ?? false) {
+          countryCode = originCountries![0] as String? ?? '';
         }
         
         // Find the country name from production_countries that matches the country code
@@ -96,7 +96,7 @@ class MediaRepository {
           );
           media.country = country?['name'] ?? 'Unknown country';
         } else if (countries?.isNotEmpty ?? false) {
-          // Fallback to first production_country if no production_company found
+          // Fallback to first production_country if no origin_country found
           media.country = countries![0]['name'];
         } else {
           media.country = 'Unknown country';

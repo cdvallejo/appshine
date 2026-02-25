@@ -73,7 +73,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       text: _formatList(widget.momentData['creators']),
     );
     _directionController = TextEditingController(
-      text: _formatList(widget.momentData['director']),
+      text: _formatList(widget.momentData['directors']),
     );
     _castController = TextEditingController(
       text: _formatList(widget.momentData['cast']),
