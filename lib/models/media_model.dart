@@ -14,7 +14,7 @@ class Media {
   // Cannot be final if we want to set it later in the details fetch
   List<String>? directors;
   List<String>? creators;
-  List<String>? actors;
+  List<String>? cast;
   String? country;
 
   Media({
@@ -24,7 +24,7 @@ class Media {
     required this.releaseDate,
     this.directors,
     this.creators,
-    this.actors,
+    this.cast,
     this.country,
     required this.type,
     required this.subtype,
@@ -61,7 +61,7 @@ class Media {
       directors: (json['directors'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
-      actors: (json['actors'] as List<dynamic>?)
+      cast: (json['cast'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
       country: json['country'] as String?,
@@ -92,7 +92,7 @@ class Media {
     String? subtype,
     List<String>? directors,
     List<String>? creators,
-    List<String>? actors,
+    List<String>? cast,
     String? country,
   }) {
     return Media(
@@ -104,7 +104,7 @@ class Media {
       subtype: subtype ?? this.subtype,
       directors: directors ?? this.directors,
       creators: creators ?? this.creators,
-      actors: actors ?? this.actors,
+      cast: cast ?? this.cast,
       country: country ?? this.country,
     );
   }

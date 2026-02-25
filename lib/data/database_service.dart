@@ -31,9 +31,9 @@ class DatabaseService {
         'title': media.title,
         'year': media.releaseYear,
         'country': media.country,
-        'director': media.directors,
+        'directors': media.directors,
         'creators': media.creators,
-        'actors': media.actors,
+        'cast': media.cast,
         'imageUrl': media.imageUrl,
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
