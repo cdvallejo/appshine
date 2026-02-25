@@ -80,9 +80,27 @@ class MediaRepository {
       if (results[0].statusCode == 200) {
         final data = json.decode(results[0].body);
         final countries = data['production_countries'] as List?;
-        media.country = (countries?.isNotEmpty ?? false)
-            ? countries![0]['name']
-            : 'Unknown country';
+        final productionCompanies = data['production_companies'] as List?;
+        
+        // Get the origin country from the first production company
+        String countryCode = '';
+        if (productionCompanies?.isNotEmpty ?? false) {
+          countryCode = productionCompanies![0]['origin_country'] as String? ?? '';
+        }
+        
+        // Find the country name from production_countries that matches the country code
+        if (countryCode.isNotEmpty && countries!.isNotEmpty) {
+          final country = countries.firstWhere(
+            (c) => c['iso_3166_1'] == countryCode,
+            orElse: () => null,
+          );
+          media.country = country?['name'] ?? 'Unknown country';
+        } else if (countries?.isNotEmpty ?? false) {
+          // Fallback to first production_country if no production_company found
+          media.country = countries![0]['name'];
+        } else {
+          media.country = 'Unknown country';
+        }
         
         // For TV shows, also get creators from here
         if (mediaType == 'tv') {
@@ -98,22 +116,21 @@ class MediaRepository {
         media.country = 'N/A';
       }
 
-      // 2. Director and actors
+      // 2. Director and cast
       if (results[1].statusCode == 200) {
         final data = json.decode(results[1].body);
         final crew = data['crew'] as List? ?? []; // if null, assign empty list
         final cast = data['cast'] as List? ?? [];
 
-        // Get directors by their known_for_department (more reliable)
-        final directorsList = crew
-            .where((p) => p['known_for_department'] == 'Directing')
-            .toList();
-
-        // Get creators for movies only
-        List<dynamic> creatorsList = [];
-        if (mediaType == 'movie') {
-          creatorsList = crew
-              .where((p) => p['job'] == 'Creator')
+        // Get directors by their known_for_department for TV, or job for movies
+        List<dynamic> directorsList = [];
+        if (mediaType == 'tv') {
+          directorsList = crew
+              .where((p) => p['known_for_department'] == 'Directing')
+              .toList();
+        } else {
+          directorsList = crew
+              .where((p) => p['job'] == 'Director')
               .toList();
         }
 
@@ -124,17 +141,7 @@ class MediaRepository {
                   .map((d) => d['name'] as String)
                   .toList();
 
-        // Only set creators for movies if not already set from the first request
-        if (mediaType == 'movie' && media.creators == null) {
-          media.creators = creatorsList.isEmpty
-              ? []
-              : creatorsList
-                    .take(4)
-                    .map((c) => c['name'] as String)
-                    .toList();
-        }
-
-        media.actors = cast.isEmpty
+        media.cast = cast.isEmpty
             ? []
             : cast
                   .take(3)
@@ -143,13 +150,13 @@ class MediaRepository {
       } else {
         media.directors = [];
         media.creators ??= [];
-        media.actors = [];
+        media.cast = [];
       }
     } catch (e) {
       media.country = 'Error loading';
       media.directors = ['Error loading'];
       media.creators = ['Error loading'];
-      media.actors = ['Error loading'];
+      media.cast = ['Error loading'];
     }
   }
 }

@@ -22,7 +22,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   final _countryController = TextEditingController();
   final _directorsController = TextEditingController();
   final _creatorsController = TextEditingController();
-  final _actorsController = TextEditingController();
+  final _castController = TextEditingController();
 
   final MediaRepository _mediaRepository = MediaRepository();
   DateTime _selectedDate = DateTime.now();
@@ -60,7 +60,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                       .split(',')
                       .map((creator) => creator.trim())
                       .toList(),
-                  actors: _actorsController.text
+                  cast: _castController.text
                       .split(',')
                       .map((actor) => actor.trim())
                       .toList(),
@@ -118,7 +118,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      // 2. If the request has arrived (we now have director, actors, and country)...
+                      // 2. If the request has arrived (we now have director, cast, and country)...
                       // Initialize controllers with API data (only once)
                       if (_titleController.text.isEmpty) {
                         _titleController.text = widget.media.title;
@@ -128,8 +128,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             widget.media.directors?.join(', ') ?? 'Unknown';
                         _creatorsController.text =
                             widget.media.creators?.join(', ') ?? 'Unknown';
-                        _actorsController.text =
-                            widget.media.actors?.join(', ') ?? 'Unknown';
+                        _castController.text =
+                            widget.media.cast?.join(', ') ?? 'Unknown';
                       }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,7 +226,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           TextField(
                             controller: _directorsController,
                             decoration: const InputDecoration(
-                              label: Text('Directors'),
+                              label: Text('Director/s'),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
@@ -237,7 +237,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           ),
                           const SizedBox(height: 4),
                           TextField(
-                            controller: _actorsController,
+                            controller: _castController,
                             decoration: const InputDecoration(
                               label: Text('Cast'),
                               isDense: true,

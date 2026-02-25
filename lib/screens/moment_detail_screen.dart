@@ -37,7 +37,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   late TextEditingController _pageCountController;
   late TextEditingController _creatorsController;
   late TextEditingController _directionController;
-  late TextEditingController _actorsController;
+  late TextEditingController _castController;
   late TextEditingController _countryController;
   DateTime? _selectedDate;
   late String _selectedSubtype;
@@ -75,8 +75,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     _directionController = TextEditingController(
       text: _formatList(widget.momentData['director']),
     );
-    _actorsController = TextEditingController(
-      text: _formatList(widget.momentData['actors']),
+    _castController = TextEditingController(
+      text: _formatList(widget.momentData['cast']),
     );
     _countryController = TextEditingController(
       text: widget.momentData['country'] ?? '',
@@ -107,7 +107,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     _pageCountController.dispose();
     _creatorsController.dispose();
     _directionController.dispose();
-    _actorsController.dispose();
+    _castController.dispose();
     _countryController.dispose();
     super.dispose();
   }
@@ -185,8 +185,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     if (_directionController.text.trim().isNotEmpty) {
       updateData['director'] = _directionController.text.split(',').map((a) => a.trim()).toList();
     }
-    if (_actorsController.text.trim().isNotEmpty) {
-      updateData['actors'] = _actorsController.text.split(',').map((a) => a.trim()).toList();
+    if (_castController.text.trim().isNotEmpty) {
+      updateData['cast'] = _castController.text.split(',').map((a) => a.trim()).toList();
     }
     if (_countryController.text.trim().isNotEmpty) {
       updateData['country'] = _countryController.text.trim();
@@ -465,7 +465,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: _actorsController,
+            controller: _castController,
             decoration: const InputDecoration(
               label: Text('Cast'),
               isDense: true,
@@ -492,7 +492,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, 'Creator/s'),
         ],
         buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, 'Direction'),
-        buildDetailRow(_actorsController.text.isEmpty ? null : _actorsController.text, 'Cast'),
+        buildDetailRow(_castController.text.isEmpty ? null : _castController.text, 'Cast'),
         buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, 'Country'),
       ],
     );
