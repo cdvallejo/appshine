@@ -79,6 +79,7 @@ class MediaRepository {
       // 1. Country
       if (results[0].statusCode == 200) {
         final data = json.decode(results[0].body);
+        // In TMDB production_countries has the full country name (United States) refered in origin_country (US).
         final countries = data['production_countries'] as List?;
         final originCountries = data['origin_country'] as List?;
         
