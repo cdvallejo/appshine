@@ -154,7 +154,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         // Right side: full date
                         Text(
-                          "${date.day} de ${_getMonthName(context, date.month)} de ${date.year}",
+                          _formatDate(context, date),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -265,6 +265,7 @@ class HomeScreen extends StatelessWidget {
 
   // Function to show the bottom sheet menu for adding moments
   void _showAddMomentMenu(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -275,8 +276,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min, // Wrap content height
           children: [
-            const Text(
-              'ADD A NEW MOMENT',
+            Text(
+              loc.translate('addNewMoment').toUpperCase(),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 20),
@@ -284,7 +285,7 @@ class HomeScreen extends StatelessWidget {
             // MEDIA OPTION
             ListTile(
               leading: const Icon(Icons.movie, color: Colors.indigo),
-              title: const Text('Movie | TV Series'),
+              title: Text(loc.translate('movieOrTv')),
               onTap: () async {
                 // 1. Launch the search FIRST (using the current context)
                 final result = await showSearch<Media?>(
@@ -318,7 +319,7 @@ class HomeScreen extends StatelessWidget {
             // BOOK OPTION
             ListTile(
               leading: const Icon(Icons.book, color: Colors.indigo),
-              title: const Text('Book'),
+              title: Text(loc.translate('bookOrComic')),
               onTap: () async {
                 final result = await showSearch<Book?>(
                   context: context,
@@ -347,7 +348,7 @@ class HomeScreen extends StatelessWidget {
             // SOCIAL EVENT OPTION
             ListTile(
               leading: const Icon(Icons.people, color: Colors.indigo),
-              title: const Text('Event'),
+              title: Text(loc.translate('socialEvent')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -414,6 +415,19 @@ class HomeScreen extends StatelessWidget {
 
   String _capitalize(String text) {
     return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+  }
+
+  /// Format date according to locale (Spanish or English)
+  String _formatDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context);
+    
+    if (locale.languageCode == 'en') {
+      // English format: "February 26, 2026"
+      return "${_getMonthName(context, date.month)} ${date.day}, ${date.year}";
+    } else {
+      // Spanish format: "26 de febrero de 2026"
+      return "${date.day} de ${_getMonthName(context, date.month)} de ${date.year}";
+    }
   }
 
   /// Build the moment image widget based on type

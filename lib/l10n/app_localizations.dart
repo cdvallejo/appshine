@@ -36,6 +36,10 @@ class AppLocalizations {
       'welcome': 'Bienvenido, Admin',
       'untitled': 'Sin título',
       'myMoments': 'Mis momentos',
+      'movieOrTv': 'Película | Serie de TV',
+      'bookOrComic': 'Libro | Cómic',
+      'socialEvent': 'Evento Social',
+      'addNewMoment': 'Añadir nuevo momento',
 
       // Settings Screen
       'language': 'IDIOMA',
@@ -120,6 +124,7 @@ class AppLocalizations {
       // Admin
       'admin': 'Admin',
     },
+
     'en': {
       // App & Navigation
       'settings': 'Settings',
@@ -143,6 +148,10 @@ class AppLocalizations {
       'welcome': 'Welcome, Admin',
       'untitled': 'Untitled',
       'myMoments': 'My Moments',
+      'movieOrTv': 'Movie | TV Series',
+      'bookOrComic': 'Book | Comic',
+      'socialEvent': 'Social Event',
+      'addNewMoment': 'Add new moment',
 
       // Settings Screen
       'language': 'LANGUAGE',
