@@ -8,6 +8,7 @@ import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/screens/settings_screen.dart';
 import 'package:appshine/widgets_extra/book_search_delegate.dart';
 import 'package:appshine/widgets_extra/media_search_delegate.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final loc = AppLocalizations.of(context);
 
     // --- MAIN STRUCTURE OF THE SCREEN ---
     return Scaffold(
@@ -89,8 +91,8 @@ class HomeScreen extends StatelessWidget {
           }
           // If the user is an admin, show a special message
           if (isAdmin) {
-            return const Center(
-              child: Text('Welcome, Admin', style: TextStyle(fontSize: 24)),
+            return Center(
+              child: Text(loc.translate('welcome'), style: const TextStyle(fontSize: 24)),
             );
           }
 
@@ -142,7 +144,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         // Left side: weekday name
                         Text(
-                          _getWeekdayName(date.weekday),
+                          _getWeekdayName(context, date.weekday),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -152,7 +154,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         // Right side: full date
                         Text(
-                          "${date.day} de ${_getMonthName(date.month)} de ${date.year}",
+                          "${date.day} de ${_getMonthName(context, date.month)} de ${date.year}",
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -190,7 +192,7 @@ class HomeScreen extends StatelessWidget {
                           data['subtype'],
                         ),
                         title: Text(
-                          data['title'] ?? 'Untitled',
+                          data['title'] ?? loc.translate('untitled'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -367,36 +369,13 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Functions to get month and weekday names in English
-  String _getMonthName(int month) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[month - 1];
+  // Functions to get month and weekday names using localization
+  String _getMonthName(BuildContext context, int month) {
+    return AppLocalizations.of(context).getMonthName(month);
   }
 
-  String _getWeekdayName(int weekday) {
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    return days[weekday - 1];
+  String _getWeekdayName(BuildContext context, int weekday) {
+    return AppLocalizations.of(context).getWeekdayName(weekday);
   }
 
   IconData _getMomentIconBig(String type, String subtype) {

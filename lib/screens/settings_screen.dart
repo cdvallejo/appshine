@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:appshine/l10n/app_localizations.dart';
+import 'package:appshine/main.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,17 +11,22 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  /// Current language selected. 'es' for Spanish, 'en' for English
-  String _selectedLanguage = 'en';
+  /// Currently selected language code ('en' or 'es')
+  late String _selectedLanguage;
 
   /// Whether dark mode is enabled
   bool _darkModeEnabled = false;
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    
+    // Update selected language from context
+    _selectedLanguage = loc.locale.languageCode;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(loc.settings),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
       ),
@@ -31,9 +38,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'LANGUAGE',
-                  style: TextStyle(
+                Text(
+                  loc.translate('language'),
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -44,15 +51,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 RadioGroup<String>(
                   groupValue: _selectedLanguage,
                   onChanged: (String? value) {
-                    setState(() {
-                      _selectedLanguage = value ?? 'en';
-                    });
-                    // TODO: Change app language logic here
+                    if (value != null) {
+                      setState(() {
+                        _selectedLanguage = value;
+                      });
+                      MainApp.setLocale(context, Locale(value));
+                    }
                   },
                   child: Column(
                     children: [
                       ListTile(
-                        title: const Text('Spanish'),
+                        title: const Text('Español'),
                         leading: Radio<String>(value: 'es'),
                       ),
                       ListTile(
@@ -73,9 +82,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'THEME',
-                  style: TextStyle(
+                Text(
+                  loc.translate('theme'),
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -84,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: const Text('Dark mode'),
+                  title: Text(loc.translate('darkMode')),
                   value: _darkModeEnabled,
                   onChanged: (value) {
                     setState(() {
@@ -103,12 +112,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ListTile(
               leading: const Icon(Icons.bar_chart, color: Colors.indigo),
-              title: const Text('Insights'),
+              title: Text(loc.translate('insights')),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 // TODO: Navigate to insights screen
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Insights - Coming soon')),
+                  SnackBar(content: Text(loc.translate('insightsComing'))),
                 );
               },
             ),
@@ -121,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ElevatedButton.icon(
               icon: const Icon(Icons.logout),
-              label: const Text('Cerrar sesión'),
+              label: Text(loc.logout),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.withValues(alpha: 0.8),
                 foregroundColor: Colors.white,
@@ -131,12 +140,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Close session'),
-                    content: const Text('Are you sure you want to close the session?'),
+                    title: Text(loc.translate('closeSessionTitle')),
+                    content: Text(loc.translate('closeSessionMessage')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancelar'),
+                        child: Text(loc.cancel),
                       ),
                       TextButton(
                         onPressed: () async {
@@ -146,7 +155,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Navigator.pop(context); // Close settings screen
                           }
                         },
-                        child: const Text('Close session', style: TextStyle(color: Colors.red)),
+                        child: Text(
+                          loc.translate('closeSessionTitle'),
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
                   ),
