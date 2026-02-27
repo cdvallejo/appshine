@@ -630,33 +630,34 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 4),
-              if (isEditing)
-                TextField(
-                  controller: _locationController,
-                  style: const TextStyle(fontSize: 14),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_pin,
+                    size: 16,
+                    color: isEditing ? Colors.orange : Colors.indigo,
                   ),
-                )
-              else
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_pin,
-                      size: 16,
-                      color: Colors.indigo,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _locationController.text.isEmpty ? loc.translate('unknown') : _locationController.text,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: isEditing
+                        ? TextField(
+                            controller: _locationController,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          )
+                        : Text(
+                            _locationController.text.isEmpty ? loc.translate('unknown') : _locationController.text,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -670,8 +671,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'MY NOTES',
+        Text(
+          loc.translate('myNotes').toUpperCase(),
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,

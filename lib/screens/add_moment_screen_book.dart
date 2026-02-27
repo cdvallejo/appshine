@@ -15,9 +15,7 @@ class AddMomentScreenBook extends StatefulWidget {
 
 class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   final _notesController = TextEditingController();
-  final _locationController = TextEditingController(
-    text: 'Home',
-  ); // Default value
+  final _locationController = TextEditingController();
   final _titleController = TextEditingController();
   final _yearController = TextEditingController();
   final _publisherController = TextEditingController();
