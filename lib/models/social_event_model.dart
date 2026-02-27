@@ -1,20 +1,65 @@
 class SocialEvent {
   static const List<String> subtypes = [
-    'Coffee', // Momento breve (Café, desayuno)
-    'Dining', // Comidas y cenas
-    'Hangout', // Quedadas informales / Cañas
-    'Concert', // Música en directo
-    'Exhibition', // Museos y exposiciones
-    'Meeting', // Reuniones de trabajo o TFE
-    'Party', // Fiestas y eventos nocturnos
-    'Show', // Cine, teatro, monólogos, espectáculos
-    'Trip', // Viajes (el contenedor padre)
-    'Sport', // Deporte social (partidos, rutas)
-    'Workshop', // Cursos, talleres, aprendizaje
+    'Culture',
+    'Gaming',
+    'Social',
+    'Sport',
   ];
+
+  // TODO: User suggestions for tags based on subtype
+  static const Map<String, List<String>> tagLibrary = {
+  'Culture': [
+    'Cinema',
+    'Concert',
+    'Exhibition',
+    'Festival',
+    'Monologue',
+    'Museum',
+    'Show',
+    'Theater',
+  ],
+  'Social & Lifestyle': [
+    'Birthday',
+    'Coffee',
+    'Dance',
+    'Dining',
+    'Hangout',
+    'Party',
+    'Walk',
+  ],
+  'Gaming': [
+    'Board Games',
+    'Escape Room',
+    'Roleplay',
+    'Video Games',
+  ],
+  'Sport': [
+    'Basketball',
+    'Beach Volley', 
+    'Cycling',
+    'Football',
+    'Gym',
+    'Hiking',
+    'Padel',      
+    'Running',
+    'Swimming',
+    'Tennis',
+    'Volley',      
+  ],
+  'Learning & Development': [
+    'Course',
+    'Language Exchange',
+    'Meeting',
+    'Seminar',
+    'Study Session',
+    'Workshop',
+  ],
+};
+
   final String title;
   final String subtype;
-  final List<String>? imageNames; // Filenames of saved images (for future backup with drive!)
+  final List<String>?
+  imageNames; // Filenames of saved images (for future backup with drive!)
 
   SocialEvent({required this.title, required this.subtype, this.imageNames});
 
