@@ -559,12 +559,13 @@ class HomeScreen extends StatelessWidget {
   ) {
     /* For social events, reconstruct path from filename and show local image.
     Not null and empty list check */
-    if (type == 'socialEvent' &&
+     if (type == 'socialEvent' &&
         imageNames != null &&
         (imageNames as List).isNotEmpty) {
       return FutureBuilder<String>(
-        future: _getImagePath(imageNames[0]),
-        builder: (context, snapshot) {
+        future: _getImagePath(imageNames[0]), // Get the full path of the first image
+        builder: (context, snapshot) { // Check if the file exists at the path, the result of the future is in snapshot.data
+    
           if (snapshot.hasData && File(snapshot.data!).existsSync()) {
             return Image.file(
               File(snapshot.data!),
@@ -572,34 +573,34 @@ class HomeScreen extends StatelessWidget {
               height: 75,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Icon(_getMomentIconBig(type, subtype), size: 50),
+                  Icon(_getMomentIconBig(type, subtype), size: 50), // Fallback to icon if file can't be loaded
+             
             );
           }
           return Icon(_getMomentIconBig(type, subtype), size: 50);
         },
       );
     }
+
     // For media and books, show network image from imageUrl
     if (imageUrl != null) {
-      return Stack(
-        children: [
-          // Background icon that shows while loading
-          Container(
+      return Image.network(
+        imageUrl,
+        width: 50,
+        height: 75,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const SizedBox(
             width: 50,
             height: 75,
-            alignment: Alignment.center,
-            child: Icon(_getMomentIconBig(type, subtype), size: 50),
-          ),
-          // Network image on top
-          Image.network(
-            imageUrl,
-            width: 50,
-            height: 75,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) =>
-                Icon(_getMomentIconBig(type, subtype), size: 50),
-          ),
-        ],
+            child: Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(_getMomentIconBig(type, subtype), size: 50),
       );
     }
 
