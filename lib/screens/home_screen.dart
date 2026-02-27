@@ -294,6 +294,7 @@ class HomeScreen extends StatelessWidget {
           );
         },
       ),
+
       // --- FLOATING BUTTON TO ADD MOMENT ---
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.indigo,
@@ -562,8 +563,8 @@ class HomeScreen extends StatelessWidget {
         imageNames != null &&
         (imageNames as List).isNotEmpty) {
       return FutureBuilder<String>(
-        future: _getImagePath(imageNames[0]), // Get the full path of the first image
-        builder: (context, snapshot) { // Check if the file exists at the path, the result of the future is in snapshot.data
+        future: _getImagePath(imageNames[0]),
+        builder: (context, snapshot) {
           if (snapshot.hasData && File(snapshot.data!).existsSync()) {
             return Image.file(
               File(snapshot.data!),
@@ -571,23 +572,34 @@ class HomeScreen extends StatelessWidget {
               height: 75,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Icon(_getMomentIconBig(type, subtype), size: 50), // Fallback to icon if file can't be loaded
+                  Icon(_getMomentIconBig(type, subtype), size: 50),
             );
           }
           return Icon(_getMomentIconBig(type, subtype), size: 50);
         },
       );
     }
-
     // For media and books, show network image from imageUrl
     if (imageUrl != null) {
-      return Image.network(
-        imageUrl,
-        width: 50,
-        height: 75,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) =>
-            Icon(_getMomentIconBig(type, subtype), size: 50),
+      return Stack(
+        children: [
+          // Background icon that shows while loading
+          Container(
+            width: 50,
+            height: 75,
+            alignment: Alignment.center,
+            child: Icon(_getMomentIconBig(type, subtype), size: 50),
+          ),
+          // Network image on top
+          Image.network(
+            imageUrl,
+            width: 50,
+            height: 75,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) =>
+                Icon(_getMomentIconBig(type, subtype), size: 50),
+          ),
+        ],
       );
     }
 
