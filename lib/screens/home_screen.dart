@@ -343,7 +343,7 @@ class HomeScreen extends StatelessWidget {
                 // 1. Launch the search FIRST (using the current context)
                 final result = await showSearch<Media?>(
                   context: context,
-                  delegate: MediaSearchDelegate(),
+                  delegate: MediaSearchDelegate(searchLabel: loc.translate('searchByTitle')),
                 );
 
                 // 2. If the user pressed back (result is null), also close the menu
@@ -376,7 +376,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () async {
                 final result = await showSearch<Book?>(
                   context: context,
-                  delegate: BookSearchDelegate(),
+                  delegate: BookSearchDelegate(searchLabel: loc.translate('searchByTitle')),
                 );
 
                 if (result == null) {
@@ -409,7 +409,7 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => AddMomentScreenSocialEvent(
                       socialEvent: SocialEvent(
-                        title: 'New Event',
+                        title: loc.translate('newEvent'),
                         subtype: 'Dinner',
                       ),
                     ),

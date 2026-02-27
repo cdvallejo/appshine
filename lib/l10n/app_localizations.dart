@@ -52,24 +52,29 @@ class AppLocalizations {
       'closeSessionTitle': 'Cerrar sesión',
       'closeSessionMessage': '¿Estás seguro de que quieres cerrar sesión?',
 
-      // Media Screen
-      'addMovieMoment': 'Añadir Momento de Película',
-      'selectSubtype': 'Seleccionar subtipo',
-      'year': 'Año',
-      'country': 'País',
-      'director': 'Director/es',
-      'cast': 'Reparto',
-      'creator': 'Creador/es',
-      'date': 'Fecha',
-      'location': 'Ubicación',
-      'myNotes': 'Mis Notas',
+      // General fields
       'writeNote': 'Escribe aquí una nota.',
+      'myNotes': 'Mis Notas',
       'momentSaved': 'Momento guardado!',
       'savingError': 'Error guardando el momento: ',
       'pleaseSelectSubtype': 'Por favor selecciona un subtipo',
+      'year': 'Año',
+      'country': 'País',
       'changesSaved': 'Cambios guardados correctamente',
       'unknownCountry': 'País desconocido',
       'unknown': 'Desconocido',
+      'newEvent': 'Nuevo Evento',
+      'typeToSearch': 'Escribe para buscar y presiona el botón de búsqueda',
+      'where': 'Añadir ubicación',
+      'searchByTitle': 'Buscar por título',
+      'noNotes': 'No hay notas...',
+
+      // Media Screen
+      'addMovieMoment': 'Añadir Momento de Película',
+      'selectSubtype': 'Seleccionar película o serie',
+      'director': 'Director/es',
+      'cast': 'Reparto',
+      'creator': 'Creador/es',
 
       // Book Screen
       'addBookMoment': 'Añadir Momento de Libro',
@@ -83,6 +88,11 @@ class AppLocalizations {
       // Social Event Screen
       'addEventMoment': 'Añadir Momento Social',
       'selectEventType': 'Seleccionar tipo de evento',
+      'selectEventSubtype': 'Selecciona un subtipo',
+      'gallery': 'Galería',
+      'noImagesAdded': 'No hay imágenes añadidas',
+      'imagesSavedDevice': 'Imágenes guardadas en el dispositivo',
+      'errorSavingImages': 'Error al guardar imágenes',
 
       // Moment Detail Screen
       'detail': 'Detalle',
@@ -125,6 +135,7 @@ class AppLocalizations {
       'admin': 'Admin',
     },
 
+    //  -- ENGLISH translations --
     'en': {
       // App & Navigation
       'settings': 'Settings',
@@ -153,6 +164,24 @@ class AppLocalizations {
       'socialEvent': 'Social Event',
       'addNewMoment': 'Add new moment',
 
+      // General fields
+      'writeNote': 'Write here a note.',
+      'myNotes': 'My Notes',
+      'year': 'Year',
+      'country': 'Country',
+      'momentSaved': 'Moment saved!',
+      'savingError': 'Error saving the moment: ',
+      'pleaseSelectSubtype': 'Please select a subtype',
+      'changesSaved': 'Changes saved successfully',
+      'unknownCountry': 'Unknown country',
+      'unknown': 'Unknown',
+      'newEvent': 'New Event',
+      'typeToSearch': 'Type to search and press the search button',
+      'where': 'Add location',
+      'searchByTitle': 'Search by title',
+      'searchByAuthor': 'Search by author',
+      'noNotes': 'No notes...',
+
       // Settings Screen
       'language': 'LANGUAGE',
       'spanish': 'Español',
@@ -166,22 +195,11 @@ class AppLocalizations {
 
       // Media Screen
       'addMovieMoment': 'Add Movie Moment',
-      'selectSubtype': 'Select subtype',
-      'year': 'Year',
-      'country': 'Country',
+      'selectSubtype': 'Select movie or TV Series',
       'director': 'Director/s',
       'cast': 'Cast',
       'creator': 'Creator/s',
-      'date': 'Date',
-      'location': 'Location',
-      'myNotes': 'My Notes',
-      'writeNote': 'Write here a note.',
-      'momentSaved': 'Moment saved!',
-      'savingError': 'Error saving moment: ',
-      'pleaseSelectSubtype': 'Please select a subtype',
-      'changesSaved': 'Changes saved successfully',
-      'unknownCountry': 'Unknown country',
-      'unknown': 'Unknown',
+
 
       // Book Screen
       'addBookMoment': 'Add Book Moment',
@@ -195,6 +213,11 @@ class AppLocalizations {
       // Social Event Screen
       'addEventMoment': 'Add Social Event Moment',
       'selectEventType': 'Select event type',
+      'selectEventSubtype': 'Please select a subtype',
+      'gallery': 'Gallery',
+      'noImagesAdded': 'No images added yet',
+      'imagesSavedDevice': 'Images saved to device',
+      'errorSavingImages': 'Error saving images',
 
       // Moment Detail Screen
       'detail': 'Detail',
@@ -258,23 +281,38 @@ class AppLocalizations {
 
   String getMonthName(int month) {
     const monthKeys = [
-      'january', 'february', 'march', 'april', 'may', 'june',
-      'july', 'august', 'september', 'october', 'november', 'december'
+      'january',
+      'february',
+      'march',
+      'april',
+      'may',
+      'june',
+      'july',
+      'august',
+      'september',
+      'october',
+      'november',
+      'december',
     ];
     return translate(monthKeys[month - 1]);
   }
 
   String getWeekdayName(int weekday) {
     const dayKeys = [
-      'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
     ];
     return translate(dayKeys[weekday - 1]);
   }
 }
 
 // Class bridge to connect the AppLocalizations with the Flutter localization system
-class AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationsDelegate();
 
   // Supported languages
@@ -285,7 +323,7 @@ class AppLocalizationsDelegate
   Future<AppLocalizations> load(Locale locale) async {
     return AppLocalizations(locale);
   }
-  
+
   @override
   bool shouldReload(AppLocalizationsDelegate old) => false;
 }

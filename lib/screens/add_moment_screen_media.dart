@@ -1,4 +1,5 @@
 import 'package:appshine/data/database_service.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import '../models/media_model.dart';
@@ -14,9 +15,7 @@ class AddMomentScreen extends StatefulWidget {
 
 class _AddMomentScreenState extends State<AddMomentScreen> {
   final _notesController = TextEditingController();
-  final _locationController = TextEditingController(
-    text: 'Cinema, Home...',
-  ); // Default value
+  final _locationController = TextEditingController();
   final _titleController = TextEditingController();
   final _yearController = TextEditingController();
   final _countryController = TextEditingController();
@@ -30,9 +29,10 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Movie Moment'),
+        title: Text(loc.translate('addMovieMoment')),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -40,7 +40,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select a subtype')),
+                  SnackBar(content: Text(loc.translate('pleaseSelectSubtype'))),
                 );
                 return;
               }
@@ -77,7 +77,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 if (context.mounted) {
                   // Extra safety in case the user closed the screen before
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Moment saved!')),
+                    SnackBar(content: Text(loc.translate('momentSaved'))),
                   );
                   Navigator.pop(context);
                 }
@@ -85,7 +85,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 // 4. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error saving moment: $error')),
+                    SnackBar(content: Text('${loc.translate('savingError')}$error')),
                   );
                 }
               }
@@ -152,7 +152,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           // Subtype dropdown
                           DropdownButton<String>(
                             isExpanded: true,
-                            hint: const Text('Select subtype'),
+                            hint: Text(loc.translate('selectSubtype')),
                             value: _selectedSubtype,
                             items: Media.subtypes
                                 .map((subtype) => DropdownMenuItem(
@@ -176,8 +176,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                 flex: 1,
                                 child: TextField(
                                   controller: _yearController,
-                                  decoration: const InputDecoration(
-                                    label: Text('Year'),
+                                  decoration: InputDecoration(
+                                    label: Text(loc.translate('year')),
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 0,
@@ -194,8 +194,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                 flex: 7,
                                 child: TextField(
                                   controller: _countryController,
-                                  decoration: const InputDecoration(
-                                    label: Text('Country'),
+                                  decoration: InputDecoration(
+                                    label: Text(loc.translate('country')),
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 0,
@@ -211,8 +211,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           if (widget.media.type == 'tv') ...[
                             TextField(
                               controller: _creatorsController,
-                              decoration: const InputDecoration(
-                                label: Text('Creator/s'),
+                              decoration: InputDecoration(
+                                label: Text(loc.translate('creator')),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 0,
@@ -225,8 +225,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           ],
                           TextField(
                             controller: _directorsController,
-                            decoration: const InputDecoration(
-                              label: Text('Director/s'),
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('director')),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
@@ -238,8 +238,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           const SizedBox(height: 4),
                           TextField(
                             controller: _castController,
-                            decoration: const InputDecoration(
-                              label: Text('Cast'),
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('cast')),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
@@ -277,14 +277,6 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Date',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
                                   const SizedBox(height: 4),
                                   SizedBox(
                                     height: 24,
@@ -316,14 +308,6 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Location',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
                                 const SizedBox(height: 4),
                                 SizedBox(
                                   height: 24,
@@ -339,14 +323,15 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                         child: TextField(
                                           controller: _locationController,
                                           onTap: () => _locationController.clear(),
-                                          decoration: const InputDecoration(
+                                          decoration: InputDecoration(
+                                            hintText: loc.translate('where'),
                                             isDense: true,
                                             contentPadding:
-                                                EdgeInsets.symmetric(
+                                                const EdgeInsets.symmetric(
                                                   horizontal: 0,
                                                   vertical: 0,
                                                 ),
-                                            border: UnderlineInputBorder(),
+                                            border: const UnderlineInputBorder(),
                                           ),
                                         ),
                                       ),
@@ -362,17 +347,17 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   ),
                   // PART BOTTOM SECTION: NOTES
                   const SizedBox(height: 20),
-                  const Text(
-                    "My Notes",
+                  Text(
+                    loc.translate('myNotes'),
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _notesController,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      hintText: 'Write here a note.',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: loc.translate('writeNote'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
