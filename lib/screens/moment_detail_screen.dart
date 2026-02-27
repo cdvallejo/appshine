@@ -632,6 +632,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         ),
         // WHERE section
         Expanded(
+          flex: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
