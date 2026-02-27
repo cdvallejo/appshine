@@ -18,9 +18,58 @@ import 'dart:io';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
+/// Home screen implementation for displaying user moments.
+///
+/// This screen serves as the main hub for viewing and managing moments
+/// (movies, TV shows, books, and social events). It provides role-based
+/// content: admins see a welcome message, while regular users see their
+/// moments organized by date in descending order.
+///
+/// **Features:**
+///   * Real-time moment list synchronized with Firestore
+///   * Moments grouped and sorted by date (newest first)
+///   * Locale-aware date formatting (Spanish and English)
+///   * Image handling for local (social events) and network sources
+///   * Floating action button to quickly add new moments
+///   * Admin panel access for administrators
+///
+/// **Dependencies:**
+///   * FirebaseAuth: User authentication and role checking
+///   * Firestore: User and moment data storage
+///   * AppLocalizations: Multi-language support
+///
+/// ## Main screen of the app displaying user's moments or admin welcome screen.
+///
+/// Shows different content based on user roles:
+///   * Admins: See a welcome message
+///   * Regular users: See a grouped list of their moments organized by date
+///
+/// The screen includes:
+///   * App bar with admin button (if user is admin) and settings menu
+///   * Body with moments list or admin message
+///   * Floating action button to add new moments (media, books, or events)
 class HomeScreen extends StatelessWidget {
+  /// Creates a HomeScreen widget.
+  ///
+  /// The [key] parameter is optional and used to identify this widget in the widget tree.
   const HomeScreen({super.key});
 
+  /// Builds the home screen widget.
+  ///
+  /// Constructs a Scaffold with:
+  ///   * An app bar with navigation and admin controls
+  ///   * A body that shows admin message or moments list
+  ///   * A floating action button to add moments
+  ///
+  /// The screen fetches user role from Firestore and displays
+  /// appropriate content. Non-admin users see a grouped list of moments
+  /// organized by date with newest first.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context
+  ///
+  /// Returns:
+  ///   A Scaffold widget containing the home screen layout
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -206,14 +255,6 @@ class HomeScreen extends StatelessWidget {
                               _capitalize(data['subtype']),
                               style: const TextStyle(color: Colors.indigo),
                             ),
-
-                            /*Text(
-                              'Año: ${data['year'] ?? 'N/A'}',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),*/
                           ],
                         ),
                         // Traiing with icon moment and onTap for future detail
@@ -263,7 +304,19 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Function to show the bottom sheet menu for adding moments
+  /// Shows a modal bottom sheet menu for adding different types of moments.
+  ///
+  /// Displays three options: Movies/TV shows, books, and social events.
+  /// Once the user selects an option, navigates to the corresponding
+  /// input screen or closes the menu if tap outside.
+  ///
+  /// Note: The menu handles context.mounted checks to prevent navigation
+  /// errors if the widget is disposed while async operations are in progress.
+  /// Each option (media/book) opens a search delegate before navigating
+  /// to the add moment screen.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context used to show the modal sheet
   void _showAddMomentMenu(BuildContext context) {
     final loc = AppLocalizations.of(context);
     showModalBottomSheet(
@@ -370,15 +423,38 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Functions to get month and weekday names using localization
+  /// Gets the localized month name for the given month number.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context to access localization
+  ///   * [month] - The month number (1-12)
+  ///
+  /// Returns:
+  ///   The localized month name
   String _getMonthName(BuildContext context, int month) {
     return AppLocalizations.of(context).getMonthName(month);
   }
 
+  /// Gets the localized weekday name for the given weekday number.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context to access localization
+  ///   * [weekday] - The weekday number (1=Monday through 7=Sunday)
+  ///
+  /// Returns:
+  ///   The localized weekday name
   String _getWeekdayName(BuildContext context, int weekday) {
     return AppLocalizations.of(context).getWeekdayName(weekday);
   }
 
+  /// Returns the icon for a moment type (filled version).
+  ///
+  /// Parameters:
+  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
+  ///   * [subtype] - The moment subtype (used for media to differentiate TV vs Movies)
+  ///
+  /// Returns:
+  ///   The appropriate MaterialIcon for the moment type
   IconData _getMomentIconBig(String type, String subtype) {
     switch (type) {
       case 'media':
@@ -392,10 +468,18 @@ class HomeScreen extends StatelessWidget {
       case 'socialEvent':
         return Icons.people;
       default:
-        return Icons.question_mark_outlined; // Just in case
+        return Icons.question_mark_outlined; // Just in case there is an error with the type / subtype
     }
   }
 
+  /// Returns the icon for a moment type (outlined version).
+  ///
+  /// Parameters:
+  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
+  ///   * [subtype] - The moment subtype (used for media to differentiate TV vs Movies)
+  ///
+  /// Returns:
+  ///   The appropriate outlined MaterialIcon for the moment type
   IconData _getMomentIcon(String type, String subtype) {
     switch (type) {
       case 'media':
@@ -413,11 +497,28 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  /// Capitalizes the first character of a string.
+  ///
+  /// Parameters:
+  ///   * [text] - The string to capitalize
+  ///
+  /// Returns:
+  ///   The capitalized string, or the original if empty
   String _capitalize(String text) {
     return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
   }
 
-  /// Format date according to locale (Spanish or English)
+  /// Formats a date according to the current locale.
+  ///
+  /// Shows Spanish format "26 de febrero de 2026" or English format
+  /// "February 26, 2026" depending on device language settings.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context to access locale information
+  ///   * [date] - The DateTime object to format
+  ///
+  /// Returns:
+  ///   A formatted date string appropriate for the current locale
   String _formatDate(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context);
     
@@ -430,9 +531,25 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  /// Build the moment image widget based on type
-  /// For social events: shows image from local storage using filename
-  /// For media/books: shows network image from imageUrl
+  /// Builds the image widget for a moment display.
+  ///
+  /// Handles different image sources based on moment type:
+  ///   * Social events: Loads image from local storage using filename
+  ///   * Media/books: Loads network image from Firebase Storage URL
+  ///   * Fallback: Shows icon if image is unavailable
+  ///
+  /// Note: Images are cached by Flutter's Image caching strategy.
+  /// Network images use errorBuilder to show icons when loading fails.
+  /// Local image files are checked for existence with [File.existsSync].
+  ///
+  /// Parameters:
+  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
+  ///   * [imageNames] - List of filenames for social event images
+  ///   * [imageUrl] - Network URL for media/book images
+  ///   * [subtype] - The moment subtype (used for fallback icon)
+  ///
+  /// Returns:
+  ///   A widget displaying the moment image or an icon placeholder
   Widget _buildMomentImage(
     String type,
     dynamic imageNames,
@@ -445,8 +562,8 @@ class HomeScreen extends StatelessWidget {
         imageNames != null &&
         (imageNames as List).isNotEmpty) {
       return FutureBuilder<String>(
-        future: _getImagePath(imageNames[0]),
-        builder: (context, snapshot) {
+        future: _getImagePath(imageNames[0]), // Get the full path of the first image
+        builder: (context, snapshot) { // Check if the file exists at the path, the result of the future is in snapshot.data
           if (snapshot.hasData && File(snapshot.data!).existsSync()) {
             return Image.file(
               File(snapshot.data!),
@@ -454,7 +571,7 @@ class HomeScreen extends StatelessWidget {
               height: 75,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Icon(_getMomentIconBig(type, subtype), size: 50),
+                  Icon(_getMomentIconBig(type, subtype), size: 50), // Fallback to icon if file can't be loaded
             );
           }
           return Icon(_getMomentIconBig(type, subtype), size: 50);
@@ -478,7 +595,27 @@ class HomeScreen extends StatelessWidget {
     return Icon(_getMomentIconBig(type, subtype), size: 50);
   }
 
-  /// Reconstruct the full path to a social event image from its filename
+  /// Reconstructs the full file path for a social event image.
+  ///
+  /// Completes the path by combining the application documents directory
+  /// with the 'social_events' subdirectory and the provided filename.
+  ///
+  /// Note: This method assumes the file exists at the constructed path.
+  /// Always check file existence before using the returned path.
+  ///
+  /// Parameters:
+  ///   * [fileName] - The image filename (without directory path)
+  ///
+  /// Returns:
+  ///   A Future that resolves to the complete file path string
+  ///
+  /// Example:
+  ///   ```dart
+  ///   final path = await _getImagePath('event_photo.jpg');
+  ///   if (File(path).existsSync()) {
+  ///     // Use the file
+  ///   }
+  ///   ```
   Future<String> _getImagePath(String fileName) async {
     final appDir = await getApplicationDocumentsDirectory();
     return '${appDir.path}/social_events/$fileName';
