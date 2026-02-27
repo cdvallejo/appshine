@@ -1,9 +1,18 @@
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/repositories/book_repository.dart';
 import 'package:flutter/material.dart';
 
 class BookSearchDelegate extends SearchDelegate<Book?> {
   final BookRepository _repo = BookRepository();
+  final String searchLabel;
+
+  // Constructor requires searchLabel parameter because the [searchFieldLabel] getter
+  // doesn't have access to BuildContext, so we pass the localized text here
+  BookSearchDelegate({required this.searchLabel});
+
+  @override
+  String? get searchFieldLabel => searchLabel;
 
   // Clear query action button
   @override
@@ -31,8 +40,9 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
   // Build suggestions as the user types
   @override
   Widget buildSuggestions(BuildContext context) {
-    return const Center(
-      child: Text('Type to search and press the search button'),
+    final loc = AppLocalizations.of(context);
+    return Center(
+      child: Text(loc.translate('typeToSearch')),
     );
   }
 

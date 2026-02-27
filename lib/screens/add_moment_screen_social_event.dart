@@ -1,4 +1,5 @@
 import 'package:appshine/data/database_service.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/models/social_event_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -18,9 +19,7 @@ class AddMomentScreenSocialEvent extends StatefulWidget {
 class _AddMomentScreenSocialEventState
     extends State<AddMomentScreenSocialEvent> {
   final _notesController = TextEditingController();
-  final _locationController = TextEditingController(
-    text: 'Unknown Location',
-  );
+  final _locationController = TextEditingController();
   final _titleController = TextEditingController();
   final _imagePicker = ImagePicker();
   final List<String> _selectedImages = [];
@@ -33,7 +32,7 @@ class _AddMomentScreenSocialEventState
   @override
   void initState() {
     super.initState();
-    _titleController.text = widget.socialEvent.title;
+    _titleController.text = widget.socialEvent.title; // Here receive the title from the previous screen!
   }
   
   // Let user pick an image from camera or gallery, and add it to the pending list (_selectedImageFiles)
@@ -54,7 +53,7 @@ class _AddMomentScreenSocialEventState
     }
   }
 
-  Future<void> _uploadImages() async {
+  Future<void> _uploadImages(AppLocalizations loc) async {
     // Saves selected images to local cache and updates _selectedImages with their local paths
     // Images are NOT uploaded to Firebase Storage, only their names. Saved locally on the device.
     if (_selectedImageFiles.isEmpty) return;
@@ -100,13 +99,13 @@ class _AddMomentScreenSocialEventState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Images saved to device')),
+          SnackBar(content: Text(loc.translate('imagesSavedDevice'))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving images: $e')),
+          SnackBar(content: Text('${loc.translate('errorSavingImages')}: $e')),
         );
       }
     }
@@ -114,9 +113,10 @@ class _AddMomentScreenSocialEventState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Social Event Moment'),
+        title: Text(loc.translate('addEventMoment')),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -124,7 +124,7 @@ class _AddMomentScreenSocialEventState
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select a subtype')),
+                  SnackBar(content: Text(loc.translate('selectEventSubtype'))),
                 );
                 return;
               }
@@ -132,11 +132,11 @@ class _AddMomentScreenSocialEventState
               // 2. If there are new images pending to save, save them first to local cache and update _selectedImages with their local paths
               if (_selectedImageFiles.isNotEmpty) {
                 try {
-                  await _uploadImages();
+                  await _uploadImages(loc);
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error saving images: $e')),
+                      SnackBar(content: Text('${loc.translate('errorSavingImages')}: $e')),
                     );
                   }
                   return;
@@ -163,7 +163,7 @@ class _AddMomentScreenSocialEventState
                 // 5. If everything goes well, notify the user and close
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Moment saved!')),
+                    SnackBar(content: Text(loc.translate('momentSaved'))),
                   );
                   Navigator.pop(context);
                 }
@@ -171,7 +171,7 @@ class _AddMomentScreenSocialEventState
                 // 6. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error saving moment: $error')),
+                    SnackBar(content: Text('${loc.translate('savingError')}: $error')),
                   );
                 }
               }
@@ -204,7 +204,7 @@ class _AddMomentScreenSocialEventState
               // Subtype dropdown
               DropdownButton<String>(
                 isExpanded: true,
-                hint: const Text('Select subtype'),
+                hint: Text(loc.translate('selectEventType')),
                 value: _selectedSubtype,
                 items: SocialEvent.subtypes
                     .map(
@@ -235,9 +235,9 @@ class _AddMomentScreenSocialEventState
               - Add local path to _selectedImages (which is showing the "Saved images" section)
               - Clean _selectedImageFiles (pending list) because its now saved
               5. Finally, save the data moment to Firestore. No Firebase storage involved for images, only local cache */
-              const Text(
-                'Images',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                loc.translate('images'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
@@ -248,7 +248,7 @@ class _AddMomentScreenSocialEventState
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
                       icon: const Icon(Icons.camera_alt),
-                      label: const Text('Camera'),
+                      label: Text(loc.translate('camera')),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -256,7 +256,7 @@ class _AddMomentScreenSocialEventState
                     child: ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
                       icon: const Icon(Icons.image),
-                      label: const Text('Gallery'),
+                      label: Text(loc.translate('gallery')),
                     ),
                   ),
                 ],
@@ -326,10 +326,10 @@ class _AddMomentScreenSocialEventState
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   color: Colors.grey[200],
-                  child: const Text(
-                    'No images added yet',
+                  child: Text(
+                    loc.translate('noImagesAdded'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
 
@@ -355,14 +355,6 @@ class _AddMomentScreenSocialEventState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Date',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
                           const SizedBox(height: 4),
                           SizedBox(
                             height: 24,
@@ -394,14 +386,6 @@ class _AddMomentScreenSocialEventState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Location',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
                         const SizedBox(height: 4),
                         SizedBox(
                           height: 24,
@@ -417,10 +401,11 @@ class _AddMomentScreenSocialEventState
                                 child: TextField(
                                   controller: _locationController,
                                   onTap: () => _locationController.clear(),
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
+                                    hintText: loc.translate('where'),
                                     isDense: true,
                                     contentPadding:
-                                        EdgeInsets.symmetric(
+                                        const EdgeInsets.symmetric(
                                           horizontal: 0,
                                           vertical: 0,
                                         ),
@@ -438,17 +423,17 @@ class _AddMomentScreenSocialEventState
               ),
               // PART BOTTOM SECTION: NOTES
               const SizedBox(height: 20),
-              const Text(
-                "My Notes",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                loc.translate('myNotes'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: _notesController,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Write here a note.',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: loc.translate('writeNote'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],

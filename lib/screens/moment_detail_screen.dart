@@ -1,4 +1,5 @@
 import 'package:appshine/data/database_service.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/widgets_extra/delete_confirm_dialog.dart';
 import 'package:appshine/widgets_extra/moment_detail_row.dart';
 import 'package:appshine/widgets_extra/social_event_image_gallery.dart';
@@ -589,7 +590,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   }
 
   // Build date and location section
-  Widget _buildDateAndLocationSection() {
+  Widget _buildDateAndLocationSection(AppLocalizations loc) {
     return Row(
       children: [
         // WHEN section
@@ -599,14 +600,6 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'WHEN',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -636,14 +629,6 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'WHERE',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
               const SizedBox(height: 4),
               if (isEditing)
                 TextField(
@@ -664,7 +649,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _locationController.text.isEmpty ? 'Unknown' : _locationController.text,
+                      _locationController.text.isEmpty ? loc.translate('unknown') : _locationController.text,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -681,6 +666,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
   // Build notes section
   Widget _buildNotesSection() {
+    final loc = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -694,25 +680,23 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         ),
         const SizedBox(height: 10),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 1.0),
           child: isEditing
               ? TextField(
                   controller: _notesController,
                   maxLines: null,
                   style: const TextStyle(
                     fontSize: 16,
-                    fontStyle: FontStyle.italic,
                   ),
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),
                 )
               : Text(
-                  _notesController.text.trim().isEmpty ? 'No comments...' : _notesController.text,
+                  _notesController.text.trim().isEmpty ? loc.translate('noNotes') : _notesController.text,
                   style: const TextStyle(
                     fontSize: 16,
                     height: 1.5,
-                    fontStyle: FontStyle.italic,
                     color: Colors.black87,
                   ),
                 ),
@@ -809,7 +793,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   const SizedBox(height: 4),
                   _buildTypeSpecificDetails(),
                   const Divider(height: 40),
-                  _buildDateAndLocationSection(),
+                  _buildDateAndLocationSection(AppLocalizations.of(context)),
                   const SizedBox(height: 30),
                   _buildNotesSection(),
                   const Divider(height: 40),

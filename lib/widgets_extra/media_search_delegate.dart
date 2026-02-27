@@ -1,9 +1,18 @@
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/models/media_model.dart';
 import 'package:appshine/repositories/media_repository.dart';
 import 'package:flutter/material.dart';
 
 class MediaSearchDelegate extends SearchDelegate<Media?> {
   final MediaRepository _repo = MediaRepository();
+  final String searchLabel;
+
+  /// Constructor requires searchLabel parameter because the [searchFieldLabel] getter
+  /// doesn't have access to BuildContext, so we pass the localized text here
+  MediaSearchDelegate({required this.searchLabel});
+
+  @override
+  String? get searchFieldLabel => searchLabel;
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -27,16 +36,13 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return const Center(
-      child: Text('Type to search and press the search button'),
+    final loc = AppLocalizations.of(context);
+    return Center(
+      child: Text(loc.translate('typeToSearch')),
     );
   }
 
   Widget _search(BuildContext context) {
-    // Control barriers for short queries. FilmAffinity starts searching from 2 characters.
-    if (query.length < 2) {
-      return const Center(child: Text('Type at least 2 characters.'));
-    }
 
     return FutureBuilder<List<Media>>(
       future: _repo.searchMedia(query),

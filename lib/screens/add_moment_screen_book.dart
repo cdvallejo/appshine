@@ -1,5 +1,6 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/repositories/book_repository.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/book_model.dart';
@@ -30,9 +31,10 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Book Moment'),
+        title: Text(loc.translate('addBookMoment')),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -40,7 +42,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select a book type')),
+                  SnackBar(content: Text(loc.translate('pleaseSelectSubtype'))),
                 );
                 return;
               }
@@ -69,7 +71,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                 if (context.mounted) {
                   // Extra safety in case the user closed the screen before
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Moment saved!')),
+                    SnackBar(content: Text(loc.translate('momentSaved'))),
                   );
                   Navigator.pop(context);
                 }
@@ -77,7 +79,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                 // 5. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error saving moment: $error')),
+                    SnackBar(content: Text('${loc.translate('savingError')}$error')),
                   );
                 }
               }
@@ -121,7 +123,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                         _titleController.text = book.title;
                         _yearController.text = book.releaseYear;
                         _publisherController.text = '...'; // Placeholder, as Open Library doesn't provide publisher in search results
-                        _authorsController.text = book.authors?.join(', ') ?? 'Unknown';
+                        _authorsController.text = book.authors?.join(', ') ?? loc.translate('unknown');
                         _pagesController.text = book.formattedPageCount;
                       }
                       // Always update the ISBN (in case it arrives from API)
@@ -136,8 +138,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
-                            decoration: const InputDecoration(
-                              label: Text('Title'),
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('title')),
                               isDense: true,
                               border: UnderlineInputBorder(),
                               contentPadding: EdgeInsets.zero,
@@ -149,7 +151,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                           // Subtype dropdown
                           DropdownButton<String>(
                             isExpanded: true,
-                            hint: const Text('Select book type'),
+                            hint: Text(loc.translate('selectBookType')),
                             value: _selectedSubtype,
                             items: Book.subtypes
                                 .map((subtype) => DropdownMenuItem(
@@ -168,8 +170,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                           // Authors field (editable)
                           TextField(
                             controller: _authorsController,
-                            decoration: const InputDecoration(
-                              label: Text('Author/s'),
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('author')),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
@@ -187,8 +189,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                 flex: 1,
                                 child: TextField(
                                   controller: _yearController,
-                                  decoration: const InputDecoration(
-                                    label: Text('Year'),
+                                  decoration: InputDecoration(
+                                    label: Text(loc.translate('year')),
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 0,
@@ -205,8 +207,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                 flex: 7,
                                 child: TextField(
                                   controller: _publisherController,
-                                  decoration: const InputDecoration(
-                                    label: Text('Publisher'),
+                                  decoration: InputDecoration(
+                                    label: Text(loc.translate('publisher')),
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 0,
@@ -224,11 +226,11 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                           Row(
                             children: [
                               Expanded(
-                                flex: 1,
+                                flex: 2,
                                 child: TextField(
                                   controller: _pagesController,
-                                  decoration: const InputDecoration(
-                                    label: Text('Pages'),
+                                  decoration: InputDecoration(
+                                    label: Text(loc.translate('pages')),
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 0,
@@ -288,14 +290,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Date',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
                                   const SizedBox(height: 4),
                                   SizedBox(
                                     height: 24,
@@ -325,14 +319,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Location',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
                                 const SizedBox(height: 4),
                                 SizedBox(
                                   height: 24,
@@ -348,10 +334,11 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                         child: TextField(
                                           controller: _locationController,
                                           onTap: () => _locationController.clear(),
-                                          decoration: const InputDecoration(
+                                          decoration: InputDecoration(
+                                            hintText: loc.translate('where'),
                                             isDense: true,
                                             contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                                            border: UnderlineInputBorder(),
+                                            border: const UnderlineInputBorder(),
                                           ),
                                         ),
                                       ),
@@ -368,17 +355,17 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
 
                   // PART BOTTOM SECTION: NOTES
                   const SizedBox(height: 20),
-                  const Text(
-                    "My Notes",
+                  Text(
+                    loc.translate('myNotes'),
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _notesController,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      hintText: 'Write here a note.',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: loc.translate('writeNote'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
