@@ -308,6 +308,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
   // Build the title section (read/edit mode)
   Widget _buildTitleSection() {
+    final loc = AppLocalizations.of(context);
     if (isEditing) {
       return TextField(
         controller: _titleController,
@@ -323,7 +324,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       );
     }
     return Text(
-      _titleController.text.isEmpty ? 'Unknown' : _titleController.text,
+      _titleController.text.isEmpty ? loc.translate('unknown') : _titleController.text,
       style: const TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
@@ -333,6 +334,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
   // Build book details section
   Widget _buildBookDetails() {
+    final loc = AppLocalizations.of(context);
     if (isEditing) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,46 +358,46 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _yearController,
-            decoration: const InputDecoration(
-              label: Text('Year'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('year')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _authorsController,
-            decoration: const InputDecoration(
-              label: Text('Author/s'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('author')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _pageCountController,
-            decoration: const InputDecoration(
-              label: Text('Pages'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('pages')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _publisherController,
-            decoration: const InputDecoration(
-              label: Text('Publisher'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('publisher')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _isbnController,
-            decoration: const InputDecoration(
-              label: Text('ISBN'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('isbn')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
         ],
@@ -404,17 +406,18 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, 'Year'),
-        buildDetailRow(_authorsController.text.isEmpty ? null : _authorsController.text, 'Author/s'),
-        buildDetailRow(_pageCountController.text.isEmpty ? null : _pageCountController.text, 'Pages'),
-        buildDetailRow(_publisherController.text.isEmpty ? null : _publisherController.text, 'Publisher'),
-        buildDetailRow(_isbnController.text.isEmpty ? null : _isbnController.text, 'ISBN'),
+        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, loc.translate('year'), context),
+        buildDetailRow(_authorsController.text.isEmpty ? null : _authorsController.text, loc.translate('author'), context),
+        buildDetailRow(_pageCountController.text.isEmpty ? null : _pageCountController.text, loc.translate('pages'), context),
+        buildDetailRow(_publisherController.text.isEmpty ? null : _publisherController.text, loc.translate('publisher'), context),
+        buildDetailRow(_isbnController.text.isEmpty ? null : _isbnController.text, loc.translate('isbn'), context),
       ],
     );
   }
 
   // Build movie/TV details section
   Widget _buildMovieDetails() {
+    final loc = AppLocalizations.of(context);
     if (isEditing) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,48 +441,48 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _yearController,
-            decoration: const InputDecoration(
-              label: Text('Year'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('year')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           if (_selectedSubtype.toLowerCase().contains('tv series')) ...[
             TextField(
               controller: _creatorsController,
-              decoration: const InputDecoration(
-                label: Text('Creator/s'),
+              decoration: InputDecoration(
+                label: Text(loc.translate('creator')),
                 isDense: true,
-                border: UnderlineInputBorder(),
+                border: const UnderlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
           ],
           TextField(
             controller: _directionController,
-            decoration: const InputDecoration(
-              label: Text('Direction'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('director')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _castController,
-            decoration: const InputDecoration(
-              label: Text('Cast'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('cast')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _countryController,
-            decoration: const InputDecoration(
-              label: Text('Country'),
+            decoration: InputDecoration(
+              label: Text(loc.translate('country')),
               isDense: true,
-              border: UnderlineInputBorder(),
+              border: const UnderlineInputBorder(),
             ),
           ),
         ],
@@ -488,13 +491,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, 'Year'),
+        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, loc.translate('year'), context),
         if (widget.momentData['subtype'] == 'TV Series') ...[
-          buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, 'Creator/s'),
+          buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, loc.translate('creator'), context),
         ],
-        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, 'Direction'),
-        buildDetailRow(_castController.text.isEmpty ? null : _castController.text, 'Cast'),
-        buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, 'Country'),
+        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, loc.translate('director'), context),
+        buildDetailRow(_castController.text.isEmpty ? null : _castController.text, loc.translate('cast'), context),
+        buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, loc.translate('country'), context),
       ],
     );
   }
@@ -543,8 +546,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         children: [
           Text(
             _selectedSubtype.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.blue,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -559,8 +562,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         children: [
           Text(
             _selectedSubtype.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.blue,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -575,8 +578,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         children: [
           Text(
             _selectedSubtype.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.blue,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -606,7 +609,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                     Icon(
                       Icons.calendar_month,
                       size: 16,
-                      color: isEditing ? Colors.orange : Colors.indigo,
+                      color: isEditing ? Colors.orange : Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -614,7 +617,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isEditing ? Colors.orange : Colors.black,
+                        color: isEditing ? Colors.orange : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -671,13 +674,24 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          loc.translate('myNotes').toUpperCase(),
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
+        Row(
+          children: [
+            Icon(
+              Icons.sticky_note_2,
+              size: 16,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              loc.translate('myNotes').toUpperCase(),
+              textAlign: TextAlign.justify,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Padding(
@@ -695,10 +709,11 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 )
               : Text(
                   _notesController.text.trim().isEmpty ? loc.translate('noNotes') : _notesController.text,
-                  style: const TextStyle(
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
                     fontSize: 16,
                     height: 1.5,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface, // onSurface color for better contrast in dark mode
                   ),
                 ),
         ),
@@ -709,11 +724,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   // MAIN build method with Scaffold, AppBar, and body containing image and details sections
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titleController.text.isEmpty ? 'Detalle' : _titleController.text),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        title: Text(_titleController.text.isEmpty ? loc.translate('detail') : _titleController.text),
         actions: [
           IconButton(
             icon: Icon(isEditing ? Icons.check : Icons.edit),
@@ -721,8 +735,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
               if (isEditing) {
                 await _saveChanges();
                 if (context.mounted) {
+                  final loc = AppLocalizations.of(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Changes saved successfully')),
+                    SnackBar(content: Text(loc.translate('changesSaved'))),
                   );
                 }
               }
@@ -793,11 +808,11 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   _buildTitleSection(),
                   const SizedBox(height: 4),
                   _buildTypeSpecificDetails(),
-                  const Divider(height: 40),
+                  const Divider(height: 40, thickness: 1.5),
                   _buildDateAndLocationSection(AppLocalizations.of(context)),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   _buildNotesSection(),
-                  const Divider(height: 40),
+                  const Divider(height: 40, thickness: 0.5),
                 ],
               ),
             ),

@@ -9,6 +9,7 @@ import 'package:appshine/screens/settings_screen.dart';
 import 'package:appshine/widgets_extra/book_search_delegate.dart';
 import 'package:appshine/widgets_extra/media_search_delegate.dart';
 import 'package:appshine/l10n/app_localizations.dart';
+import 'package:appshine/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -88,8 +89,6 @@ class HomeScreen extends StatelessWidget {
       // --- APP BAR ---
       appBar: AppBar(
         title: const Text('Appshine'),
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.indigo,
         actions: [
           // AppBar admin button visibility based on user role
           FutureBuilder<DocumentSnapshot>(
@@ -183,18 +182,12 @@ class HomeScreen extends StatelessWidget {
                 // --- GROUP HEADER DESIGN ---
                 groupSeparatorBuilder: (DateTime date) => Container(
                   decoration: BoxDecoration(
-                    color: Colors.indigo.withValues(alpha: 0.05),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 15,
-                      vertical: 8,
+                      vertical: 6,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -206,7 +199,7 @@ class HomeScreen extends StatelessWidget {
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
-                            color: Colors.indigo.withValues(alpha: 0.8),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
                           ),
                         ),
                         // Right side: full date
@@ -216,7 +209,7 @@ class HomeScreen extends StatelessWidget {
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 1.1,
-                            color: Colors.indigo.withValues(alpha: 0.7),
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
@@ -229,61 +222,62 @@ class HomeScreen extends StatelessWidget {
                   return Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 8,
-                      vertical: 6,
+                      vertical: 0,
                     ),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.grey.withValues(alpha: 0.2),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           width: 1,
                         ),
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: ListTile(
-                        leading: _buildMomentImage(
-                          data['type'],
-                          data['imageNames'],
-                          data['imageUrl'],
-                          data['subtype'],
-                        ),
-                        title: Text(
-                          data['title'] ?? loc.translate('untitled'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              _capitalize(data['subtype']),
-                              style: const TextStyle(color: Colors.indigo),
-                            ),
-                          ],
-                        ),
-                        // Traiing with icon moment and onTap for future detail
-                        trailing: Icon(
-                          _getMomentIcon(data['type'], data['subtype']),
-                          size: 20,
-                          color: Colors.indigo.withValues(alpha: 0.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MomentDetailScreen(
-                                momentData: data,
-                                momentId: doc
-                                    .id, // Pass the document ID for future reference (e.g., deletion)
-                              ),
-                            ),
-                          );
-                        },
+                    child: ListTile(
+                      visualDensity: VisualDensity.compact,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      leading: _buildMomentImage(
+                        data['type'],
+                        data['imageNames'],
+                        data['imageUrl'],
+                        data['subtype'],
                       ),
+                      title: Text(
+                        data['title'] ?? loc.translate('untitled'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 1),
+                          Text(
+                            _capitalize(data['subtype']),
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ],
+                      ),
+                      // Traiing with icon moment and onTap for future detail
+                      trailing: Icon(
+                        _getMomentIcon(data['type'], data['subtype']),
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MomentDetailScreen(
+                              momentData: data,
+                              momentId: doc
+                                  .id, // Pass the document ID for future reference (e.g., deletion)
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
@@ -294,6 +288,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                 useStickyGroupSeparators:
                     true, // Enable sticky headers for group separators
+                stickyHeaderBackgroundColor: AppTheme.getStickyHeaderColor(context),
                 floatingHeader:
                     false, // No floating header for no transparency between DateTime
                 order: GroupedListOrder.DESC,
@@ -305,7 +300,7 @@ class HomeScreen extends StatelessWidget {
 
       // --- FLOATING BUTTON TO ADD MOMENT ---
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.indigo,
+        backgroundColor: AppTheme.primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () =>
             _showAddMomentMenu(context), // Call the Moment menu function
@@ -346,7 +341,7 @@ class HomeScreen extends StatelessWidget {
 
             // MEDIA OPTION
             ListTile(
-              leading: const Icon(Icons.movie, color: Colors.indigo),
+              leading: Icon(Icons.movie, color: Theme.of(context).colorScheme.primary),
               title: Text(loc.translate('movieOrTv')),
               onTap: () async {
                 // 1. Launch the search FIRST (using the current context)
@@ -380,7 +375,7 @@ class HomeScreen extends StatelessWidget {
 
             // BOOK OPTION
             ListTile(
-              leading: const Icon(Icons.book, color: Colors.indigo),
+              leading: Icon(Icons.book, color: Theme.of(context).colorScheme.primary),
               title: Text(loc.translate('bookOrComic')),
               onTap: () async {
                 final result = await showSearch<Book?>(
@@ -409,7 +404,7 @@ class HomeScreen extends StatelessWidget {
 
             // SOCIAL EVENT OPTION
             ListTile(
-              leading: const Icon(Icons.people, color: Colors.indigo),
+              leading: Icon(Icons.people, color: Theme.of(context).colorScheme.primary),
               title: Text(loc.translate('socialEvent')),
               onTap: () {
                 Navigator.pop(context);

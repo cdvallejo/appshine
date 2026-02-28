@@ -293,10 +293,10 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                     height: 24,
                                     child: Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.calendar_month,
                                           size: 16,
-                                          color: Colors.indigo,
+                                          color: Theme.of(context).colorScheme.primary,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -322,10 +322,10 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                                   height: 24,
                                   child: Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.location_pin,
                                         size: 16,
-                                        color: Colors.indigo,
+                                        color: Theme.of(context).colorScheme.primary,
                                       ),
                                       const SizedBox(width: 4),
                                       Expanded(

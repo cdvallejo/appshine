@@ -1,3 +1,4 @@
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class DeleteConfirmDialog extends StatelessWidget {
@@ -7,22 +8,22 @@ class DeleteConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    
     return AlertDialog(
-      title: const Text('Delete Moment'),
-      content: const Text(
-        'This action cannot be undone. Are you sure you want to delete this moment?',
-      ),
+      title: Text(loc.translate('deleteConfirmTitle')),
+      content: Text(loc.translate('deleteConfirmMessage')),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('CANCEL'),
+          child: Text(loc.translate('cancel')),
         ),
         TextButton(
           onPressed: () async {
             await onConfirm();
             if (context.mounted) Navigator.pop(context);
           },
-          child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+          child: Text(loc.translate('delete'), style: TextStyle(color: Colors.red)),
         ),
       ],
     );
