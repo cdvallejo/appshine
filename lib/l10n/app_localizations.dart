@@ -44,7 +44,7 @@ class AppLocalizations {
       // Settings Screen
       'language': 'IDIOMA',
       'spanish': 'Español',
-      'english': 'English',
+      'english': 'Inglés',
       'theme': 'TEMA',
       'darkMode': 'Modo oscuro',
       'insights': 'Insights',
@@ -72,7 +72,7 @@ class AppLocalizations {
       // Media Screen
       'addMovieMoment': 'Añadir Momento de Película',
       'selectSubtype': 'Seleccionar película o serie',
-      'director': 'Director/es',
+      'director': 'Dirección',
       'cast': 'Reparto',
       'creator': 'Creador/es',
 
@@ -98,6 +98,10 @@ class AppLocalizations {
       'detail': 'Detalle',
       'deleteConfirmTitle': 'Eliminar momento',
       'deleteConfirmMessage': '¿Estás seguro? Esta acción no se puede deshacer.',
+
+      // Update Moment Sheet
+      'editMoment': 'Editar momento',
+      'saveChanges': 'Guardar cambios',
 
       // Messages
       'noMoments': 'No hay momentos',
@@ -184,7 +188,7 @@ class AppLocalizations {
 
       // Settings Screen
       'language': 'LANGUAGE',
-      'spanish': 'Español',
+      'spanish': 'Spanish',
       'english': 'English',
       'theme': 'THEME',
       'darkMode': 'Dark mode',
@@ -196,9 +200,9 @@ class AppLocalizations {
       // Media Screen
       'addMovieMoment': 'Add Movie Moment',
       'selectSubtype': 'Select movie or TV Series',
-      'director': 'Director/s',
+      'director': 'Director',
       'cast': 'Cast',
-      'creator': 'Creator/s',
+      'creator': 'Creator',
 
 
       // Book Screen
@@ -232,6 +236,10 @@ class AppLocalizations {
       'ok': 'Ok',
       'yes': 'Yes',
       'no': 'No',
+
+      // Update Moment Sheet
+      'editMoment': 'Edit moment',
+      'saveChanges': 'Save changes',
 
       // Months
       'january': 'January',

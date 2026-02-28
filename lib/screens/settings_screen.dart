@@ -15,7 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late String _selectedLanguage;
 
   /// Whether dark mode is enabled
-  bool _darkModeEnabled = false;
+  late bool _darkModeEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +24,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Update selected language from context
     _selectedLanguage = loc.locale.languageCode;
     
+    // Sync dark mode state with current theme
+    _darkModeEnabled = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.settings),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
       ),
       body: ListView(
         children: [
@@ -40,11 +41,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   loc.translate('language'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    color: Colors.indigo,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -61,11 +62,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     children: [
                       ListTile(
-                        title: const Text('Español'),
+                        title: Text(loc.translate('spanish')),
                         leading: Radio<String>(value: 'es'),
                       ),
                       ListTile(
-                        title: const Text('English'),
+                        title: Text(loc.translate('english')),
                         leading: Radio<String>(value: 'en'),
                       ),
                     ],
@@ -76,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          // DARK MODE SECTION (TODO: future implementation)
+          // DARK MODE SECTION
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -84,11 +85,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   loc.translate('theme'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    color: Colors.indigo,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -99,7 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() {
                       _darkModeEnabled = value;
                     });
-                    // TODO: Implement dark mode logic
+                    MainApp.setThemeMode(
+                      context,
+                      value ? ThemeMode.dark : ThemeMode.light,
+                    );
                   },
                 ),
               ],
@@ -111,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ListTile(
-              leading: const Icon(Icons.bar_chart, color: Colors.indigo),
+              leading: Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.primary),
               title: Text(loc.translate('insights')),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {

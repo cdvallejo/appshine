@@ -1,5 +1,6 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:flutter/material.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 
 class UpdateMomentSheet extends StatefulWidget {
   final String momentId;
@@ -12,6 +13,7 @@ class UpdateMomentSheet extends StatefulWidget {
     required this.initialNotes,
     required this.initialLocation,
   });
+
 
   @override
   State<UpdateMomentSheet> createState() => _UpdateMomentSheetState();
@@ -30,6 +32,7 @@ class _UpdateMomentSheetState extends State<UpdateMomentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(
@@ -42,18 +45,18 @@ class _UpdateMomentSheetState extends State<UpdateMomentSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'EDIT MOMENT',
+          Text(
+            loc.translate('editMoment'),
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           TextField(
             controller: _locationController,
-            decoration: const InputDecoration(labelText: 'Location'),
+            decoration: InputDecoration(labelText: loc.translate('location')),
           ),
           TextField(
             controller: _notesController,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Notes'),
+            decoration: InputDecoration(labelText: loc.translate('notes')),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -71,7 +74,7 @@ class _UpdateMomentSheetState extends State<UpdateMomentSheet> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Save Changes'),
+            child: Text(loc.translate('saveChanges')),
           ),
           const SizedBox(height: 20),
         ],

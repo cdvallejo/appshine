@@ -3,6 +3,7 @@ class SocialEvent {
     'Culture',
     'Gaming',
     'Social',
+    'Sex',
     'Sport',
   ];
 
