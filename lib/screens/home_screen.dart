@@ -18,6 +18,13 @@ import 'dart:io';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
+/// Initialize Flutter's image cache for better performance during scrolling
+void _initializeImageCache() {
+  // Increase cache size to prevent eviction during scrolling
+  imageCache.maximumSize = 200; // Keep more images in memory
+  imageCache.maximumSizeBytes = 200 * 1024 * 1024; // 200 MB cache
+}
+
 /// Home screen implementation for displaying user moments.
 ///
 /// This screen serves as the main hub for viewing and managing moments
@@ -72,6 +79,7 @@ class HomeScreen extends StatelessWidget {
   ///   A Scaffold widget containing the home screen layout
   @override
   Widget build(BuildContext context) {
+    _initializeImageCache(); // Optimize image caching for smooth scrolling
     final user = FirebaseAuth.instance.currentUser;
     final loc = AppLocalizations.of(context);
 
