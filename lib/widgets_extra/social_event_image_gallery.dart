@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 /// Widget to manage image gallery for social events, allowing users to add new images from camera or gallery, and display existing images.
 class SocialEventImageGallery extends StatefulWidget {
@@ -28,7 +28,29 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   @override
   void initState() {
     super.initState();
-    _currentImageNames = List.from(widget.initialImageNames);
+    _filterExistingImages();
+  }
+
+  /// Filter and keep only images that physically exist on the device
+  Future<void> _filterExistingImages() async {
+    final List<String> existingImages = [];
+    
+    for (String imageName in widget.initialImageNames) {
+      final imagePath = await _getImagePath(imageName);
+      final imageFile = File(imagePath);
+      if (await imageFile.exists()) {
+        existingImages.add(imageName);
+      }
+    }
+    
+    setState(() {
+      _currentImageNames = existingImages;
+    });
+    
+    // If some images were removed (they don't exist), notify parent
+    if (existingImages.length < widget.initialImageNames.length) {
+      widget.onImagesChanged?.call();
+    }
   }
 
   /// Get the current image names (existing + new that have been uploaded)
@@ -37,21 +59,25 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// Get the new image files pending to upload
   List<XFile> getNewImageFiles() => _newImageFiles;
 
-  /// Pick an image from camera or gallery
+  /// Pick multiple images from camera or gallery
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? pickedFile = await _imagePicker.pickImage(source: source);
-      if (pickedFile != null) {
+      final List<XFile> pickedFiles = source == ImageSource.gallery
+          ? await _imagePicker.pickMultiImage()
+          : await _imagePicker.pickMultipleMedia().then(
+              (files) => files.map((f) => XFile(f.path)).toList(),
+            );
+      if (pickedFiles.isNotEmpty) {
         setState(() {
-          _newImageFiles.add(pickedFile);
-          _newImageFileNames.add(pickedFile.name);
+          _newImageFiles.addAll(pickedFiles);
+          _newImageFileNames.addAll(pickedFiles.map((f) => f.name));
         });
         widget.onImagesChanged?.call();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
+          SnackBar(content: Text('Error picking images: $e')),
         );
       }
     }
@@ -63,11 +89,12 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     if (_newImageFiles.isEmpty) return _currentImageNames;
 
     try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final socialEventsDir = Directory('${appDir.path}/social_events');
+      // Save to Pictures folder so images appear in gallery
+      const picturesPath = '/storage/emulated/0/Pictures';
+      final appshineImagesDir = Directory('$picturesPath/Appshine Images');
 
-      if (!await socialEventsDir.exists()) {
-        await socialEventsDir.create(recursive: true);
+      if (!await appshineImagesDir.exists()) {
+        await appshineImagesDir.create(recursive: true);
       }
 
       final List<String> newFileNames = [];
@@ -78,10 +105,23 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         final File sourceFile = File(imageFile.path);
         // Add counter to ensure unique filenames
         final String fileName = '${baseTimestamp}_${i}_${imageFile.name}';
-        final String localPath = '${socialEventsDir.path}/$fileName';
+        final String localPath = '${appshineImagesDir.path}/$fileName';
 
         await sourceFile.copy(localPath);
         newFileNames.add(fileName);
+        
+        // Trigger media scanner so the image appears in gallery
+        const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
+        try {
+          await platform.invokeMethod('scanFile', {'path': localPath});
+        } catch (e) {
+          // Fall back: just try to scan the directory
+          try {
+            await platform.invokeMethod('scanFile', {'path': appshineImagesDir.path});
+          } catch (_) {
+            // If method channel fails, it's okay, app will still work
+          }
+        }
       }
 
       // Single setState to update all at once
@@ -197,7 +237,14 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
                               top: 0,
                               right: 0,
                               child: GestureDetector(
-                                onTap: () {
+                                onTap: () async {
+                                  // Delete the physical file first
+                                  final imagePath = await _getImagePath(_currentImageNames[index]);
+                                  final imageFile = File(imagePath);
+                                  if (await imageFile.exists()) {
+                                    await imageFile.delete();
+                                  }
+                                  // Then remove from list
                                   setState(() {
                                     _currentImageNames.removeAt(index);
                                   });
@@ -300,7 +347,7 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
   /// Helper method to get the full path of an image
   Future<String> _getImagePath(String fileName) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    return '${appDir.path}/social_events/$fileName';
+    const picturesPath = '/storage/emulated/0/Pictures';
+    return '$picturesPath/Appshine Images/$fileName';
   }
 }

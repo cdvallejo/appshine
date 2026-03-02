@@ -25,7 +25,7 @@ android {
     defaultConfig {
     applicationId = "com.carlosvallejo.appshine"
     minSdk = 26        
-    targetSdk = 33     
+    targetSdk = 35     
     versionCode = flutter.versionCode
     versionName = flutter.versionName
     }
