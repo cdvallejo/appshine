@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 class AddMomentScreenSocialEvent extends StatefulWidget {
   final SocialEvent socialEvent;
@@ -22,7 +22,6 @@ class _AddMomentScreenSocialEventState
   final _locationController = TextEditingController();
   final _titleController = TextEditingController();
   final _imagePicker = ImagePicker();
-  final List<String> _selectedImages = [];
   final List<XFile> _selectedImageFiles = [];
   final List<String> _selectedImageNames = []; // Only filenames (for backup compatibility)
 
@@ -35,38 +34,41 @@ class _AddMomentScreenSocialEventState
     _titleController.text = widget.socialEvent.title; // Here receive the title from the previous screen!
   }
   
-  // Let user pick an image from camera or gallery, and add it to the pending list (_selectedImageFiles)
+  // Let user pick multiple images from camera or gallery, and add them to the pending list (_selectedImageFiles)
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? pickedFile = await _imagePicker.pickImage(source: source);
-      if (pickedFile != null) {
+      final List<XFile> pickedFiles = source == ImageSource.gallery
+          ? await _imagePicker.pickMultiImage()
+          : await _imagePicker.pickMultipleMedia().then(
+              (files) => files.map((f) => XFile(f.path)).toList(),
+            );
+      if (pickedFiles.isNotEmpty) {
         setState(() {
-          _selectedImageFiles.add(pickedFile);
+          _selectedImageFiles.addAll(pickedFiles);
         });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
+          SnackBar(content: Text('Error picking images: $e')),
         );
       }
     }
   }
 
   Future<void> _uploadImages(AppLocalizations loc) async {
-    // Saves selected images to local cache and updates _selectedImages with their local paths
+    // Saves selected images to Pictures folder (gallery-accessible)
     // Images are NOT uploaded to Firebase Storage, only their names. Saved locally on the device.
     if (_selectedImageFiles.isEmpty) return;
 
     try {
-      // Obtain the app's documents directory to save images locally
-      final appDir = await getApplicationDocumentsDirectory();
+      // Save to Pictures folder so images appear in gallery
+      const picturesPath = '/storage/emulated/0/Pictures';
+      final appshineImagesDir = Directory('$picturesPath/Appshine Images');
       
-      // Create a subdirectory for social event images if it doesn't exist
-      final socialEventsDir = Directory('${appDir.path}/social_events');
-      if (!await socialEventsDir.exists()) {
+      if (!await appshineImagesDir.exists()) {
         // If the directory doesn't exist, create it (recursive: true to create any intermediate folders if needed)
-        await socialEventsDir.create(recursive: true);
+        await appshineImagesDir.create(recursive: true);
       }
 
       // For each selected image file, copy it to the new location and save its local path
@@ -78,16 +80,27 @@ class _AddMomentScreenSocialEventState
         final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${imageFile.name}';
         
         // Define local path where the image will be saved
-        final String localPath = '${socialEventsDir.path}/$fileName';
+        final String localPath = '${appshineImagesDir.path}/$fileName';
         
         // Copy the file to the new location
         await sourceFile.copy(localPath);
 
+        // Trigger media scanner so the image appears in gallery
+        const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
+        try {
+          await platform.invokeMethod('scanFile', {'path': localPath});
+        } catch (e) {
+          // Fall back: just try to scan the directory
+          try {
+            await platform.invokeMethod('scanFile', {'path': appshineImagesDir.path});
+          } catch (_) {
+            // If method channel fails, it's okay, app will still work
+          }
+        }
+
         // Add local path and filename to lists
-        // _selectedImages: full path for UI display
         // _selectedImageNames: only filename for Firestore (backup compatible)
         setState(() {
-          _selectedImages.add(localPath);
           _selectedImageNames.add(fileName);
         });
       }
@@ -129,7 +142,7 @@ class _AddMomentScreenSocialEventState
                 return;
               }
 
-              // 2. If there are new images pending to save, save them first to local cache and update _selectedImages with their local paths
+              // 2. If there are new images pending to save, save them first to local cache and update the image names list
               if (_selectedImageFiles.isNotEmpty) {
                 try {
                   await _uploadImages(loc);
@@ -228,11 +241,10 @@ class _AddMomentScreenSocialEventState
               1. User press "Camera" or "Gallery" → _pickImage()
               XFile is added to _selectedImageFiles (pending files to save)
               2. XFile is displayed in "Selected files" section (not yet saved, just preview)
-              (_selectedImages is still unchanged, it only contains already saved images)
               3. User press "Save moment" en appbar
-              4. Calls _uploadImages():
-              - Save each XFile to local cache and get its local path
-              - Add local path to _selectedImages (which is showing the "Saved images" section)
+              4. Calls _uploadImages() via SocialEventImageGallery:
+              - Save each XFile to local cache and get its filename
+              - Add filename to _selectedImageNames (which is saved to Firestore)
               - Clean _selectedImageFiles (pending list) because its now saved
               5. Finally, save the data moment to Firestore. No Firebase storage involved for images, only local cache */
               Text(

@@ -9,7 +9,6 @@ import 'package:appshine/models/social_event_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 
 class MomentDetailScreen extends StatefulWidget {
   // StatefulWidget to manage editing state
@@ -856,8 +855,8 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
   }
 
   Future<String> _getImagePath(String fileName) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    return '${appDir.path}/social_events/$fileName';
+    const picturesPath = '/storage/emulated/0/Pictures';
+    return '$picturesPath/Appshine Images/$fileName';
   }
 
   @override
@@ -937,8 +936,8 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
   }
 }
 
-// Helper method to get image path for gallery (accessible from global function)
+// Helper method to get image path for gallery
 Future<String> _getImagePathForGallery(String fileName) async {
-  final appDir = await getApplicationDocumentsDirectory();
-  return '${appDir.path}/social_events/$fileName';
+  const picturesPath = '/storage/emulated/0/Pictures';
+  return '$picturesPath/Appshine Images/$fileName';
 }

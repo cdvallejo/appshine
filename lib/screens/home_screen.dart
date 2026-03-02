@@ -14,7 +14,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
@@ -22,8 +21,8 @@ import 'package:appshine/data/database_service.dart';
 /// Initialize Flutter's image cache for better performance during scrolling
 void _initializeImageCache() {
   // Increase cache size to prevent eviction during scrolling
-  imageCache.maximumSize = 200; // Keep more images in memory
-  imageCache.maximumSizeBytes = 200 * 1024 * 1024; // 200 MB cache
+  imageCache.maximumSize = 250; // Keep more images in memory
+  imageCache.maximumSizeBytes = 250 * 1024 * 1024; // 250 MB cache
 }
 
 /// Home screen implementation for displaying user moments.
@@ -613,7 +612,7 @@ class HomeScreen extends StatelessWidget {
 
   /// Reconstructs the full file path for a social event image.
   ///
-  /// Completes the path by combining the application documents directory
+  /// Completes the path by combining the external storage directory
   /// with the 'social_events' subdirectory and the provided filename.
   ///
   /// Note: This method assumes the file exists at the constructed path.
@@ -633,7 +632,7 @@ class HomeScreen extends StatelessWidget {
   ///   }
   ///   ```
   Future<String> _getImagePath(String fileName) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    return '${appDir.path}/social_events/$fileName';
+    const picturesPath = '/storage/emulated/0/Pictures';
+    return '$picturesPath/Appshine Images/$fileName';
   }
 }
