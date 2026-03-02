@@ -194,8 +194,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     
     updateData['subtype'] = _selectedSubtype;
     
-    // 2. Update imageNames for social events
-    if (widget.momentData['type'] == 'socialEvent' && finalImageNames.isNotEmpty) {
+    // 2. Update imageNames for social events (always, even if empty to clear deleted images)
+    if (widget.momentData['type'] == 'socialEvent') {
       updateData['imageNames'] = finalImageNames;
     }
     

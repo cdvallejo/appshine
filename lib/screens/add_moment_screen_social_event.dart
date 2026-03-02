@@ -109,12 +109,6 @@ class _AddMomentScreenSocialEventState
       setState(() {
         _selectedImageFiles.clear();
       });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.translate('imagesSavedDevice'))),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
