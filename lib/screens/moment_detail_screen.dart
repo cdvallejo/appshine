@@ -699,6 +699,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
               ? TextField(
                   controller: _notesController,
                   maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
+                  keyboardType: TextInputType.multiline,
                   style: const TextStyle(
                     fontSize: 16,
                   ),

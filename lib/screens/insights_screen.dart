@@ -42,7 +42,6 @@ class InsightsScreen extends StatelessWidget {
           break;
       }
     }
-
     return {
       'media': mediaCount,
       'book': bookCount,
@@ -183,7 +182,9 @@ class InsightsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
+                  const Divider(height: 40, thickness: 1.5),
+                  const SizedBox(height: 16),
 
                   // Statistics by type
                   Text(
