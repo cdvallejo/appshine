@@ -35,7 +35,6 @@ class AppLocalizations {
       // Home Screen
       'welcome': 'Bienvenido, Admin',
       'untitled': 'Sin título',
-      'myMoments': 'Mis momentos',
       'movieOrTv': 'Película | Serie de TV',
       'bookOrComic': 'Libro | Cómic',
       'socialEvent': 'Evento Social',
@@ -103,6 +102,11 @@ class AppLocalizations {
       'editMoment': 'Editar momento',
       'saveChanges': 'Guardar cambios',
 
+      // Insights Screen
+      'myMoments': 'Mis momentos',
+      'momentsTotal': 'Momentos registrados',
+      'statisticsByType': 'Estadística por tipo',
+
       // Messages
       'noMoments': 'No hay momentos',
       'loading': 'Cargando...',
@@ -162,7 +166,6 @@ class AppLocalizations {
       // Home Screen
       'welcome': 'Welcome, Admin',
       'untitled': 'Untitled',
-      'myMoments': 'My Moments',
       'movieOrTv': 'Movie | TV Series',
       'bookOrComic': 'Book | Comic',
       'socialEvent': 'Social Event',
@@ -227,6 +230,11 @@ class AppLocalizations {
       'detail': 'Detail',
       'deleteConfirmTitle': 'Delete moment',
       'deleteConfirmMessage': 'Are you sure? This action cannot be undone.',
+
+      // Insights Screen
+      'myMoments': 'My moments',
+      'momentsTotal': 'Total moments',
+      'statisticsByType': 'Statistics by type',
 
       // Messages
       'noMoments': 'No moments',
