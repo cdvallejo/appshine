@@ -437,6 +437,8 @@ class _AddMomentScreenSocialEventState
               TextField(
                 controller: _notesController,
                 maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
+                keyboardType: TextInputType.multiline,
                 decoration: InputDecoration(
                   hintText: loc.translate('writeNote'),
                   border: const OutlineInputBorder(),

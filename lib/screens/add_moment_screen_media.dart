@@ -355,6 +355,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   TextField(
                     controller: _notesController,
                     maxLines: 4,
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.multiline, // Shows "Enter" key for new lines, no need becasue of maxLines, but good practice
                     decoration: InputDecoration(
                       hintText: loc.translate('writeNote'),
                       border: const OutlineInputBorder(),
