@@ -162,13 +162,20 @@ class HomeScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final docs = momentSnapshot.data?.docs ?? [];
+              var docs = (momentSnapshot.data?.docs ?? []).toList();
 
               if (docs.isEmpty) {
                 return const Center(
                   child: Text('No moments added yet. Tap + to add one!'),
                 );
               }
+
+              // Sort docs by date (ascending)
+              docs.sort((a, b) {
+                final dateA = (a['date'] as Timestamp).toDate();
+                final dateB = (b['date'] as Timestamp).toDate();
+                return dateA.compareTo(dateB);
+              });
 
               // --- GROUPED LIST VIEW BY DATE ---
               return GroupedListView<dynamic, DateTime>(
@@ -280,11 +287,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-                // Date comparator to order groups
-                itemComparator: (item1, item2) =>
-                    (item2.data()['date'] as Timestamp).compareTo(
-                      item1.data()['date'] as Timestamp,
-                    ),
                 useStickyGroupSeparators:
                     true, // Enable sticky headers for group separators
                 stickyHeaderBackgroundColor: AppTheme.getStickyHeaderColor(context),

@@ -30,6 +30,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final languageCode = '${loc.locale.languageCode}-${(loc.locale.countryCode ?? loc.locale.languageCode).toUpperCase()}';
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.translate('addMovieMoment')),
@@ -111,7 +112,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 children: [
                   // PART MEDIA DETAILS SECTION: EDITABLE
                   FutureBuilder(
-                    future: _mediaRepository.getMovieDetails(widget.media),
+                    future: _mediaRepository.getMovieDetails(widget.media, languageCode),
                     builder: (context, snapshot) {
                       // 1. If the request is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -356,7 +357,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                     controller: _notesController,
                     maxLines: 4,
                     textCapitalization: TextCapitalization.sentences,
-                    keyboardType: TextInputType.multiline, // Shows "Enter" key for new lines, no need becasue of maxLines, but good practice
+                    keyboardType: TextInputType.multiline,
                     decoration: InputDecoration(
                       hintText: loc.translate('writeNote'),
                       border: const OutlineInputBorder(),
