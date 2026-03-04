@@ -43,9 +43,11 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
   }
 
   Widget _search(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final languageCode = '${loc.locale.languageCode}-${(loc.locale.countryCode ?? loc.locale.languageCode).toUpperCase()}';
 
     return FutureBuilder<List<Media>>(
-      future: _repo.searchMedia(query),
+      future: _repo.searchMedia(query, languageCode),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

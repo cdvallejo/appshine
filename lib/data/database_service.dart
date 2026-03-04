@@ -114,7 +114,7 @@ class DatabaseService {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not identified');
 
-    // Query to get moments for the current user, ordered by creation date
+    // Query to get moments for the current user, ordered by event date
     return _db
         .collection('moments')
         .where('userId', isEqualTo: user.uid)

@@ -11,7 +11,7 @@ class MediaRepository {
   final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
   final String _baseUrl = 'https://api.themoviedb.org/3';
 
-  Future<List<Media>> searchMedia(String query) async {
+  Future<List<Media>> searchMedia(String query, String languageCode) async {
     if (query.isEmpty) return [];
     try {
       // Uri.parse with queryParameters to handle spaces and special characters, more secure.
@@ -20,7 +20,7 @@ class MediaRepository {
         queryParameters: {
           'api_key': _apiKey,
           'query': query,
-          'language': 'es-ES',
+          'language': languageCode,
         },
       );
       // HTTP GET request with timeout
@@ -47,7 +47,7 @@ class MediaRepository {
   }
 
   // Fetch extra details for a specific movie or TV show with two more requests
-  Future<void> getMovieDetails(Media media) async {
+  Future<void> getMovieDetails(Media media, String languageCode) async {
     try {
       // Determine the correct endpoint based on media type
       final String mediaType = media.type == 'tv' ? 'tv' : 'movie';
@@ -60,7 +60,7 @@ class MediaRepository {
             path: '/3/$mediaType/${media.id}',
             queryParameters: {
               'api_key': _apiKey,
-              'language': 'es-ES',
+              'language': languageCode,
             },
           ),
         ),
@@ -70,7 +70,7 @@ class MediaRepository {
             path: '/3/$mediaType/${media.id}/credits',
             queryParameters: {
               'api_key': _apiKey,
-              'language': 'es-ES',
+              'language': languageCode,
             },
           ),
         ),
