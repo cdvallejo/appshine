@@ -108,4 +108,51 @@ class Media {
       country: country ?? this.country,
     );
   }
+
+  /// Converts Media instance to Firestore document format
+  /// Used when saving media data to Firestore collection
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'title': title,
+      'imageUrl': imageUrl,
+      'releaseDate': releaseDate,
+      'type': type,
+      'subtype': subtype,
+      'directors': directors,
+      'creators': creators,
+      'cast': cast,
+      'country': country,
+    };
+  }
+
+  /// Factory method to create a Media from Firestore document data
+  /// Used when retrieving media data from Firestore collection
+  factory Media.fromFirestore(Map<String, dynamic> data) {
+    if (data['id'] == null) {
+      throw FormatException('Missing required field: id');
+    }
+    if (data['title'] == null || (data['title'] is String && (data['title'] as String).isEmpty)) {
+      throw FormatException('Missing required field: title');
+    }
+
+    return Media(
+      id: (data['id'] as num).toInt(),
+      title: (data['title'] as String).trim(),
+      imageUrl: data['imageUrl'] as String?,
+      releaseDate: data['releaseDate'] as String?,
+      type: (data['type'] as String?) ?? 'movie',
+      subtype: (data['subtype'] as String?) ?? 'Movie',
+      directors: (data['directors'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
+      creators: (data['creators'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
+      cast: (data['cast'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
+      country: data['country'] as String?,
+    );
+  }
 }

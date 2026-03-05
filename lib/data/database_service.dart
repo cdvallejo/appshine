@@ -9,7 +9,39 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Function to add a media moment to Firestore
+  /// Saves or updates a Media in the 'media' collection
+  /// Returns the ID (mediaId) for reference in moments
+  Future<int> _saveOrUpdateMedia(Media media) async {
+    try {
+      await _db
+          .collection('media')
+          .doc(media.id.toString())
+          .set(media.toFirestore(), SetOptions(merge: true));
+      return media.id;
+    } catch (e) {
+      debugPrint("Error saving media: $e");
+      rethrow;
+    }
+  }
+
+  /// Saves or updates a Book in the 'books' collection
+  /// Returns the ID (bookId) for reference in moments
+  Future<String> _saveOrUpdateBook(Book book) async {
+    try {
+      await _db
+          .collection('books')
+          .doc(book.id)
+          .set(book.toFirestore(), SetOptions(merge: true));
+      return book.id;
+    } catch (e) {
+      debugPrint("Error saving book: $e");
+      rethrow;
+    }
+  }
+
+  /// Adds a media viewing moment to Firestore
+  /// Separates the Media record (stored in 'media' collection)
+  /// from the Moment record (stored in 'moments' collection with only a reference)
   Future<void> addMomentMedia({
     required Media media,
     required DateTime date,
@@ -22,19 +54,15 @@ class DatabaseService {
     if (user == null) throw Exception('User not identified');
 
     try {
-      // 2. Sending data to Firestore
+      // 1. Save or update the Media in the 'media' collection
+      final mediaId = await _saveOrUpdateMedia(media);
+
+      // 2. Create a Moment record with reference to the Media
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
         'type': 'media', // Moment type
         'subtype': subtype,
-        'mediaId': media.id,
-        'title': media.title,
-        'year': media.releaseYear,
-        'country': media.country,
-        'directors': media.directors,
-        'creators': media.creators,
-        'cast': media.cast,
-        'imageUrl': media.imageUrl,
+        'mediaId': mediaId, // Reference to media
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
         'notes': notes,
@@ -45,6 +73,9 @@ class DatabaseService {
     }
   }
 
+  /// Adds a book reading moment to Firestore
+  /// Separates the Book record (stored in 'books' collection)
+  /// from the Moment record (stored in 'moments' collection with only a reference)
   Future<void> addMomentBook({
     required Book book,
     required DateTime date,
@@ -57,19 +88,15 @@ class DatabaseService {
     if (user == null) throw Exception('User not identified');
 
     try {
-      // 2. Sending data to Firestore
+      // 1. Save or update the Book in the 'books' collection
+      final bookId = await _saveOrUpdateBook(book);
+
+      // 2. Create a Moment record with reference to the Book
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
         'type': 'book',
         'subtype': subtype,
-        'bookId': book.id,
-        'title': book.title,
-        'authors': book.authors,
-        'publishedDate': book.publishedDate,
-        'isbn': book.isbn,
-        'publisher': book.publisher,
-        'imageUrl': book.fullCoverUrl,
-        'pageCount': book.pageCount,
+        'bookId': bookId, // Reference to book
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
         'notes': notes,
@@ -118,6 +145,74 @@ class DatabaseService {
     return _db
         .collection('moments')
         .where('userId', isEqualTo: user.uid)
+        .orderBy('date', descending: true)
+        .snapshots();
+  }
+
+  /// Retrieves moments enriched with their associated media/book data
+  /// For media moments, fetches the full Media object from the 'media' collection
+  /// For book moments, fetches the full Book object from the 'books' collection
+  /// Useful for displaying moment details with all media information
+  Future<Map<String, dynamic>> getMomentEnriched(String momentId) async {
+    try {
+      final momentDoc = await _db.collection('moments').doc(momentId).get();
+      final momentData = momentDoc.data();
+
+      if (momentData == null) {
+        throw Exception('Moment not found');
+      }
+
+      // Enrich moment with media or book data based on type
+      if (momentData['type'] == 'media' && momentData['mediaId'] != null) {
+        final mediaDoc =
+            await _db.collection('media').doc(momentData['mediaId'].toString()).get();
+        if (mediaDoc.exists) {
+          return {
+            'moment': momentData,
+            'media': mediaDoc.data(),
+          };
+        }
+      } else if (momentData['type'] == 'book' && momentData['bookId'] != null) {
+        final bookDoc = await _db.collection('books').doc(momentData['bookId']).get();
+        if (bookDoc.exists) {
+          return {
+            'moment': momentData,
+            'book': bookDoc.data(),
+          };
+        }
+      }
+
+      return {'moment': momentData};
+    } catch (e) {
+      debugPrint("Error fetching enriched moment: $e");
+      rethrow;
+    }
+  }
+
+  /// Get all moments for a specific media (useful for viewing history)
+  /// This will be used for the "View History" feature in the future
+  Stream<QuerySnapshot> getMomentsByMedia(int mediaId) {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not identified');
+
+    return _db
+        .collection('moments')
+        .where('userId', isEqualTo: user.uid)
+        .where('mediaId', isEqualTo: mediaId)
+        .orderBy('date', descending: true)
+        .snapshots();
+  }
+
+  /// Get all moments for a specific book (useful for viewing history)
+  /// This will be used for the "View History" feature in the future
+  Stream<QuerySnapshot> getMomentsByBook(String bookId) {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not identified');
+
+    return _db
+        .collection('moments')
+        .where('userId', isEqualTo: user.uid)
+        .where('bookId', isEqualTo: bookId)
         .orderBy('date', descending: true)
         .snapshots();
   }

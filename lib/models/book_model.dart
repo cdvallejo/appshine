@@ -154,4 +154,47 @@ class Book {
       authors: authors ?? this.authors,
     );
   }
+
+  /// Converts Book instance to Firestore document format
+  /// Used when saving book data to Firestore collection
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'title': title,
+      'publishedDate': publishedDate,
+      'imageUrl': imageUrl,
+      'pageCount': pageCount,
+      'isbn': isbn,
+      'publisher': publisher,
+      'editionKey': editionKey,
+      'subtype': subtype,
+      'authors': authors,
+    };
+  }
+
+  /// Factory method to create a Book from Firestore document data
+  /// Used when retrieving book data from Firestore collection
+  factory Book.fromFirestore(Map<String, dynamic> data) {
+    if (data['id'] == null || (data['id'] is String && (data['id'] as String).isEmpty)) {
+      throw FormatException('Missing required field: id');
+    }
+    if (data['title'] == null || (data['title'] is String && (data['title'] as String).isEmpty)) {
+      throw FormatException('Missing required field: title');
+    }
+
+    return Book(
+      id: (data['id'] as String).trim(),
+      title: (data['title'] as String).trim(),
+      publishedDate: data['publishedDate'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      pageCount: (data['pageCount'] as num?)?.toInt(),
+      isbn: data['isbn'] as String?,
+      publisher: data['publisher'] as String?,
+      editionKey: data['editionKey'] as String?,
+      subtype: (data['subtype'] as String?) ?? 'Novel',
+      authors: (data['authors'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList(),
+    );
+  }
 }
