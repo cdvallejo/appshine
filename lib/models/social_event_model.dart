@@ -65,6 +65,7 @@ class SocialEvent {
 
   Map<String, dynamic> toMap() => {
     'title': title,
+    'titleLower': title.toLowerCase(),
     'subtype': subtype,
     'imageNames': imageNames,
   };

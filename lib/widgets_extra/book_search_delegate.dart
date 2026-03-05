@@ -1,11 +1,19 @@
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/models/book_model.dart';
-import 'package:appshine/repositories/book_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookSearchDelegate extends SearchDelegate<Book?> {
-  final BookRepository _repo = BookRepository();
+  // TODO: Move to OpenLibrarySearchDelegate when refactoring
+  // final BookRepository _repo = BookRepository();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final String searchLabel;
+
+  // TODO: Refactor into separate local and Open Library search delegates
+  // Split into BookSearchDelegate (local) and OpenLibrarySearchDelegate (Open Library API)
+  // Open OpenLibrarySearchDelegate when user clicks "Buscar en Open Library" button
 
   // Constructor requires searchLabel parameter because the [searchFieldLabel] getter
   // doesn't have access to BuildContext, so we pass the localized text here
@@ -46,16 +54,41 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
     );
   }
 
+  /// Search for books in local Firestore collection
+  Future<List<Book>> _searchLocal(String query) async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      // Search in books collection using titleLower for case-insensitive search
+      // Note: Firestore doesn't have native "contains" so we use range queries
+      final queryLower = query.toLowerCase();
+      final snapshot = await _db
+          .collection('books')
+          .where('titleLower', isGreaterThanOrEqualTo: queryLower)
+          .where('titleLower', isLessThan: '${queryLower}z')
+          .limit(10)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Book.fromFirestore(doc.data()))
+          .toList();
+    } catch (e) {
+      debugPrint('Error searching local books: $e');
+      return [];
+    }
+  }
+
   // Common search widget used by both results and suggestions
   Widget _search(BuildContext context) {
-    // Control barriers for short queries. FilmAffinity starts searching from 2 characters.
+    final loc = AppLocalizations.of(context);
+    
     if (query.length < 2) {
       return const Center(child: Text('Type at least 2 characters.'));
     }
 
-    // Use FutureBuilder to handle asynchronous search
     return FutureBuilder<List<Book>>(
-      future: _repo.searchBooks(query),
+      future: _searchLocal(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -68,7 +101,22 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
         final books = snapshot.data ?? [];
 
         if (books.isEmpty) {
-          return const Center(child: Text('No books found'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(loc.translate('noBooksFound')),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Open Open Library search delegate
+                  },
+                  icon: const Icon(Icons.search),
+                  label: const Text('Buscar en Open Library'),
+                ),
+              ],
+            ),
+          );
         }
 
         return ListView.builder(
@@ -76,18 +124,13 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
           itemBuilder: (context, index) {
             final book = books[index];
 
-            // DESIGN SCREEN BOOK ITEM
             return InkWell(
               onTap: () => close(context, book),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Poster image
                     book.fullCoverUrl.isNotEmpty
                         ? Image.network(
                             book.fullCoverUrl,
@@ -102,7 +145,6 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
                                   child: const Icon(Icons.broken_image),
                                 ),
                           )
-                        // Placeholder in case of no poster
                         : Container(
                             width: 80,
                             height: 120,
@@ -110,7 +152,6 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
                             child: const Icon(Icons.book, color: Colors.grey),
                           ),
                     const SizedBox(width: 16),
-                    // Title, year
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,10 +169,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
                           const SizedBox(height: 4),
                           Text(
                             book.releaseYear,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
                           ),
                         ],
                       ),

@@ -115,6 +115,7 @@ class Media {
     return {
       'id': id,
       'title': title,
+      'titleLower': title.toLowerCase(),
       'imageUrl': imageUrl,
       'releaseDate': releaseDate,
       'type': type,

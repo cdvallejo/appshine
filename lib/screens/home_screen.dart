@@ -4,10 +4,10 @@ import 'package:appshine/models/social_event_model.dart';
 import 'package:appshine/screens/add_moment_screen_media.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/add_moment_screen_social_event.dart';
-import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/screens/settings_screen.dart';
 import 'package:appshine/widgets_extra/book_search_delegate.dart';
 import 'package:appshine/widgets_extra/media_search_delegate.dart';
+import 'package:appshine/widgets_extra/moment_tile.dart';
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -223,68 +223,11 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 itemBuilder: (context, dynamic doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  // Moment item design
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 0,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: ListTile(
-                      visualDensity: VisualDensity.compact,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      leading: _buildMomentImage(
-                        data['type'],
-                        data['imageNames'],
-                        data['imageUrl'],
-                        data['subtype'],
-                      ),
-                      title: Text(
-                        data['title'] ?? loc.translate('untitled'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 1),
-                          Text(
-                            _capitalize(data['subtype']),
-                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ],
-                      ),
-                      // Traiing with icon moment and onTap for future detail
-                      trailing: Icon(
-                        _getMomentIcon(data['type'], data['subtype']),
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MomentDetailScreen(
-                              momentData: data,
-                              momentId: doc
-                                  .id, // Pass the document ID for future reference (e.g., deletion)
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                  return MomentTile(
+                    doc: doc,
+                    buildMomentImage: _buildMomentImage,
+                    getMomentIcon: _getMomentIcon,
+                    capitalize: _capitalize,
                   );
                 },
                 useStickyGroupSeparators:

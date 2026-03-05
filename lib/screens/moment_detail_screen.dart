@@ -48,6 +48,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // First, enrich the moment data with media/book information if needed
+    _enrichMomentData();
+    
     // Initialize controllers with existing data
     _titleController = TextEditingController(text: widget.momentData['title'] ?? '');
     _notesController = TextEditingController(text: widget.momentData['notes']);
@@ -83,6 +86,55 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
     _selectedDate = (widget.momentData['date'] as Timestamp).toDate();
     _selectedSubtype = widget.momentData['subtype'] ?? '';
+  }
+
+  /// Enriches moment data with media or book information if not already present
+  /// This method fetches data from 'media' or 'books' collections separately
+  Future<void> _enrichMomentData() async {
+    try {
+      final title = widget.momentData['title'] as String?;
+      if (widget.momentData['type'] == 'media' &&
+          widget.momentData['mediaId'] != null &&
+          (title == null || title.isEmpty)) {
+        final mediaDoc = await FirebaseFirestore.instance
+            .collection('media')
+            .doc(widget.momentData['mediaId'].toString())
+            .get();
+
+        if (mediaDoc.exists) {
+          widget.momentData.addAll({
+            'title': mediaDoc['title'],
+            'imageUrl': mediaDoc['imageUrl'],
+            'directors': mediaDoc['directors'],
+            'creators': mediaDoc['creators'],
+            'cast': mediaDoc['cast'],
+            'country': mediaDoc['country'],
+            'year': mediaDoc['releaseDate']?.toString().substring(0, 4) ?? 'N/A',
+          });
+        }
+      } else if (widget.momentData['type'] == 'book' &&
+          widget.momentData['bookId'] != null &&
+          (title == null || title.isEmpty)) {
+        final bookDoc = await FirebaseFirestore.instance
+            .collection('books')
+            .doc(widget.momentData['bookId'])
+            .get();
+
+        if (bookDoc.exists) {
+          widget.momentData.addAll({
+            'title': bookDoc['title'],
+            'imageUrl': bookDoc['imageUrl'],
+            'authors': bookDoc['authors'],
+            'publishedDate': bookDoc['publishedDate'],
+            'isbn': bookDoc['isbn'],
+            'publisher': bookDoc['publisher'],
+            'pageCount': bookDoc['pageCount'],
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error enriching moment data: $e');
+    }
   }
 
   // Helper function to format list fields as comma-separated strings for editing

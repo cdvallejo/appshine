@@ -161,6 +161,7 @@ class Book {
     return {
       'id': id,
       'title': title,
+      'titleLower': title.toLowerCase(),
       'publishedDate': publishedDate,
       'imageUrl': imageUrl,
       'pageCount': pageCount,
