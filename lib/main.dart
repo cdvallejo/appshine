@@ -50,30 +50,26 @@ class MainApp extends StatefulWidget {
   /// Parameters:
   /// * [context]: The [BuildContext] used to find the [_MainAppState]
   /// * [newLocale]: The new [Locale] to apply (e.g., `Locale('es')`)
-  ///
-  /// Example:
-  /// ```dart
-  /// MainApp.setLocale(context, Locale('en'));
-  /// ```
   static void setLocale(BuildContext context, Locale newLocale) {
     var state = context.findAncestorStateOfType<_MainAppState>();
     state?.setLocale(newLocale);
   }
 
-  /// Changes the application theme mode dynamically.
+  /// Changes the application theme mode dynamically using the Static Accessor Pattern.
   ///
-  /// This method finds the nearest [_MainAppState] ancestor and updates its
-  /// [_themeMode] field, triggering a rebuild of the entire application with
-  /// the new theme.
+  /// This public static method provides a clean interface for other widgets to change
+  /// the app theme. It finds the nearest [_MainAppState] ancestor and delegates to
+  /// its private `setThemeMode()` method, which handles the actual implementation.
+  ///
+  /// **Static Accessor Pattern**:
+  /// - Public static method: Simple, clean interface for external access
+  /// - Private instance method: Encapsulates implementation and persistence logic
+  /// - Separation of concerns: Theme state management separate from usage
+  /// - Single responsibility: Delegate pattern keeps code maintainable
   ///
   /// Parameters:
   /// * [context]: The [BuildContext] used to find the [_MainAppState]
   /// * [themeMode]: The new [ThemeMode] to apply
-  ///
-  /// Example:
-  /// ```dart
-  /// MainApp.setThemeMode(context, ThemeMode.dark);
-  /// ```
   static void setThemeMode(BuildContext context, ThemeMode themeMode) {
     var state = context.findAncestorStateOfType<_MainAppState>();
     state?.setThemeMode(themeMode);
@@ -85,10 +81,14 @@ class MainApp extends StatefulWidget {
 
 /// State for [MainApp].
 ///
-/// Manages the current locale and theme mode, providing localization delegates
-/// to support Spanish and English languages. Rebuilds the Material app when the
-/// locale or theme changes, ensuring all localized strings and theme colors
-/// reflect the current settings.
+/// Manages the current locale and theme mode using the **Static Accessor Pattern**:
+/// - Public static methods in [MainApp] provide the external interface
+/// - Private methods in this state handle the actual implementation
+/// - Always provides localization delegates to support Spanish and English
+/// - Rebuilds the Material app when locale or theme changes
+///
+/// The pattern ensures clean separation between widget interface and state logic,
+/// making the app maintainable and easy to extend with new settings.
 class _MainAppState extends State<MainApp> {
   /// The current locale of the application.
   ///
@@ -157,7 +157,9 @@ class _MainAppState extends State<MainApp> {
   /// Configures:
   /// * **Localization**: Supports Spanish and English via custom and built-in delegates
   /// * **Theme**: Light and dark themes with indigo as primary color
-  /// * **Home**: Displays [AuthGate] to handle authentication state
+  /// * **Home**: Displays [AuthGate] widget, which manages authentication flow:
+  ///   - If user is logged in: shows the main app screens
+  ///   - If user is not logged in: shows login/signup screens
   ///
   /// The localization delegates are applied in order:
   /// 1. [AppLocalizationsDelegate] - Custom translations for the app
