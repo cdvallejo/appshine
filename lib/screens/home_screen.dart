@@ -261,7 +261,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           const SizedBox(height: 1),
                           Text(
-                            loc.translate(_getSubtypeKey(data['type'], data['subtype'])),
+                            loc.translate(AppLocalizations.getSubtypeKey(data['type'], data['subtype'])),
                             style: TextStyle(color: Theme.of(context).colorScheme.primary),
                           ),
                         ],
@@ -471,6 +471,18 @@ class HomeScreen extends StatelessWidget {
       case 'book':
         return Icons.book;
       case 'socialEvent':
+        if (subtype.toLowerCase().contains('cultural')) {
+          return Icons.music_note;
+        }
+        if (subtype.toLowerCase().contains('gaming')) {
+          return Icons.diversity_1;
+        }
+        if (subtype.toLowerCase().contains('social')) {
+          return Icons.people;
+        }
+        if (subtype.toLowerCase().contains('sport')) {
+          return Icons.sports;
+        }
         return Icons.people;
       default:
         return Icons.question_mark_outlined; // Just in case there is an error with the type / subtype
@@ -496,44 +508,21 @@ class HomeScreen extends StatelessWidget {
       case 'book':
         return Icons.book_outlined;
       case 'socialEvent':
+        if (subtype.toLowerCase().contains('cultural')) {
+          return Icons.music_note_outlined;
+        }
+        if (subtype.toLowerCase().contains('gaming')) {
+          return Icons.diversity_1_outlined;
+        }
+        if (subtype.toLowerCase().contains('social')) {
+          return Icons.people_outlined;
+        }
+        if (subtype.toLowerCase().contains('sport')) {
+          return Icons.sports_outlined;
+        }
         return Icons.people_outlined;
       default:
         return Icons.question_mark_outlined; // Just in case
-    }
-  }
-
-  /// Gets the localized subtype key based on moment type and subtype.
-  ///
-  /// Maps subtypes to their translation keys for proper localization.
-  /// Supports media (movie/tvSeries), books, and social events.
-  ///
-  /// Parameters:
-  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
-  ///   * [subtype] - The subtype name
-  ///
-  /// Returns:
-  ///   The translation key for the subtype
-  String _getSubtypeKey(String type, String subtype) {
-    final subtypeLower = subtype.toLowerCase();
-    
-    switch (type) {
-      case 'media':
-        return subtypeLower.contains('movie') ? 'movie' : 'tvSeries';
-      case 'book':
-        if (subtypeLower.contains('novel')) return 'novel';
-        if (subtypeLower.contains('comic')) return 'comic';
-        if (subtypeLower.contains('essay')) return 'essay';
-        if (subtypeLower.contains('sheet')) return 'sheetMusic';
-        if (subtypeLower.contains('other')) return 'other';
-        return 'unknown';
-      case 'socialEvent':
-        if (subtypeLower.contains('culture')) return 'culture';
-        if (subtypeLower.contains('gaming')) return 'gaming';
-        if (subtypeLower.contains('social')) return 'socialEvent';
-        if (subtypeLower.contains('sport')) return 'sport';
-        return 'unknown';
-      default:
-        return 'unknown';
     }
   }
 

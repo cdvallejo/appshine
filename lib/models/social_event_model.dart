@@ -1,14 +1,15 @@
 class SocialEvent {
   static const List<String> subtypes = [
-    'Culture',
+    'Cultural',
     'Gaming',
     'Social',
     'Sport',
+    'Other',
   ];
 
   // TODO: User suggestions for tags based on subtype
   static const Map<String, List<String>> tagLibrary = {
-  'Culture': [
+  'Cultural': [
     'Cinema',
     'Concert',
     'Exhibition',

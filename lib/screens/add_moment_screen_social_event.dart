@@ -461,7 +461,7 @@ class _AddMomentScreenSocialEventState
   ///   The translation key for the subtype.
   String _getSocialEventSubtypeKey(String subtype) {
     final subtypeLower = subtype.toLowerCase();
-    if (subtypeLower.contains('culture')) return 'culture';
+    if (subtypeLower.contains('cultural')) return 'cultural';
     if (subtypeLower.contains('gaming')) return 'gaming';
     if (subtypeLower.contains('social')) return 'social';
     if (subtypeLower.contains('sport')) return 'sport';
