@@ -122,10 +122,10 @@ class AppLocalizations {
       'isbn': 'ISBN',
 
       // Social Event Screen
-      'addEventMoment': 'Añadir Momento Social',
+      'addEventMoment': 'Añadir Evento Social',
       'selectEventType': 'Seleccionar tipo de evento',
       'selectEventSubtype': 'Selecciona un subtipo',
-      'culture': 'Cultural',
+      'cultural': 'Cultural',
       'gaming': 'Juegos',
       'social': 'Social',
       'sport': 'Deporte',
@@ -137,7 +137,8 @@ class AppLocalizations {
       // Moment Detail Screen
       'detail': 'Detalle',
       'deleteConfirmTitle': 'Eliminar momento',
-      'deleteConfirmMessage': '¿Estás seguro? Esta acción no se puede deshacer.',
+      'deleteConfirmMessage':
+          '¿Estás seguro? Esta acción no se puede deshacer.',
 
       // Update Moment Sheet
       'editMoment': 'Editar momento',
@@ -228,6 +229,7 @@ class AppLocalizations {
       'searchByTitle': 'Search by title',
       'searchByAuthor': 'Search by author',
       'noNotes': 'No notes...',
+      'other': 'Other',
 
       // Search delegate
       'typeToSearch': 'Type to search and press the search button',
@@ -261,7 +263,6 @@ class AppLocalizations {
       'comic': 'Comic',
       'essay': 'Essay',
       'sheetMusic': 'Sheet Music',
-      'other': 'Other',
       'title': 'Title',
       'author': 'Author/s',
       'pages': 'Pages',
@@ -272,7 +273,7 @@ class AppLocalizations {
       'addEventMoment': 'Add Social Event Moment',
       'selectEventType': 'Select event type',
       'selectEventSubtype': 'Please select a subtype',
-      'culture': 'Culture',
+      'cultural': 'Cultural',
       'gaming': 'Gaming',
       'social': 'Social',
       'sport': 'Sport',
@@ -404,6 +405,30 @@ class AppLocalizations {
     return translate(dayKeys[weekday - 1]);
   }
 
+  /// Gets the translation key for any moment subtype based on type.
+  ///
+  /// Routes to the appropriate subtype key getter based on moment type.
+  /// Single entry point for translating all moment subtypes.
+  ///
+  /// Parameters:
+  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
+  ///   * [subtype] - The subtype name
+  ///
+  /// Returns:
+  ///   The translation key for the subtype
+  static String getSubtypeKey(String type, String subtype) {
+    switch (type) {
+      case 'media':
+        return getMediaSubtypeKey(subtype);
+      case 'book':
+        return getBookSubtypeKey(subtype);
+      case 'socialEvent':
+        return getSocialEventSubtypeKey(subtype);
+      default:
+        return 'unknown';
+    }
+  }
+
   /// Gets the translation key for a book subtype.
   ///
   /// Parameters:
@@ -438,16 +463,17 @@ class AppLocalizations {
   /// Gets the translation key for a social event subtype.
   ///
   /// Parameters:
-  ///   * [subtype] - The subtype of the social event (e.g., Culture, Gaming, Sport).
+  ///   * [subtype] - The subtype of the social event (e.g., Cultural, Gaming, Sport).
   ///
   /// Returns:
   ///   The translation key for the subtype.
   static String getSocialEventSubtypeKey(String subtype) {
     final subtypeLower = subtype.toLowerCase();
-    if (subtypeLower.contains('culture')) return 'culture';
+    if (subtypeLower.contains('cultural')) return 'cultural';
     if (subtypeLower.contains('gaming')) return 'gaming';
-    if (subtypeLower.contains('social')) return 'socialEvent';
+    if (subtypeLower.contains('social')) return 'social';
     if (subtypeLower.contains('sport')) return 'sport';
+    if (subtypeLower.contains('other')) return 'other';
     return 'unknown';
   }
 }

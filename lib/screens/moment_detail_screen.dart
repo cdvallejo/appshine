@@ -341,7 +341,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Book type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype,
+            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
             items: Book.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
@@ -424,7 +424,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Media type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype,
+            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
             items: Media.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
@@ -511,7 +511,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Event type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype,
+            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
             items: SocialEvent.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
@@ -539,13 +539,14 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
   // Build type-specific details
   Widget _buildTypeSpecificDetails() {
+    final loc = AppLocalizations.of(context);
     // Blue Uppercase label + details below (with edit mode support)
     if (widget.momentData['type'] == 'media') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _selectedSubtype.toUpperCase(),
+            loc.translate(AppLocalizations.getSubtypeKey('media', _selectedSubtype)).toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -561,7 +562,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _selectedSubtype.toUpperCase(),
+            loc.translate(AppLocalizations.getSubtypeKey('book', _selectedSubtype)).toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -577,7 +578,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _selectedSubtype.toUpperCase(),
+            loc.translate(AppLocalizations.getSubtypeKey('socialEvent', _selectedSubtype)).toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
