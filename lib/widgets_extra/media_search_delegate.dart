@@ -60,7 +60,7 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
         final movies = snapshot.data ?? [];
 
         if (movies.isEmpty) {
-          return const Center(child: Text('No movies found'));
+          return Center(child: Text(loc.translate('noMoviesFound')));
         }
 
         return ListView.builder(

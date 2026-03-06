@@ -211,13 +211,13 @@ class _AddMomentScreenSocialEventState
               // Subtype dropdown
               DropdownButton<String>(
                 isExpanded: true,
-                hint: Text(loc.translate('selectEventType')),
+                hint: Text(loc.translate('selectEventSubtype')),
                 value: _selectedSubtype,
                 items: SocialEvent.subtypes
                     .map(
                       (subtype) => DropdownMenuItem(
                         value: subtype,
-                        child: Text(subtype),
+                        child: Text(loc.translate(_getSocialEventSubtypeKey(subtype))),
                       ),
                     )
                     .toList(),
@@ -449,5 +449,22 @@ class _AddMomentScreenSocialEventState
         ),
       ),
     );
+  }
+  /// Gets the localized translation key for a social event subtype.
+  ///
+  /// Maps social event subtypes to their translation keys.
+  ///
+  /// Parameters:
+  ///   * [subtype] - The subtype of the social event (e.g., Concert, Party).
+  ///
+  /// Returns:
+  ///   The translation key for the subtype.
+  String _getSocialEventSubtypeKey(String subtype) {
+    final subtypeLower = subtype.toLowerCase();
+    if (subtypeLower.contains('culture')) return 'culture';
+    if (subtypeLower.contains('gaming')) return 'gaming';
+    if (subtypeLower.contains('social')) return 'social';
+    if (subtypeLower.contains('sport')) return 'sport';
+    return 'unknown'; // Default case if no match is found. Firebase should never receive 'unknown' as subtype, because it's not an option in the dropdown.
   }
 }

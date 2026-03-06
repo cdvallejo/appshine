@@ -154,7 +154,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                             items: Book.subtypes
                                 .map((subtype) => DropdownMenuItem(
                                       value: subtype,
-                                      child: Text(subtype),
+                                      child: Text(loc.translate(AppLocalizations.getBookSubtypeKey(subtype))),
                                     ))
                                 .toList(),
                             onChanged: (value) {
