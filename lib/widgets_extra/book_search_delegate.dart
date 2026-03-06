@@ -48,10 +48,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
 
   // Common search widget used by both results and suggestions
   Widget _search(BuildContext context) {
-    // Control barriers for short queries. FilmAffinity starts searching from 2 characters.
-    if (query.length < 2) {
-      return const Center(child: Text('Type at least 2 characters.'));
-    }
+    final loc = AppLocalizations.of(context);
 
     // Use FutureBuilder to handle asynchronous search
     return FutureBuilder<List<Book>>(
@@ -68,7 +65,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
         final books = snapshot.data ?? [];
 
         if (books.isEmpty) {
-          return const Center(child: Text('No books found'));
+          return Center(child: Text(loc.translate('noBooksFound')));
         }
 
         return ListView.builder(

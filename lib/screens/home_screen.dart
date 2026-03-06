@@ -261,7 +261,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           const SizedBox(height: 1),
                           Text(
-                            _capitalize(data['subtype']),
+                            loc.translate(_getSubtypeKey(data['type'], data['subtype'])),
                             style: TextStyle(color: Theme.of(context).colorScheme.primary),
                           ),
                         ],
@@ -502,15 +502,39 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  /// Capitalizes the first character of a string.
+  /// Gets the localized subtype key based on moment type and subtype.
+  ///
+  /// Maps subtypes to their translation keys for proper localization.
+  /// Supports media (movie/tvSeries), books, and social events.
   ///
   /// Parameters:
-  ///   * [text] - The string to capitalize
+  ///   * [type] - The moment type ('media', 'book', 'socialEvent')
+  ///   * [subtype] - The subtype name
   ///
   /// Returns:
-  ///   The capitalized string, or the original if empty
-  String _capitalize(String text) {
-    return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+  ///   The translation key for the subtype
+  String _getSubtypeKey(String type, String subtype) {
+    final subtypeLower = subtype.toLowerCase();
+    
+    switch (type) {
+      case 'media':
+        return subtypeLower.contains('movie') ? 'movie' : 'tvSeries';
+      case 'book':
+        if (subtypeLower.contains('novel')) return 'novel';
+        if (subtypeLower.contains('comic')) return 'comic';
+        if (subtypeLower.contains('essay')) return 'essay';
+        if (subtypeLower.contains('sheet')) return 'sheetMusic';
+        if (subtypeLower.contains('other')) return 'other';
+        return 'unknown';
+      case 'socialEvent':
+        if (subtypeLower.contains('culture')) return 'culture';
+        if (subtypeLower.contains('gaming')) return 'gaming';
+        if (subtypeLower.contains('social')) return 'socialEvent';
+        if (subtypeLower.contains('sport')) return 'sport';
+        return 'unknown';
+      default:
+        return 'unknown';
+    }
   }
 
   /// Formats a date according to the current locale.

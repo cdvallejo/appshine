@@ -183,7 +183,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       updateData['creators'] = _creatorsController.text.split(',').map((a) => a.trim()).toList();
     }
     if (_directionController.text.trim().isNotEmpty) {
-      updateData['director'] = _directionController.text.split(',').map((a) => a.trim()).toList();
+      updateData['directors'] = _directionController.text.split(',').map((a) => a.trim()).toList();
     }
     if (_castController.text.trim().isNotEmpty) {
       updateData['cast'] = _castController.text.split(',').map((a) => a.trim()).toList();
@@ -345,7 +345,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             items: Book.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
-                      child: Text(subtype),
+                      child: Text(loc.translate(AppLocalizations.getBookSubtypeKey(subtype))),
                     ))
                 .toList(),
             onChanged: (value) {
@@ -428,7 +428,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             items: Media.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
-                      child: Text(subtype),
+                      child: Text(loc.translate(AppLocalizations.getMediaSubtypeKey(subtype))),
                     ))
                 .toList(),
             onChanged: (value) {
@@ -461,7 +461,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           TextField(
             controller: _directionController,
             decoration: InputDecoration(
-              label: Text(loc.translate('director')),
+              label: Text(loc.translate('directors')),
               isDense: true,
               border: const UnderlineInputBorder(),
             ),
@@ -494,7 +494,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         if (widget.momentData['subtype'] == 'TV Series') ...[
           buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, loc.translate('creator'), context),
         ],
-        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, loc.translate('director'), context),
+        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, loc.translate('directors'), context),
         buildDetailRow(_castController.text.isEmpty ? null : _castController.text, loc.translate('cast'), context),
         buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, loc.translate('country'), context),
       ],
@@ -503,6 +503,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
   // Build social event details section
   Widget _buildSocialEventDetails() {
+    final loc = AppLocalizations.of(context);
     if (isEditing) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +515,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             items: SocialEvent.subtypes
                 .map((subtype) => DropdownMenuItem(
                       value: subtype,
-                      child: Text(subtype),
+                      child: Text(loc.translate(AppLocalizations.getSocialEventSubtypeKey(subtype))),
                     ))
                 .toList(),
             onChanged: (value) {
@@ -936,6 +937,8 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
       ),
     );
   }
+
+
 }
 
 // Helper method to get image path for gallery

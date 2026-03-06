@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
 
+/// Localization support for the Appshine application.
+///
+/// This class provides translations for Spanish ('es') and English ('en').
+/// It manages all user-facing strings in the application and provides
+/// convenience methods for accessing common translations and generating
+/// localized subtype names for different moment types (Media, Book, SocialEvent).
+///
+/// Usage:
+/// ```dart
+/// final loc = AppLocalizations.of(context);
+/// String translated = loc.translate('key');
+/// ```
 class AppLocalizations {
+  /// The [Locale] associated with this localization instance.
   final Locale locale;
 
+  /// Creates a new [AppLocalizations] instance with the given [locale].
   AppLocalizations(this.locale);
 
-  // Helper method to keep the code in the widgets concise
-  // Localizations are accessed using an InheritedWidget "of" syntax
+  /// Retrieves the [AppLocalizations] instance from the given [context].
+  ///
+  /// This method follows the standard Flutter localization pattern
+  /// using an InheritedWidget's "of" syntax. If no localization
+  /// is available in the context, defaults to Spanish ('es').
+  ///
+  /// Parameters:
+  ///   * [context] - The build context from which to retrieve localizations.
+  ///
+  /// Returns:
+  ///   The [AppLocalizations] instance, or a Spanish locale instance if not found.
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
         AppLocalizations(const Locale('es'));
   }
 
+  /// Map of all localized strings organized by language and key.
+  ///
+  /// Structure: language code ('es', 'en') -> translation key -> translated string
   static const Map<String, Map<String, String>> _localizedStrings = {
     'es': {
       // App & Navigation
@@ -63,21 +89,32 @@ class AppLocalizations {
       'unknownCountry': 'País desconocido',
       'unknown': 'Desconocido',
       'newEvent': 'Nuevo Evento',
-      'typeToSearch': 'Escribe para buscar y presiona el botón de búsqueda',
       'where': 'Añadir ubicación',
       'searchByTitle': 'Buscar por título',
       'noNotes': 'No hay notas...',
 
+      // Search delegate
+      'typeToSearch': 'Escribe para buscar y pulsa el botón de búsqueda',
+      'noMoviesFound': 'No se han encontrado películas',
+      'noBooksFound': 'No se han encontrado libros',
+
       // Media Screen
       'addMovieMoment': 'Añadir Momento de Película',
-      'selectSubtype': 'Seleccionar película o serie',
-      'director': 'Dirección',
+      'selectMediaSubtype': 'Seleccionar película o serie',
+      'movie': 'Película',
+      'tvSeries': 'Serie de TV',
+      'directors': 'Dirección',
       'cast': 'Reparto',
       'creator': 'Creador/es',
 
       // Book Screen
       'addBookMoment': 'Añadir Momento de Libro',
       'selectBookType': 'Seleccionar tipo de libro',
+      'novel': 'Novela',
+      'comic': 'Cómic',
+      'essay': 'Ensayo',
+      'sheetMusic': 'Partitura',
+      'other': 'Otro',
       'title': 'Título',
       'author': 'Autor/es',
       'pages': 'Páginas',
@@ -88,6 +125,10 @@ class AppLocalizations {
       'addEventMoment': 'Añadir Momento Social',
       'selectEventType': 'Seleccionar tipo de evento',
       'selectEventSubtype': 'Selecciona un subtipo',
+      'culture': 'Cultural',
+      'gaming': 'Juegos',
+      'social': 'Social',
+      'sport': 'Deporte',
       'gallery': 'Galería',
       'noImagesAdded': 'No hay imágenes añadidas',
       'imagesSavedDevice': 'Imágenes guardadas en el dispositivo',
@@ -183,11 +224,15 @@ class AppLocalizations {
       'unknownCountry': 'Unknown country',
       'unknown': 'Unknown',
       'newEvent': 'New Event',
-      'typeToSearch': 'Type to search and press the search button',
       'where': 'Add location',
       'searchByTitle': 'Search by title',
       'searchByAuthor': 'Search by author',
       'noNotes': 'No notes...',
+
+      // Search delegate
+      'typeToSearch': 'Type to search and press the search button',
+      'noMoviesFound': 'No movies found',
+      'noBooksFound': 'No books found',
 
       // Settings Screen
       'language': 'LANGUAGE',
@@ -202,15 +247,21 @@ class AppLocalizations {
 
       // Media Screen
       'addMovieMoment': 'Add Movie Moment',
-      'selectSubtype': 'Select movie or TV Series',
-      'director': 'Director',
+      'selectMediaSubtype': 'Select movie or TV Series',
+      'movie': 'Movie',
+      'tvSeries': 'TV Series',
+      'directors': 'Direction',
       'cast': 'Cast',
       'creator': 'Creator',
-
 
       // Book Screen
       'addBookMoment': 'Add Book Moment',
       'selectBookType': 'Select book type',
+      'novel': 'Novel',
+      'comic': 'Comic',
+      'essay': 'Essay',
+      'sheetMusic': 'Sheet Music',
+      'other': 'Other',
       'title': 'Title',
       'author': 'Author/s',
       'pages': 'Pages',
@@ -221,6 +272,10 @@ class AppLocalizations {
       'addEventMoment': 'Add Social Event Moment',
       'selectEventType': 'Select event type',
       'selectEventSubtype': 'Please select a subtype',
+      'culture': 'Culture',
+      'gaming': 'Gaming',
+      'social': 'Social',
+      'sport': 'Sport',
       'gallery': 'Gallery',
       'noImagesAdded': 'No images added yet',
       'imagesSavedDevice': 'Images saved to device',
@@ -277,24 +332,40 @@ class AppLocalizations {
     },
   };
 
+  /// Translates a localization key to the corresponding string in the current locale.
+  ///
+  /// Looks up the translation key in the current language's dictionary.
+  /// If the key is not found, returns the key itself as a fallback.
+  ///
+  /// Parameters:
+  ///   * [key] - The localization key to translate.
+  ///
+  /// Returns:
+  ///   The translated string, or the key if translation not found.
   String translate(String key) {
     return _localizedStrings[locale.languageCode]?[key] ?? key;
   }
 
-  // Convenience getters for common strings
-  String get settings => translate('settings');
-  String get logout => translate('logout');
-  String get login => translate('login');
-  String get cancel => translate('cancel');
-  String get year => translate('year');
-  String get country => translate('country');
-  String get director => translate('director');
-  String get cast => translate('cast');
-  String get myNotes => translate('myNotes');
-  String get date => translate('date');
-  String get location => translate('location');
-  String get momentSaved => translate('momentSaved');
+  // ========================================
+  // CONVENIENCE GETTERS FOR FREQUENTLY USED STRINGS
+  // ========================================
 
+  /// Translated string for 'Settings'.
+  String get settings => translate('settings');
+
+  /// Translated string for 'Logout'.
+  String get logout => translate('logout');
+
+  /// Translated string for 'Cancel'.
+  String get cancel => translate('cancel');
+
+  /// Gets the localized name of a month.
+  ///
+  /// Parameters:
+  ///   * [month] - The month number (1-12).
+  ///
+  /// Returns:
+  ///   The translated month name for the given month number.
   String getMonthName(int month) {
     const monthKeys = [
       'january',
@@ -313,6 +384,13 @@ class AppLocalizations {
     return translate(monthKeys[month - 1]);
   }
 
+  /// Gets the localized name of a weekday.
+  ///
+  /// Parameters:
+  ///   * [weekday] - The weekday number (1-7, where 1 = Monday).
+  ///
+  /// Returns:
+  ///   The translated weekday name for the given weekday number.
   String getWeekdayName(int weekday) {
     const dayKeys = [
       'monday',
@@ -325,21 +403,100 @@ class AppLocalizations {
     ];
     return translate(dayKeys[weekday - 1]);
   }
+
+  /// Gets the translation key for a book subtype.
+  ///
+  /// Parameters:
+  ///   * [subtype] - The subtype of the book (e.g., Novel, Comic, Essay).
+  ///
+  /// Returns:
+  ///   The translation key for the subtype.
+  static String getBookSubtypeKey(String subtype) {
+    final subtypeLower = subtype.toLowerCase();
+    if (subtypeLower.contains('novel')) return 'novel';
+    if (subtypeLower.contains('comic')) return 'comic';
+    if (subtypeLower.contains('essay')) return 'essay';
+    if (subtypeLower.contains('sheet')) return 'sheetMusic';
+    if (subtypeLower.contains('other')) return 'other';
+    return 'unknown';
+  }
+
+  /// Gets the translation key for a media subtype.
+  ///
+  /// Parameters:
+  ///   * [subtype] - The subtype of the media (e.g., Movie, TV Series).
+  ///
+  /// Returns:
+  ///   The translation key for the subtype.
+  static String getMediaSubtypeKey(String subtype) {
+    final subtypeLower = subtype.toLowerCase();
+    if (subtypeLower.contains('movie')) return 'movie';
+    if (subtypeLower.contains('tv')) return 'tvSeries';
+    return 'unknown';
+  }
+
+  /// Gets the translation key for a social event subtype.
+  ///
+  /// Parameters:
+  ///   * [subtype] - The subtype of the social event (e.g., Culture, Gaming, Sport).
+  ///
+  /// Returns:
+  ///   The translation key for the subtype.
+  static String getSocialEventSubtypeKey(String subtype) {
+    final subtypeLower = subtype.toLowerCase();
+    if (subtypeLower.contains('culture')) return 'culture';
+    if (subtypeLower.contains('gaming')) return 'gaming';
+    if (subtypeLower.contains('social')) return 'socialEvent';
+    if (subtypeLower.contains('sport')) return 'sport';
+    return 'unknown';
+  }
 }
 
-// Class bridge to connect the AppLocalizations with the Flutter localization system
+/// Delegate for loading [AppLocalizations] instances.
+///
+/// This class bridges the [AppLocalizations] with the Flutter localization system.
+/// It is responsible for determining supported locales and instantiating
+/// localization objects for the application.
+///
+/// Supported languages: Spanish ('es'), English ('en')
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  /// Creates a new [AppLocalizationsDelegate].
   const AppLocalizationsDelegate();
 
-  // Supported languages
+  /// Determines whether the given [locale] is supported by this app.
+  ///
+  /// Currently supports Spanish ('es') and English ('en').
+  ///
+  /// Parameters:
+  ///   * [locale] - The locale to check for support.
+  ///
+  /// Returns:
+  ///   true if the locale's language code is supported, false otherwise.
   @override
   bool isSupported(Locale locale) => ['es', 'en'].contains(locale.languageCode);
 
+  /// Loads the localization for the given [locale].
+  ///
+  /// Parameters:
+  ///   * [locale] - The locale for which to load localization strings.
+  ///
+  /// Returns:
+  ///   A Future that resolves to an [AppLocalizations] instance.
   @override
   Future<AppLocalizations> load(Locale locale) async {
     return AppLocalizations(locale);
   }
 
+  /// Determines whether to reload localization data.
+  ///
+  /// Returns false to indicate that localization data is stable
+  /// and does not need to be reloaded when the delegate changes.
+  ///
+  /// Parameters:
+  ///   * [old] - The old [AppLocalizationsDelegate] instance.
+  ///
+  /// Returns:
+  ///   false - localization data is never reloaded.
   @override
   bool shouldReload(AppLocalizationsDelegate old) => false;
 }

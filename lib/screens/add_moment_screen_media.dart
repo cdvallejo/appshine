@@ -55,7 +55,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                   country: _countryController.text,
                   directors: _directorsController.text
                       .split(',')
-                      .map((director) => director.trim())
+                      .map((directors) => directors.trim())
                       .toList(),
                   creators: _creatorsController.text
                       .split(',')
@@ -153,12 +153,12 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           // Subtype dropdown
                           DropdownButton<String>(
                             isExpanded: true,
-                            hint: Text(loc.translate('selectSubtype')),
+                            hint: Text(loc.translate('selectMediaSubtype')),
                             value: _selectedSubtype,
                             items: Media.subtypes
                                 .map((subtype) => DropdownMenuItem(
                                       value: subtype,
-                                      child: Text(subtype),
+                                      child: Text(loc.translate(AppLocalizations.getMediaSubtypeKey(subtype))),
                                     ))
                                 .toList(),
                             onChanged: (value) {
@@ -227,7 +227,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                           TextField(
                             controller: _directorsController,
                             decoration: InputDecoration(
-                              label: Text(loc.translate('director')),
+                              label: Text(loc.translate('directors')),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
@@ -371,4 +371,6 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
       ),
     );
   }
+    /// Gets the localized translation key for a media subtype.
 }
+

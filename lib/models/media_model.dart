@@ -9,7 +9,7 @@ class Media {
   final String title;
   final String? imageUrl;
   final String? releaseDate;
-  final String type; // movie or tv
+  final String type; // media
   final String subtype; // 'Movie' or 'TV Series'
   // Cannot be final if we want to set it later in the details fetch
   List<String>? directors;

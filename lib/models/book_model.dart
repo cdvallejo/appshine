@@ -1,11 +1,10 @@
 class Book {
   static const List<String> subtypes = [
     'Novel',
-    'Manga',
     'Comic',
     'Essay',
-    'Technical',
     'Sheet music',
+    'Other',
   ];
 
   final String id;
