@@ -19,6 +19,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Must be called as the entry point of the application.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Aumentar el image cache de Flutter para mejor rendimiento de scroll
+  imageCache.maximumSize = 250;        // 250 imágenes en memoria
+  imageCache.maximumSizeBytes = 250 * 1024 * 1024; // 250 MB
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

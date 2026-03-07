@@ -1,5 +1,6 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:appshine/widgets_extra/delete_confirm_dialog.dart';
 import 'package:appshine/widgets_extra/moment_detail_row.dart';
 import 'package:appshine/widgets_extra/social_event_image_gallery.dart';
@@ -27,6 +28,7 @@ class MomentDetailScreen extends StatefulWidget {
 
 class _MomentDetailScreenState extends State<MomentDetailScreen> {
   bool isEditing = false;
+  bool _isSaving = false;
   late TextEditingController _titleController;
   late TextEditingController _notesController;
   late TextEditingController _locationController;
@@ -288,19 +290,33 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         },
       );
     } else {
-      // For books, media, etc., show network image
+      // For books, media, etc., show network image with disk caching
+      if (widget.momentData['imageUrl'] != null) {
+        return CachedNetworkImage(
+          imageUrl: widget.momentData['imageUrl'],
+          height: 300,
+          width: double.infinity,
+          fit: BoxFit.fitHeight,
+          placeholder: (context, url) => Container(
+            height: 300,
+            width: double.infinity,
+            color: Colors.cyan.withValues(alpha: 0.2),
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => Container(
+            height: 300,
+            width: double.infinity,
+            color: Colors.cyan.withValues(alpha: 0.2),
+            child: const Center(child: Icon(Icons.image_not_supported, size: 64, color: Colors.grey)),
+          ),
+        );
+      }
+      
       return Container(
         height: 300,
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.cyan.withValues(alpha: 0.2),
-          image: widget.momentData['imageUrl'] != null
-              ? DecorationImage(
-                  image: NetworkImage(widget.momentData['imageUrl']),
-                  fit: BoxFit.fitHeight,
-                )
-              : null,
-        ),
+        color: Colors.cyan.withValues(alpha: 0.2),
+        child: const Center(child: Icon(Icons.image, size: 64, color: Colors.grey)),
       );
     }
   }
@@ -733,18 +749,35 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         title: Text(_titleController.text.isEmpty ? loc.translate('detail') : _titleController.text),
         actions: [
           IconButton(
-            icon: Icon(isEditing ? Icons.check : Icons.edit),
-            onPressed: () async {
+            icon: _isSaving ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(isEditing ? Icons.check : Icons.edit),
+            onPressed: _isSaving ? null : () async {
               if (isEditing) {
-                await _saveChanges();
-                if (context.mounted) {
-                  final loc = AppLocalizations.of(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.translate('changesSaved'))),
-                  );
+                setState(() => _isSaving = true);
+                try {
+                  await _saveChanges();
+                  if (context.mounted) {
+                    final loc = AppLocalizations.of(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(loc.translate('changesSaved'))),
+                    );
+                    Navigator.pop(context); // Vuelve a la pantalla anterior
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    final loc = AppLocalizations.of(context);
+                    final String message = e.toString().contains('timed out')
+                        ? loc.translate('saveLocally')
+                        : '${loc.translate('savingError')}$e';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(message)),
+                    );
+                    setState(() => _isSaving = false);
+                    Navigator.pop(context); // Vuelve atrás incluso con timeout/error
+                  }
                 }
+              } else {
+                setState(() => isEditing = !isEditing);
               }
-              setState(() => isEditing = !isEditing);
             },
           ),
           if (!isEditing)
@@ -755,9 +788,25 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   context: context,
                   builder: (context) => DeleteConfirmDialog(
                     onConfirm: () async {
-                      await DatabaseService().deleteMoment(widget.momentId);
-                      if (context.mounted) {
-                        Navigator.pop(context);
+                      try {
+                        await DatabaseService().deleteMoment(widget.momentId);
+                        if (context.mounted) {
+                          Navigator.pop(context); // Vuelve a home (el diálogo se cierra solo)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(AppLocalizations.of(context).translate('momentDeleted'))),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          final loc = AppLocalizations.of(context);
+                          final String message = e.toString().contains('timed out')
+                              ? loc.translate('deleteLocally')
+                              : '${loc.translate('savingError')}$e';
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(message)),
+                          );
+                          Navigator.pop(context); // Vuelve atrás incluso con error/timeout
+                        }
                       }
                     },
                   ),
@@ -882,7 +931,7 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
                 return InteractiveViewer(
                   minScale: 0.5,
                   maxScale: 4.0,
-                  child: Image.network(pathOrUrl, fit: BoxFit.contain),
+                  child: CachedNetworkImage(imageUrl: pathOrUrl, fit: BoxFit.contain),
                 );
               } else if (widget.localImageFileNames != null && index < widget.localImageFileNames!.length) {
                 // Local file image (social events)

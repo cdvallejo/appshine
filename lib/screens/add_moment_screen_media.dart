@@ -26,6 +26,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   final MediaRepository _mediaRepository = MediaRepository();
   DateTime _selectedDate = DateTime.now();
   String? _selectedSubtype;
+  bool _isSaving = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +38,17 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
         title: Text(loc.translate('addMovieMoment')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () async {
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.save),
+            onPressed: _isSaving ? null : () async {
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -46,6 +56,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 );
                 return;
               }
+
+              setState(() => _isSaving = true);
 
               // 2. Async function to save the moment
               try {
@@ -86,11 +98,15 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
               } catch (error) {
                 // 4. If there was an error, show it
                 if (context.mounted) {
+                  setState(() => _isSaving = false);
+                  final String message = error.toString().contains('timed out')
+                      ? loc.translate('saveLocally')
+                      : '${loc.translate('savingError')}$error';
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${loc.translate('savingError')}$error'),
-                    ),
+                    SnackBar(content: Text(message)),
                   );
+                  // Close screen even after error
+                  Navigator.pop(context);
                 }
               }
             },

@@ -15,15 +15,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
-
-/// Initialize Flutter's image cache for better performance during scrolling
-void _initializeImageCache() {
-  // Increase cache size to prevent eviction during scrolling
-  imageCache.maximumSize = 250; // Keep more images in memory
-  imageCache.maximumSizeBytes = 250 * 1024 * 1024; // 250 MB cache
-}
 
 /// Home screen implementation for displaying user moments.
 ///
@@ -79,7 +73,6 @@ class HomeScreen extends StatelessWidget {
   ///   A Scaffold widget containing the home screen layout
   @override
   Widget build(BuildContext context) {
-    _initializeImageCache(); // Optimize image caching for smooth scrolling
     final user = FirebaseAuth.instance.currentUser;
     final loc = AppLocalizations.of(context);
 
@@ -553,12 +546,12 @@ class HomeScreen extends StatelessWidget {
   ///
   /// Handles different image sources based on moment type:
   ///   * Social events: Loads image from local storage using filename
-  ///   * Media/books: Loads network image from Firebase Storage URL
+  ///   * Media/books: Loads network image from Firebase Storage URL with disk caching
   ///   * Fallback: Shows icon if image is unavailable
   ///
-  /// Note: Images are cached by Flutter's Image caching strategy.
-  /// Network images use errorBuilder to show icons when loading fails.
-  /// Local image files are checked for existence with [File.existsSync].
+  /// Note: Network images are cached on disk using [CachedNetworkImage], which
+  /// persists across app sessions. Local image files are checked for existence
+  /// with [File.existsSync]. Loading states show a progress indicator.
   ///
   /// Parameters:
   ///   * [type] - The moment type ('media', 'book', 'socialEvent')
@@ -582,6 +575,16 @@ class HomeScreen extends StatelessWidget {
       return FutureBuilder<String>(
         future: _getImagePath(imageNames[0]), // Get the full path of the first image
         builder: (context, snapshot) { // Check if the file exists at the path, the result of the future is in snapshot.data
+          // Show loading indicator while waiting for path
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox(
+              width: 50,
+              height: 75,
+              child: Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
     
           if (snapshot.hasData && File(snapshot.data!).existsSync()) {
             return Image.file(
@@ -601,22 +604,19 @@ class HomeScreen extends StatelessWidget {
 
     // For media and books, show network image from imageUrl
     if (imageUrl != null) {
-      return Image.network(
-        imageUrl,
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         width: 50,
         height: 75,
         fit: BoxFit.contain,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const SizedBox(
-            width: 50,
-            height: 75,
-            child: Center(
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) =>
+        placeholder: (context, url) => const SizedBox(
+          width: 50,
+          height: 75,
+          child: Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) =>
             Icon(_getMomentIconBig(type, subtype), size: 50),
       );
     }

@@ -26,6 +26,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
   final BookRepository _bookRepository = BookRepository();
   late Book _bookWithDetails;
   String? _selectedSubtype;
+  bool _isSaving = false;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +36,17 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
         title: Text(loc.translate('addBookMoment')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () async {
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.save),
+            onPressed: _isSaving ? null : () async {
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -44,6 +54,8 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                 );
                 return;
               }
+
+              setState(() => _isSaving = true);
 
               // 2. Async function to save the moment
               try {
@@ -76,9 +88,15 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
               } catch (error) {
                 // 5. If there was an error, show it
                 if (context.mounted) {
+                  setState(() => _isSaving = false);
+                  final String message = error.toString().contains('timed out')
+                      ? loc.translate('saveLocally')
+                      : '${loc.translate('savingError')}$error';
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${loc.translate('savingError')}$error')),
+                    SnackBar(content: Text(message)),
                   );
+                  // Close screen even after error
+                  Navigator.pop(context);
                 }
               }
             },

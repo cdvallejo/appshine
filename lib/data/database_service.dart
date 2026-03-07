@@ -39,7 +39,10 @@ class DatabaseService {
         'location': location,
         'notes': notes,
         'createdAt': FieldValue.serverTimestamp(), // Official server time
-      });
+      }).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw Exception('Save operation timed out. Data saved offline and will sync when connection is restored.'),
+      );
     } catch (e) {
       rethrow; // Throws the error so the screen can show a message
     }
@@ -74,7 +77,10 @@ class DatabaseService {
         'location': location,
         'notes': notes,
         'createdAt': FieldValue.serverTimestamp(), // Official server time
-      });
+      }).timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => throw Exception('Save operation timed out. Data saved offline and will sync when connection is restored.'),
+      );
     } catch (e) {
       rethrow; // Throws the error so the screen can show a message
     }
@@ -103,7 +109,10 @@ class DatabaseService {
         'notes': notes,
         'imageNames': socialEvent.imageNames, // Image filenames from model
         'createdAt': FieldValue.serverTimestamp(), // Official server time
-      });
+      }).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw Exception('Save operation timed out. Data saved offline and will sync when connection is restored.'),
+      );
     } catch (e) {
       rethrow; // Throws the error so the screen can show a message
     }
@@ -125,7 +134,11 @@ class DatabaseService {
   // Function to update a moment's notes
   Future<void> updateMoment(String momentId, Map<String, dynamic> data) async {
     try {
-      await _db.collection('moments').doc(momentId).update(data);
+      await _db.collection('moments').doc(momentId).update(data).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw Exception('Update operation timed out. Changes saved offline and will sync when connection is restored.'),
+      );
+      
     } catch (e) {
       debugPrint("Error al actualizar: $e");
       rethrow;
@@ -135,7 +148,11 @@ class DatabaseService {
   // Function to delete a moment by its ID
   Future<void> deleteMoment(String momentId) async {
     try {
-      await _db.collection('moments').doc(momentId).delete();
+      await _db.collection('moments').doc(momentId).delete().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw Exception('Delete operation timed out. Changes saved offline and will sync when connection is restored.'),
+      );
+      
     } catch (e) {
       debugPrint("Error deleting moment: $e");
       rethrow;
