@@ -47,6 +47,7 @@ class AppLocalizations {
       'save': 'Guardar',
       'edit': 'Editar',
       'delete': 'Eliminar',
+      'momentDeleted': 'Momento eliminado',
 
       // Login Screen
       'login': 'Iniciar Sesión',
@@ -82,6 +83,8 @@ class AppLocalizations {
       'myNotes': 'Mis Notas',
       'momentSaved': 'Momento guardado!',
       'savingError': 'Error guardando el momento: ',
+      'saveLocally': 'Momento guardado sólo en local. Comprueba tu conexión a Internet para sincronizar datos',
+      'deleteLocally': 'Momento eliminado sólo en local. Comprueba tu conexión a Internet para sincronizar datos',
       'pleaseSelectSubtype': 'Por favor selecciona un subtipo',
       'year': 'Año',
       'country': 'País',
@@ -195,6 +198,7 @@ class AppLocalizations {
       'save': 'Save',
       'edit': 'Edit',
       'delete': 'Delete',
+      'momentDeleted': 'Moment deleted',
 
       // Login Screen
       'login': 'Login',
@@ -221,7 +225,7 @@ class AppLocalizations {
       'country': 'Country',
       'momentSaved': 'Moment saved!',
       'savingError': 'Error saving the moment: ',
-      'pleaseSelectSubtype': 'Please select a subtype',
+      'saveLocally': 'Moment saved only locally. Check your Internet connection to sync data',      'deleteLocally': 'Moment deleted only locally. Check your Internet connection to sync data',      'pleaseSelectSubtype': 'Please select a subtype',
       'changesSaved': 'Changes saved successfully',
       'unknownCountry': 'Unknown country',
       'unknown': 'Unknown',
@@ -281,7 +285,6 @@ class AppLocalizations {
       'gallery': 'Gallery',
       'camera': 'Camera',
       'noImagesAdded': 'No images added yet',
-      'imagesSavedDevice': 'Images saved to device',
       'errorSavingImages': 'Error saving images',
 
       // Moment Detail Screen

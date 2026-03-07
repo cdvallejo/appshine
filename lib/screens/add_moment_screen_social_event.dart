@@ -28,6 +28,7 @@ class _AddMomentScreenSocialEventState
 
   DateTime _selectedDate = DateTime.now();
   String? _selectedSubtype;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -134,8 +135,17 @@ class _AddMomentScreenSocialEventState
         title: Text(loc.translate('addEventMoment')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () async {
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.save),
+            onPressed: _isSaving ? null : () async {
               // 1. Validate subtype is selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -144,11 +154,14 @@ class _AddMomentScreenSocialEventState
                 return;
               }
 
+              setState(() => _isSaving = true);
+
               // 2. If there are new images pending to save, save them first to local cache and update the image names list
               if (_selectedImageFiles.isNotEmpty) {
                 try {
                   await _uploadImages(loc);
                 } catch (e) {
+                  setState(() => _isSaving = false);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -191,11 +204,15 @@ class _AddMomentScreenSocialEventState
               } catch (error) {
                 // 6. If there was an error, show it
                 if (context.mounted) {
+                  setState(() => _isSaving = false);
+                  final String message = error.toString().contains('timed out') 
+                      ? loc.translate('saveLocally') // Save operation timed out, but data is saved offline
+                      : '${loc.translate('savingError')}: $error'; // Saving error
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${loc.translate('savingError')}: $error'),
-                    ),
+                    SnackBar(content: Text(message)),
                   );
+                  // Close screen even after error
+                  Navigator.pop(context);
                 }
               }
             },

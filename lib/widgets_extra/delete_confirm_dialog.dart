@@ -1,10 +1,17 @@
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-class DeleteConfirmDialog extends StatelessWidget {
+class DeleteConfirmDialog extends StatefulWidget {
   final Future<void> Function() onConfirm;
 
   const DeleteConfirmDialog({super.key, required this.onConfirm});
+
+  @override
+  State<DeleteConfirmDialog> createState() => _DeleteConfirmDialogState();
+}
+
+class _DeleteConfirmDialogState extends State<DeleteConfirmDialog> {
+  bool _isDeleting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -15,15 +22,18 @@ class DeleteConfirmDialog extends StatelessWidget {
       content: Text(loc.translate('deleteConfirmMessage')),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isDeleting ? null : () => Navigator.pop(context),
           child: Text(loc.translate('cancel')),
         ),
         TextButton(
-          onPressed: () async {
-            await onConfirm();
+          onPressed: _isDeleting ? null : () async {
+            setState(() => _isDeleting = true);
+            await widget.onConfirm();
             if (context.mounted) Navigator.pop(context);
           },
-          child: Text(loc.translate('delete'), style: TextStyle(color: Colors.red)),
+          child: _isDeleting
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(loc.translate('delete'), style: const TextStyle(color: Colors.red)),
         ),
       ],
     );

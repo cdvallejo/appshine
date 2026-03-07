@@ -46,6 +46,7 @@ dependencies:
   grouped_list: ^6.0.0
   shared_preferences: ^2.2.0
   fl_chart: ^0.68.0
+  cached_network_image: ^3.3.0
   flutter_localizations:
     sdk: flutter
 

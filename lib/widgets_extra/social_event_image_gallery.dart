@@ -126,9 +126,9 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     try {
       final List<XFile> pickedFiles = source == ImageSource.gallery
           ? await _imagePicker.pickMultiImage()
-          : await _imagePicker.pickMultipleMedia().then(
-              (files) => files.map((f) => XFile(f.path)).toList(),
-            );
+          : (await _imagePicker.pickImage(source: ImageSource.camera) != null
+              ? [await _imagePicker.pickImage(source: ImageSource.camera)]
+              : []).whereType<XFile>().toList();
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _newImageFiles.addAll(pickedFiles);
@@ -215,12 +215,6 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         _newImageFiles.clear();
         _newImageFileNames.clear();
       });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Images saved to device')),
-        );
-      }
       
       // Return the complete updated list for parent to store in Firestore
       return _currentImageNames;
