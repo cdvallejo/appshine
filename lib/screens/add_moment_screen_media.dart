@@ -30,7 +30,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final languageCode = '${loc.locale.languageCode}-${(loc.locale.countryCode ?? loc.locale.languageCode).toUpperCase()}';
+    final languageCode =
+        '${loc.locale.languageCode}-${(loc.locale.countryCode ?? loc.locale.languageCode).toUpperCase()}';
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.translate('addMovieMoment')),
@@ -86,7 +87,9 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 // 4. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${loc.translate('savingError')}$error')),
+                    SnackBar(
+                      content: Text('${loc.translate('savingError')}$error'),
+                    ),
                   );
                 }
               }
@@ -112,7 +115,10 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 children: [
                   // PART MEDIA DETAILS SECTION: EDITABLE
                   FutureBuilder(
-                    future: _mediaRepository.getMovieDetails(widget.media, languageCode),
+                    future: _mediaRepository.getMovieDetails(
+                      widget.media,
+                      languageCode,
+                    ),
                     builder: (context, snapshot) {
                       // 1. If the request is still on the way...
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -149,17 +155,25 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // Subtype dropdown
                           DropdownButton<String>(
                             isExpanded: true,
                             hint: Text(loc.translate('selectMediaSubtype')),
                             value: _selectedSubtype,
                             items: Media.subtypes
-                                .map((subtype) => DropdownMenuItem(
-                                      value: subtype,
-                                      child: Text(loc.translate(AppLocalizations.getMediaSubtypeKey(subtype))),
-                                    ))
+                                .map(
+                                  (subtype) => DropdownMenuItem(
+                                    value: subtype,
+                                    child: Text(
+                                      loc.translate(
+                                        AppLocalizations.getMediaSubtypeKey(
+                                          subtype,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (value) {
                               setState(() {
@@ -286,7 +300,9 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                         Icon(
                                           Icons.calendar_month,
                                           size: 16,
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -317,13 +333,16 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                       Icon(
                                         Icons.location_pin,
                                         size: 16,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: TextField(
                                           controller: _locationController,
-                                          onTap: () => _locationController.clear(),
+                                          onTap: () =>
+                                              _locationController.clear(),
                                           decoration: InputDecoration(
                                             hintText: loc.translate('where'),
                                             isDense: true,
@@ -332,7 +351,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                                                   horizontal: 0,
                                                   vertical: 0,
                                                 ),
-                                            border: const UnderlineInputBorder(),
+                                            border:
+                                                const UnderlineInputBorder(),
                                           ),
                                         ),
                                       ),
@@ -371,6 +391,6 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
       ),
     );
   }
-    /// Gets the localized translation key for a media subtype.
-}
 
+  /// Gets the localized translation key for a media subtype.
+}

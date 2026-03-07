@@ -23,7 +23,8 @@ class _AddMomentScreenSocialEventState
   final _titleController = TextEditingController();
   final _imagePicker = ImagePicker();
   final List<XFile> _selectedImageFiles = [];
-  final List<String> _selectedImageNames = []; // Only filenames (for backup compatibility)
+  final List<String> _selectedImageNames =
+      []; // Only filenames (for backup compatibility)
 
   DateTime _selectedDate = DateTime.now();
   String? _selectedSubtype;
@@ -31,17 +32,21 @@ class _AddMomentScreenSocialEventState
   @override
   void initState() {
     super.initState();
-    _titleController.text = widget.socialEvent.title; // Here receive the title from the previous screen!
+    _titleController.text = widget
+        .socialEvent
+        .title; // Here receive the title from the previous screen!
   }
-  
+
   // Let user pick multiple images from camera or gallery, and add them to the pending list (_selectedImageFiles)
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final List<XFile> pickedFiles = source == ImageSource.gallery
-          ? await _imagePicker.pickMultiImage()
-          : await _imagePicker.pickMultipleMedia().then(
-              (files) => files.map((f) => XFile(f.path)).toList(),
-            );
+      final List<XFile> pickedFiles;
+      if (source == ImageSource.gallery) {
+        pickedFiles = await _imagePicker.pickMultiImage();
+      } else {
+        final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
+        pickedFiles = image != null ? [image] : [];
+      }
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _selectedImageFiles.addAll(pickedFiles);
@@ -49,9 +54,9 @@ class _AddMomentScreenSocialEventState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking images: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
       }
     }
   }
@@ -65,7 +70,7 @@ class _AddMomentScreenSocialEventState
       // Save to Pictures folder so images appear in gallery
       const picturesPath = '/storage/emulated/0/Pictures';
       final appshineImagesDir = Directory('$picturesPath/Appshine Images');
-      
+
       if (!await appshineImagesDir.exists()) {
         // If the directory doesn't exist, create it (recursive: true to create any intermediate folders if needed)
         await appshineImagesDir.create(recursive: true);
@@ -75,13 +80,14 @@ class _AddMomentScreenSocialEventState
       for (XFile imageFile in _selectedImageFiles) {
         // Obtén el archivo original desde galería/cámara
         final File sourceFile = File(imageFile.path);
-        
+
         // Create a unique file name using timestamp and original name to avoid conflicts
-        final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${imageFile.name}';
-        
+        final String fileName =
+            '${DateTime.now().millisecondsSinceEpoch}_${imageFile.name}';
+
         // Define local path where the image will be saved
         final String localPath = '${appshineImagesDir.path}/$fileName';
-        
+
         // Copy the file to the new location
         await sourceFile.copy(localPath);
 
@@ -92,7 +98,9 @@ class _AddMomentScreenSocialEventState
         } catch (e) {
           // Fall back: just try to scan the directory
           try {
-            await platform.invokeMethod('scanFile', {'path': appshineImagesDir.path});
+            await platform.invokeMethod('scanFile', {
+              'path': appshineImagesDir.path,
+            });
           } catch (_) {
             // If method channel fails, it's okay, app will still work
           }
@@ -143,7 +151,11 @@ class _AddMomentScreenSocialEventState
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${loc.translate('errorSavingImages')}: $e')),
+                      SnackBar(
+                        content: Text(
+                          '${loc.translate('errorSavingImages')}: $e',
+                        ),
+                      ),
                     );
                   }
                   return;
@@ -156,7 +168,9 @@ class _AddMomentScreenSocialEventState
                 final socialEventWithImages = SocialEvent(
                   title: _titleController.text,
                   subtype: _selectedSubtype!,
-                  imageNames: _selectedImageNames.isNotEmpty ? _selectedImageNames : null,
+                  imageNames: _selectedImageNames.isNotEmpty
+                      ? _selectedImageNames
+                      : null,
                 );
 
                 await DatabaseService().addMomentSocialEvent(
@@ -178,7 +192,9 @@ class _AddMomentScreenSocialEventState
                 // 6. If there was an error, show it
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${loc.translate('savingError')}: $error')),
+                    SnackBar(
+                      content: Text('${loc.translate('savingError')}: $error'),
+                    ),
                   );
                 }
               }
@@ -217,7 +233,11 @@ class _AddMomentScreenSocialEventState
                     .map(
                       (subtype) => DropdownMenuItem(
                         value: subtype,
-                        child: Text(loc.translate(_getSocialEventSubtypeKey(subtype))),
+                        child: Text(
+                          loc.translate(
+                            AppLocalizations.getSocialEventSubtypeKey(subtype),
+                          ),
+                        ),
                       ),
                     )
                     .toList(),
@@ -267,7 +287,7 @@ class _AddMomentScreenSocialEventState
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 12),
 
               // IMAGES PENDING TO SAVE (just picked, not saved yet)
@@ -410,11 +430,10 @@ class _AddMomentScreenSocialEventState
                                   decoration: InputDecoration(
                                     hintText: loc.translate('where'),
                                     isDense: true,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                          horizontal: 0,
-                                          vertical: 0,
-                                        ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 0,
+                                      vertical: 0,
+                                    ),
                                     border: UnderlineInputBorder(),
                                   ),
                                 ),
@@ -449,22 +468,5 @@ class _AddMomentScreenSocialEventState
         ),
       ),
     );
-  }
-  /// Gets the localized translation key for a social event subtype.
-  ///
-  /// Maps social event subtypes to their translation keys.
-  ///
-  /// Parameters:
-  ///   * [subtype] - The subtype of the social event (e.g., Concert, Party).
-  ///
-  /// Returns:
-  ///   The translation key for the subtype.
-  String _getSocialEventSubtypeKey(String subtype) {
-    final subtypeLower = subtype.toLowerCase();
-    if (subtypeLower.contains('cultural')) return 'cultural';
-    if (subtypeLower.contains('gaming')) return 'gaming';
-    if (subtypeLower.contains('social')) return 'social';
-    if (subtypeLower.contains('sport')) return 'sport';
-    return 'unknown'; // Default case if no match is found. Firebase should never receive 'unknown' as subtype, because it's not an option in the dropdown.
   }
 }
