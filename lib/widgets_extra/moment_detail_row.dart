@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:appshine/l10n/app_localizations.dart';
 
 /* A reusable widget to display a label and its corresponding value in a row.
 Safe data rendering for lists and null values. */
 Widget buildDetailRow(dynamic value, [String? label, BuildContext? context]) {
-  String displayValue = 'Unknown';
+  final loc = context != null ? AppLocalizations.of(context) : null;
+  String displayValue = loc?.translate('unknown') ?? 'Unknown';
   
   if (value != null) {
     if (value is List) {
@@ -13,7 +15,7 @@ Widget buildDetailRow(dynamic value, [String? label, BuildContext? context]) {
             .map((item) => item.toString())
             .join(', ');
         if (displayValue.isEmpty) {
-          displayValue = 'Unknown';
+          displayValue = loc?.translate('unknown') ?? 'Unknown';
         }
       }
     } else {

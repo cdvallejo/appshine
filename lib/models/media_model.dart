@@ -14,7 +14,9 @@ class Media {
   // Cannot be final if we want to set it later in the details fetch
   List<String>? directors;
   List<String>? creators;
+  List<String>? screenwriters;
   List<String>? cast;
+  List<String>? genres;
   String? country;
 
   Media({
@@ -24,7 +26,9 @@ class Media {
     required this.releaseDate,
     this.directors,
     this.creators,
+    this.screenwriters,
     this.cast,
+    this.genres,
     this.country,
     required this.type,
     required this.subtype,
@@ -92,7 +96,9 @@ class Media {
     String? subtype,
     List<String>? directors,
     List<String>? creators,
+    List<String>? screenwriters,
     List<String>? cast,
+    List<String>? genres,
     String? country,
   }) {
     return Media(
@@ -104,7 +110,9 @@ class Media {
       subtype: subtype ?? this.subtype,
       directors: directors ?? this.directors,
       creators: creators ?? this.creators,
+      screenwriters: screenwriters ?? this.screenwriters,
       cast: cast ?? this.cast,
+      genres: genres ?? this.genres,
       country: country ?? this.country,
     );
   }

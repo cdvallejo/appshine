@@ -21,6 +21,8 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
   final _countryController = TextEditingController();
   final _directorsController = TextEditingController();
   final _creatorsController = TextEditingController();
+  final _screenwritersController = TextEditingController();
+  final _genresController = TextEditingController();
   final _castController = TextEditingController();
 
   final MediaRepository _mediaRepository = MediaRepository();
@@ -48,68 +50,81 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                     ),
                   )
                 : const Icon(Icons.save),
-            onPressed: _isSaving ? null : () async {
-              // 1. Validate subtype is selected
-              if (_selectedSubtype == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(loc.translate('pleaseSelectSubtype'))),
-                );
-                return;
-              }
+            onPressed: _isSaving
+                ? null
+                : () async {
+                    // 1. Validate subtype is selected
+                    if (_selectedSubtype == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(loc.translate('pleaseSelectSubtype')),
+                        ),
+                      );
+                      return;
+                    }
 
-              setState(() => _isSaving = true);
+                    setState(() => _isSaving = true);
 
-              // 2. Async function to save the moment
-              try {
-                // 3. Update the media with edited values and call the function with await
-                final editedMedia = widget.media.copyWith(
-                  title: _titleController.text,
-                  releaseDate: _yearController.text,
-                  country: _countryController.text,
-                  directors: _directorsController.text
-                      .split(',')
-                      .map((directors) => directors.trim())
-                      .toList(),
-                  creators: _creatorsController.text
-                      .split(',')
-                      .map((creator) => creator.trim())
-                      .toList(),
-                  cast: _castController.text
-                      .split(',')
-                      .map((actor) => actor.trim())
-                      .toList(),
-                );
-                await DatabaseService().addMomentMedia(
-                  media: editedMedia,
-                  date: _selectedDate,
-                  location: _locationController.text,
-                  notes: _notesController.text,
-                  subtype: _selectedSubtype!,
-                );
+                    // 2. Async function to save the moment
+                    try {
+                      // 3. Update the media with edited values and call the function with await
+                      final editedMedia = widget.media.copyWith(
+                        title: _titleController.text,
+                        releaseDate: _yearController.text,
+                        country: _countryController.text,
+                        directors: _directorsController.text
+                            .split(',')
+                            .map((directors) => directors.trim())
+                            .toList(),
+                        creators: _creatorsController.text
+                            .split(',')
+                            .map((creator) => creator.trim())
+                            .toList(),
+                        screenwriters: _screenwritersController.text
+                            .split(',')
+                            .map((screenwriter) => screenwriter.trim())
+                            .toList(),
+                        cast: _castController.text
+                            .split(',')
+                            .map((actor) => actor.trim())
+                            .toList(),
+                        genres: _genresController.text
+                            .split(',')
+                            .map((genre) => genre.trim())
+                            .toList(),
+                      );
+                      await DatabaseService().addMomentMedia(
+                        media: editedMedia,
+                        date: _selectedDate,
+                        location: _locationController.text,
+                        notes: _notesController.text,
+                        subtype: _selectedSubtype!,
+                      );
 
-                // 4. If everything goes well, notify the user and close
-                if (context.mounted) {
-                  // Extra safety in case the user closed the screen before
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.translate('momentSaved'))),
-                  );
-                  Navigator.pop(context);
-                }
-              } catch (error) {
-                // 4. If there was an error, show it
-                if (context.mounted) {
-                  setState(() => _isSaving = false);
-                  final String message = error.toString().contains('timed out')
-                      ? loc.translate('saveLocally')
-                      : '${loc.translate('savingError')}$error';
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(message)),
-                  );
-                  // Close screen even after error
-                  Navigator.pop(context);
-                }
-              }
-            },
+                      // 4. If everything goes well, notify the user and close
+                      if (context.mounted) {
+                        // Extra safety in case the user closed the screen before
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(loc.translate('momentSaved'))),
+                        );
+                        Navigator.pop(context);
+                      }
+                    } catch (error) {
+                      // 4. If there was an error, show it
+                      if (context.mounted) {
+                        setState(() => _isSaving = false);
+                        final String message =
+                            error.toString().contains('timed out')
+                            ? loc.translate('saveLocally')
+                            : '${loc.translate('savingError')}$error';
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                        // Close screen even after error
+                        Navigator.pop(context);
+                      }
+                    }
+                  },
           ),
         ],
       ),
@@ -151,8 +166,14 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             widget.media.directors?.join(', ') ?? 'Unknown';
                         _creatorsController.text =
                             widget.media.creators?.join(', ') ?? 'Unknown';
+                        _screenwritersController.text =
+                            widget.media.screenwriters?.join(', ') ?? 'Unknown';
+                        _genresController.text =
+                            widget.media.genres?.join(', ') ?? 'Unknown';
                         _castController.text =
                             widget.media.cast?.join(', ') ?? 'Unknown';
+                        // Set subtype based on media type
+                        _selectedSubtype = widget.media.subtype;
                       }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,10 +288,38 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
+                          if (widget.media.type != 'tv') ...[
+                            TextField(
+                              controller: _screenwritersController,
+                              decoration: InputDecoration(
+                                label: Text(loc.translate('screenwriters')),
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 0,
+                                  vertical: 8,
+                                ),
+                                border: UnderlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                          ],
                           TextField(
                             controller: _castController,
                             decoration: InputDecoration(
                               label: Text(loc.translate('cast')),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 0,
+                                vertical: 8,
+                              ),
+                              border: UnderlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          TextField(
+                            controller: _genresController,
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('genres')),
                               isDense: true,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,

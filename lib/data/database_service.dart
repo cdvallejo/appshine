@@ -33,6 +33,8 @@ class DatabaseService {
         'country': media.country,
         'directors': media.directors,
         'creators': media.creators,
+        'screenwriters': media.screenwriters,
+        'genres': media.genres,
         'cast': media.cast,
         'imageUrl': media.imageUrl,
         'date': Timestamp.fromDate(date), // Firebase format

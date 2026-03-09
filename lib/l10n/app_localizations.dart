@@ -107,6 +107,8 @@ class AppLocalizations {
       'movie': 'Película',
       'tvSeries': 'Serie de TV',
       'directors': 'Dirección',
+      'screenwriters': 'Guion',
+      'genres': 'Género/s',
       'cast': 'Reparto',
       'creator': 'Creador/es',
 
@@ -258,6 +260,8 @@ class AppLocalizations {
       'movie': 'Movie',
       'tvSeries': 'TV Series',
       'directors': 'Direction',
+      'screenwriters': 'Screenwriters',
+      'genres': 'Genres',
       'cast': 'Cast',
       'creator': 'Creator',
 

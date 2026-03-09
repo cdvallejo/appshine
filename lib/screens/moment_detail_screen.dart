@@ -39,11 +39,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   late TextEditingController _pageCountController;
   late TextEditingController _creatorsController;
   late TextEditingController _directionController;
+  late TextEditingController _screenwritersController;
+  late TextEditingController _genresController;
   late TextEditingController _castController;
   late TextEditingController _countryController;
   DateTime? _selectedDate;
   late String _selectedSubtype;
-  
+
   // For editing social event images
   final GlobalKey _imageGalleryKey = GlobalKey();
 
@@ -51,7 +53,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   void initState() {
     super.initState();
     // Initialize controllers with existing data
-    _titleController = TextEditingController(text: widget.momentData['title'] ?? '');
+    _titleController = TextEditingController(
+      text: widget.momentData['title'] ?? '',
+    );
     _notesController = TextEditingController(text: widget.momentData['notes']);
     _locationController = TextEditingController(
       text: widget.momentData['location'],
@@ -60,7 +64,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       text: _formatList(widget.momentData['authors']),
     );
     _yearController = TextEditingController(
-      text: widget.momentData['year'] ?? widget.momentData['publishedDate'] ?? '',
+      text:
+          widget.momentData['year'] ?? widget.momentData['publishedDate'] ?? '',
     );
     _publisherController = TextEditingController(
       text: widget.momentData['publisher'] ?? '',
@@ -69,13 +74,22 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       text: widget.momentData['isbn'] ?? '',
     );
     _pageCountController = TextEditingController(
-      text: widget.momentData['pageCount']?.toString() ?? widget.momentData['pages']?.toString() ?? '',
+      text:
+          widget.momentData['pageCount']?.toString() ??
+          widget.momentData['pages']?.toString() ??
+          '',
     );
     _creatorsController = TextEditingController(
       text: _formatList(widget.momentData['creators']),
     );
     _directionController = TextEditingController(
       text: _formatList(widget.momentData['directors']),
+    );
+    _screenwritersController = TextEditingController(
+      text: _formatList(widget.momentData['screenwriters'] ?? []),
+    );
+    _genresController = TextEditingController(
+      text: _formatList(widget.momentData['genres'] ?? []),
     );
     _castController = TextEditingController(
       text: _formatList(widget.momentData['cast']),
@@ -109,6 +123,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     _pageCountController.dispose();
     _creatorsController.dispose();
     _directionController.dispose();
+    _screenwritersController.dispose();
+    _genresController.dispose();
     _castController.dispose();
     _countryController.dispose();
     super.dispose();
@@ -128,10 +144,11 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       });
     }
   }
+
   // Save changes to Firestore
   Future<void> _saveChanges() async {
     List<String> finalImageNames = [];
-    
+
     // 1. Upload new images first if any
     if (widget.momentData['type'] == 'socialEvent') {
       final galleryState = _imageGalleryKey.currentState;
@@ -139,7 +156,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         final newFiles = (galleryState as dynamic).getNewImageFiles() as List;
         if (newFiles.isNotEmpty) {
           try {
-            finalImageNames = await (galleryState as dynamic).uploadNewImages() as List<String>;
+            finalImageNames =
+                await (galleryState as dynamic).uploadNewImages()
+                    as List<String>;
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +169,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           }
         } else {
           // No new images, get current ones
-          finalImageNames = (galleryState as dynamic).getCurrentImageNames() as List<String>;
+          finalImageNames =
+              (galleryState as dynamic).getCurrentImageNames() as List<String>;
         }
       }
     }
@@ -161,9 +181,12 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       'location': _locationController.text.trim(),
       'date': Timestamp.fromDate(_selectedDate!),
     };
-    
+
     if (_authorsController.text.trim().isNotEmpty) {
-      updateData['authors'] = _authorsController.text.split(',').map((a) => a.trim()).toList();
+      updateData['authors'] = _authorsController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
     }
     if (_yearController.text.trim().isNotEmpty) {
       if (widget.momentData['type'] == 'book') {
@@ -179,30 +202,52 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       updateData['isbn'] = _isbnController.text.trim();
     }
     if (_pageCountController.text.trim().isNotEmpty) {
-      updateData['pageCount'] = int.tryParse(_pageCountController.text.trim()) as Object;
+      updateData['pageCount'] =
+          int.tryParse(_pageCountController.text.trim()) as Object;
     }
     if (_creatorsController.text.trim().isNotEmpty) {
-      updateData['creators'] = _creatorsController.text.split(',').map((a) => a.trim()).toList();
+      updateData['creators'] = _creatorsController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
     }
     if (_directionController.text.trim().isNotEmpty) {
-      updateData['directors'] = _directionController.text.split(',').map((a) => a.trim()).toList();
+      updateData['directors'] = _directionController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
+    }
+    if (_screenwritersController.text.trim().isNotEmpty) {
+      updateData['screenwriters'] = _screenwritersController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
+    }
+    if (_genresController.text.trim().isNotEmpty) {
+      updateData['genres'] = _genresController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
     }
     if (_castController.text.trim().isNotEmpty) {
-      updateData['cast'] = _castController.text.split(',').map((a) => a.trim()).toList();
+      updateData['cast'] = _castController.text
+          .split(',')
+          .map((a) => a.trim())
+          .toList();
     }
     if (_countryController.text.trim().isNotEmpty) {
       updateData['country'] = _countryController.text.trim();
     }
-    
+
     updateData['subtype'] = _selectedSubtype;
-    
+
     // 2. Update imageNames for social events (always, even if empty to clear deleted images)
     if (widget.momentData['type'] == 'socialEvent') {
       updateData['imageNames'] = finalImageNames;
     }
-    
+
     await DatabaseService().updateMoment(widget.momentId, updateData);
-    
+
     // 3. Update local data with the same data that was saved to Firebase and exit edit mode
     setState(() {
       widget.momentData.addAll(updateData);
@@ -212,13 +257,16 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   // Build main image based on moment type
   Widget _buildMainImage() {
     if (widget.momentData['type'] == 'socialEvent') {
-      final imageNames = widget.momentData['imageNames'] as List<dynamic>? ?? [];
+      final imageNames =
+          widget.momentData['imageNames'] as List<dynamic>? ?? [];
       if (imageNames.isEmpty) {
         return Container(
           height: 300,
           width: double.infinity,
           color: Colors.cyan.withValues(alpha: 0.2),
-          child: const Center(child: Icon(Icons.image, size: 64, color: Colors.grey)),
+          child: const Center(
+            child: Icon(Icons.image, size: 64, color: Colors.grey),
+          ),
         );
       }
       // Show first image as preview with image count badge
@@ -235,16 +283,22 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           }
           final imagePath = snapshot.data!;
           final imageFile = File(imagePath);
-          
+
           if (!imageFile.existsSync()) {
             return Container(
               height: 300,
               width: double.infinity,
               color: Colors.cyan.withValues(alpha: 0.2),
-              child: const Center(child: Icon(Icons.image_not_supported, size: 64, color: Colors.grey)),
+              child: const Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+              ),
             );
           }
-          
+
           return Stack(
             children: [
               Container(
@@ -263,7 +317,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                 bottom: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
@@ -307,16 +364,24 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             height: 300,
             width: double.infinity,
             color: Colors.cyan.withValues(alpha: 0.2),
-            child: const Center(child: Icon(Icons.image_not_supported, size: 64, color: Colors.grey)),
+            child: const Center(
+              child: Icon(
+                Icons.image_not_supported,
+                size: 64,
+                color: Colors.grey,
+              ),
+            ),
           ),
         );
       }
-      
+
       return Container(
         height: 300,
         width: double.infinity,
         color: Colors.cyan.withValues(alpha: 0.2),
-        child: const Center(child: Icon(Icons.image, size: 64, color: Colors.grey)),
+        child: const Center(
+          child: Icon(Icons.image, size: 64, color: Colors.grey),
+        ),
       );
     }
   }
@@ -327,10 +392,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     if (isEditing) {
       return TextField(
         controller: _titleController,
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         decoration: const InputDecoration(
           border: UnderlineInputBorder(),
           isDense: true,
@@ -339,11 +401,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       );
     }
     return Text(
-      _titleController.text.isEmpty ? loc.translate('unknown') : _titleController.text,
-      style: const TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-      ),
+      _titleController.text.isEmpty
+          ? loc.translate('unknown')
+          : _titleController.text,
+      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
     );
   }
 
@@ -357,12 +418,20 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Book type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
+            value: _selectedSubtype.isNotEmpty
+                ? _selectedSubtype
+                : widget.momentData['subtype'] ?? '',
             items: Book.subtypes
-                .map((subtype) => DropdownMenuItem(
-                      value: subtype,
-                      child: Text(loc.translate(AppLocalizations.getBookSubtypeKey(subtype))),
-                    ))
+                .map(
+                  (subtype) => DropdownMenuItem(
+                    value: subtype,
+                    child: Text(
+                      loc.translate(
+                        AppLocalizations.getBookSubtypeKey(subtype),
+                      ),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {
               setState(() {
@@ -421,11 +490,31 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, loc.translate('year'), context),
-        buildDetailRow(_authorsController.text.isEmpty ? null : _authorsController.text, loc.translate('author'), context),
-        buildDetailRow(_pageCountController.text.isEmpty ? null : _pageCountController.text, loc.translate('pages'), context),
-        buildDetailRow(_publisherController.text.isEmpty ? null : _publisherController.text, loc.translate('publisher'), context),
-        buildDetailRow(_isbnController.text.isEmpty ? null : _isbnController.text, loc.translate('isbn'), context),
+        buildDetailRow(
+          _yearController.text.isEmpty ? null : _yearController.text,
+          loc.translate('year'),
+          context,
+        ),
+        buildDetailRow(
+          _authorsController.text.isEmpty ? null : _authorsController.text,
+          loc.translate('author'),
+          context,
+        ),
+        buildDetailRow(
+          _pageCountController.text.isEmpty ? null : _pageCountController.text,
+          loc.translate('pages'),
+          context,
+        ),
+        buildDetailRow(
+          _publisherController.text.isEmpty ? null : _publisherController.text,
+          loc.translate('publisher'),
+          context,
+        ),
+        buildDetailRow(
+          _isbnController.text.isEmpty ? null : _isbnController.text,
+          loc.translate('isbn'),
+          context,
+        ),
       ],
     );
   }
@@ -440,12 +529,20 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Media type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
+            value: _selectedSubtype.isNotEmpty
+                ? _selectedSubtype
+                : widget.momentData['subtype'] ?? '',
             items: Media.subtypes
-                .map((subtype) => DropdownMenuItem(
-                      value: subtype,
-                      child: Text(loc.translate(AppLocalizations.getMediaSubtypeKey(subtype))),
-                    ))
+                .map(
+                  (subtype) => DropdownMenuItem(
+                    value: subtype,
+                    child: Text(
+                      loc.translate(
+                        AppLocalizations.getMediaSubtypeKey(subtype),
+                      ),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {
               setState(() {
@@ -454,13 +551,32 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             },
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _yearController,
-            decoration: InputDecoration(
-              label: Text(loc.translate('year')),
-              isDense: true,
-              border: const UnderlineInputBorder(),
-            ),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: TextField(
+                  controller: _yearController,
+                  decoration: InputDecoration(
+                    label: Text(loc.translate('year')),
+                    isDense: true,
+                    border: const UnderlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                flex: 7,
+                child: TextField(
+                  controller: _countryController,
+                  decoration: InputDecoration(
+                    label: Text(loc.translate('country')),
+                    isDense: true,
+                    border: const UnderlineInputBorder(),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           if (_selectedSubtype.toLowerCase().contains('tv series')) ...[
@@ -483,6 +599,18 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
+          if (widget.momentData['type'] == 'media' &&
+              widget.momentData['subtype'] != 'TV Series') ...[
+            TextField(
+              controller: _screenwritersController,
+              decoration: InputDecoration(
+                label: Text(loc.translate('screenwriters')),
+                isDense: true,
+                border: const UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           TextField(
             controller: _castController,
             decoration: InputDecoration(
@@ -493,9 +621,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: _countryController,
+            controller: _genresController,
             decoration: InputDecoration(
-              label: Text(loc.translate('country')),
+              label: Text(loc.translate('genres')),
               isDense: true,
               border: const UnderlineInputBorder(),
             ),
@@ -506,13 +634,48 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildDetailRow(_yearController.text.isEmpty ? null : _yearController.text, loc.translate('year'), context),
+        buildDetailRow(
+          _yearController.text.isEmpty ? null : _yearController.text,
+          loc.translate('year'),
+          context,
+        ),
+        buildDetailRow(
+          _countryController.text.isEmpty ? null : _countryController.text,
+          loc.translate('country'),
+          context,
+        ),
         if (widget.momentData['subtype'] == 'TV Series') ...[
-          buildDetailRow(_creatorsController.text.isEmpty ? null : _creatorsController.text, loc.translate('creator'), context),
+          buildDetailRow(
+            _creatorsController.text.isEmpty ? null : _creatorsController.text,
+            loc.translate('creator'),
+            context,
+          ),
         ],
-        buildDetailRow(_directionController.text.isEmpty ? null : _directionController.text, loc.translate('directors'), context),
-        buildDetailRow(_castController.text.isEmpty ? null : _castController.text, loc.translate('cast'), context),
-        buildDetailRow(_countryController.text.isEmpty ? null : _countryController.text, loc.translate('country'), context),
+        buildDetailRow(
+          _directionController.text.isEmpty ? null : _directionController.text,
+          loc.translate('directors'),
+          context,
+        ),
+        if (widget.momentData['type'] == 'media' &&
+            widget.momentData['subtype'] != 'TV Series') ...[
+          buildDetailRow(
+            _screenwritersController.text.isEmpty
+                ? null
+                : _screenwritersController.text,
+            loc.translate('screenwriters'),
+            context,
+          ),
+        ],
+        buildDetailRow(
+          _castController.text.isEmpty ? null : _castController.text,
+          loc.translate('cast'),
+          context,
+        ),
+        buildDetailRow(
+          _genresController.text.isEmpty ? null : _genresController.text,
+          loc.translate('genres'),
+          context,
+        ),
       ],
     );
   }
@@ -527,12 +690,20 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // Event type dropdown
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedSubtype.isNotEmpty ? _selectedSubtype : widget.momentData['subtype'] ?? '',
+            value: _selectedSubtype.isNotEmpty
+                ? _selectedSubtype
+                : widget.momentData['subtype'] ?? '',
             items: SocialEvent.subtypes
-                .map((subtype) => DropdownMenuItem(
-                      value: subtype,
-                      child: Text(loc.translate(AppLocalizations.getSocialEventSubtypeKey(subtype))),
-                    ))
+                .map(
+                  (subtype) => DropdownMenuItem(
+                    value: subtype,
+                    child: Text(
+                      loc.translate(
+                        AppLocalizations.getSocialEventSubtypeKey(subtype),
+                      ),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {
               setState(() {
@@ -543,7 +714,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           const SizedBox(height: 16),
           SocialEventImageGallery(
             key: _imageGalleryKey,
-            initialImageNames: (widget.momentData['imageNames'] as List<dynamic>?)?.cast<String>() ?? [],
+            initialImageNames:
+                (widget.momentData['imageNames'] as List<dynamic>?)
+                    ?.cast<String>() ??
+                [],
           ),
         ],
       );
@@ -562,7 +736,11 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            loc.translate(AppLocalizations.getSubtypeKey('media', _selectedSubtype)).toUpperCase(),
+            loc
+                .translate(
+                  AppLocalizations.getSubtypeKey('media', _selectedSubtype),
+                )
+                .toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -578,7 +756,11 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            loc.translate(AppLocalizations.getSubtypeKey('book', _selectedSubtype)).toUpperCase(),
+            loc
+                .translate(
+                  AppLocalizations.getSubtypeKey('book', _selectedSubtype),
+                )
+                .toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -594,7 +776,14 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            loc.translate(AppLocalizations.getSubtypeKey('socialEvent', _selectedSubtype)).toUpperCase(),
+            loc
+                .translate(
+                  AppLocalizations.getSubtypeKey(
+                    'socialEvent',
+                    _selectedSubtype,
+                  ),
+                )
+                .toUpperCase(),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -626,7 +815,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                     Icon(
                       Icons.calendar_month,
                       size: 16,
-                      color: isEditing ? Colors.orange : Theme.of(context).colorScheme.primary,
+                      color: isEditing
+                          ? Colors.orange
+                          : Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -634,7 +825,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isEditing ? Colors.orange : Theme.of(context).colorScheme.primary,
+                        color: isEditing
+                            ? Colors.orange
+                            : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -669,7 +862,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                             ),
                           )
                         : Text(
-                            _locationController.text.isEmpty ? loc.translate('unknown') : _locationController.text,
+                            _locationController.text.isEmpty
+                                ? loc.translate('unknown')
+                                : _locationController.text,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -719,20 +914,22 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
                   keyboardType: TextInputType.multiline,
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(fontSize: 16),
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),
                 )
               : Text(
-                  _notesController.text.trim().isEmpty ? loc.translate('noNotes') : _notesController.text,
+                  _notesController.text.trim().isEmpty
+                      ? loc.translate('noNotes')
+                      : _notesController.text,
                   textAlign: TextAlign.justify,
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.5,
-                    color: Theme.of(context).colorScheme.onSurface, // onSurface color for better contrast in dark mode
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface, // onSurface color for better contrast in dark mode
                   ),
                 ),
         ),
@@ -746,39 +943,58 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titleController.text.isEmpty ? loc.translate('detail') : _titleController.text),
+        title: Text(
+          _titleController.text.isEmpty
+              ? loc.translate('detail')
+              : _titleController.text,
+        ),
         actions: [
           IconButton(
-            icon: _isSaving ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(isEditing ? Icons.check : Icons.edit),
-            onPressed: _isSaving ? null : () async {
-              if (isEditing) {
-                setState(() => _isSaving = true);
-                try {
-                  await _saveChanges();
-                  if (context.mounted) {
-                    final loc = AppLocalizations.of(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(loc.translate('changesSaved'))),
-                    );
-                    Navigator.pop(context); // Vuelve a la pantalla anterior
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    final loc = AppLocalizations.of(context);
-                    final String message = e.toString().contains('timed out')
-                        ? loc.translate('saveLocally')
-                        : '${loc.translate('savingError')}$e';
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(message)),
-                    );
-                    setState(() => _isSaving = false);
-                    Navigator.pop(context); // Vuelve atrás incluso con timeout/error
-                  }
-                }
-              } else {
-                setState(() => isEditing = !isEditing);
-              }
-            },
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(isEditing ? Icons.check : Icons.edit),
+            onPressed: _isSaving
+                ? null
+                : () async {
+                    if (isEditing) {
+                      setState(() => _isSaving = true);
+                      try {
+                        await _saveChanges();
+                        if (context.mounted) {
+                          final loc = AppLocalizations.of(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(loc.translate('changesSaved')),
+                            ),
+                          );
+                          Navigator.pop(
+                            context,
+                          ); // Vuelve a la pantalla anterior
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          final loc = AppLocalizations.of(context);
+                          final String message =
+                              e.toString().contains('timed out')
+                              ? loc.translate('saveLocally')
+                              : '${loc.translate('savingError')}$e';
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(message)));
+                          setState(() => _isSaving = false);
+                          Navigator.pop(
+                            context,
+                          ); // Vuelve atrás incluso con timeout/error
+                        }
+                      }
+                    } else {
+                      setState(() => isEditing = !isEditing);
+                    }
+                  },
           ),
           if (!isEditing)
             IconButton(
@@ -791,21 +1007,32 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                       try {
                         await DatabaseService().deleteMoment(widget.momentId);
                         if (context.mounted) {
-                          Navigator.pop(context); // Vuelve a home (el diálogo se cierra solo)
+                          Navigator.pop(
+                            context,
+                          ); // Vuelve a home (el diálogo se cierra solo)
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(AppLocalizations.of(context).translate('momentDeleted'))),
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('momentDeleted'),
+                              ),
+                            ),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
                           final loc = AppLocalizations.of(context);
-                          final String message = e.toString().contains('timed out')
+                          final String message =
+                              e.toString().contains('timed out')
                               ? loc.translate('deleteLocally')
                               : '${loc.translate('savingError')}$e';
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(message)),
-                          );
-                          Navigator.pop(context); // Vuelve atrás incluso con error/timeout
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(message)));
+                          Navigator.pop(
+                            context,
+                          ); // Vuelve atrás incluso con error/timeout
                         }
                       }
                     },
@@ -823,7 +1050,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
               onTap: () {
                 // For social events, show local images; for others, show network image
                 if (widget.momentData['type'] == 'socialEvent') {
-                  final imageNames = widget.momentData['imageNames'] as List<dynamic>? ?? [];
+                  final imageNames =
+                      widget.momentData['imageNames'] as List<dynamic>? ?? [];
                   if (imageNames.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -877,7 +1105,8 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
 /* Image gallery screen (full-screen image viewer). Before was a showDialog, 
 now a full screen push for better UX and pinch-to-zoom support. */
-class _ImageGalleryScreen extends StatefulWidget { // StatefulWidget to manage page controller for carousel
+class _ImageGalleryScreen extends StatefulWidget {
+  // StatefulWidget to manage page controller for carousel
   final List<String> imagePathsOrUrls;
   final int initialIndex;
   final List<String>? localImageFileNames;
@@ -931,9 +1160,13 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
                 return InteractiveViewer(
                   minScale: 0.5,
                   maxScale: 4.0,
-                  child: CachedNetworkImage(imageUrl: pathOrUrl, fit: BoxFit.contain),
+                  child: CachedNetworkImage(
+                    imageUrl: pathOrUrl,
+                    fit: BoxFit.contain,
+                  ),
                 );
-              } else if (widget.localImageFileNames != null && index < widget.localImageFileNames!.length) {
+              } else if (widget.localImageFileNames != null &&
+                  index < widget.localImageFileNames!.length) {
                 // Local file image (social events)
                 return FutureBuilder<String>(
                   future: _getImagePath(widget.localImageFileNames![index]),
@@ -951,7 +1184,10 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
                       child: imageFile.existsSync()
                           ? Image.file(imageFile, fit: BoxFit.contain)
                           : const Center(
-                              child: Icon(Icons.image_not_supported, color: Colors.white),
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.white,
+                              ),
                             ),
                     );
                   },
@@ -987,8 +1223,6 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
       ),
     );
   }
-
-
 }
 
 // Helper method to get image path for gallery
