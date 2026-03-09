@@ -160,7 +160,6 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                               border: UnderlineInputBorder(),
                               contentPadding: EdgeInsets.zero,
                             ),
-                            
                           ),
                           const SizedBox(height: 8),
 

@@ -261,7 +261,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           widget.momentData['imageNames'] as List<dynamic>? ?? [];
       if (imageNames.isEmpty) {
         return Container(
-          height: 300,
+          height: 250,
           width: double.infinity,
           color: Colors.cyan.withValues(alpha: 0.2),
           child: const Center(
@@ -275,7 +275,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Container(
-              height: 300,
+              height: 250,
               width: double.infinity,
               color: Colors.cyan.withValues(alpha: 0.2),
               child: const Center(child: CircularProgressIndicator()),
@@ -286,7 +286,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
 
           if (!imageFile.existsSync()) {
             return Container(
-              height: 300,
+              height: 250,
               width: double.infinity,
               color: Colors.cyan.withValues(alpha: 0.2),
               child: const Center(
@@ -302,7 +302,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           return Stack(
             children: [
               Container(
-                height: 300,
+                height: 250,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.cyan.withValues(alpha: 0.2),
@@ -351,17 +351,17 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       if (widget.momentData['imageUrl'] != null) {
         return CachedNetworkImage(
           imageUrl: widget.momentData['imageUrl'],
-          height: 300,
+          height: 250,
           width: double.infinity,
           fit: BoxFit.fitHeight,
           placeholder: (context, url) => Container(
-            height: 300,
+            height: 250,
             width: double.infinity,
             color: Colors.cyan.withValues(alpha: 0.2),
             child: const Center(child: CircularProgressIndicator()),
           ),
           errorWidget: (context, url, error) => Container(
-            height: 300,
+            height: 250,
             width: double.infinity,
             color: Colors.cyan.withValues(alpha: 0.2),
             child: const Center(
@@ -376,7 +376,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       }
 
       return Container(
-        height: 300,
+        height: 250,
         width: double.infinity,
         color: Colors.cyan.withValues(alpha: 0.2),
         child: const Center(
@@ -392,7 +392,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     if (isEditing) {
       return TextField(
         controller: _titleController,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         decoration: const InputDecoration(
           border: UnderlineInputBorder(),
           isDense: true,
@@ -404,7 +404,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
       _titleController.text.isEmpty
           ? loc.translate('unknown')
           : _titleController.text,
-      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
 
