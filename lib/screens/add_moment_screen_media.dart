@@ -185,9 +185,10 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
+                              label: Text(loc.translate('title')),
                               isDense: true,
-                              border: InputBorder.none,
+                              border: UnderlineInputBorder(),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
