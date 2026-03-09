@@ -76,7 +76,7 @@ class MediaRepository {
         ),
       ]);
 
-      // 1. Country
+      // 1. Country and Genres
       if (results[0].statusCode == 200) {
         final data = json.decode(results[0].body);
         // In TMDB production_countries has the full country name (United States) refered in origin_country (US).
@@ -103,6 +103,14 @@ class MediaRepository {
           media.country = 'Unknown country';
         }
         
+        // Get genres from the main endpoint
+        final genres = data['genres'] as List? ?? [];
+        media.genres = genres.isEmpty
+            ? []
+            : genres
+                  .map((g) => g['name'] as String)
+                  .toList();
+        
         // For TV shows, also get creators from here
         if (mediaType == 'tv') {
           final createdBy = data['created_by'] as List? ?? [];
@@ -115,6 +123,7 @@ class MediaRepository {
         }
       } else {
         media.country = 'N/A';
+        media.genres = [];
       }
 
       // 2. Director and cast
@@ -142,6 +151,17 @@ class MediaRepository {
                   .map((d) => d['name'] as String)
                   .toList();
 
+        // Get writers (screenplay authors or writers)
+        final writersList = crew
+            .where((p) => p['job'] == 'Screenplay' || p['job'] == 'Writer')
+            .toList();
+        media.screenwriters = writersList.isEmpty
+            ? []
+            : writersList
+                  .take(4)
+                  .map((w) => w['name'] as String)
+                  .toList();
+
         media.cast = cast.isEmpty
             ? []
             : cast
@@ -151,13 +171,16 @@ class MediaRepository {
       } else {
         media.directors = [];
         media.creators ??= [];
+        media.screenwriters = [];
         media.cast = [];
       }
     } catch (e) {
       media.country = 'Error loading';
       media.directors = ['Error loading'];
       media.creators = ['Error loading'];
+      media.screenwriters = ['Error loading'];
       media.cast = ['Error loading'];
+      media.genres = ['Error loading'];
     }
   }
 }
