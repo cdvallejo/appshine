@@ -41,7 +41,7 @@ class AppLocalizations {
   static const Map<String, Map<String, String>> _localizedStrings = {
     'es': {
       // App & Navigation
-      'settings': 'Configuración',
+      'settings': 'Ajustes',
       'logout': 'Cerrar sesión',
       'cancel': 'Cancelar',
       'save': 'Guardar',

@@ -4,6 +4,7 @@ import 'package:appshine/models/social_event_model.dart';
 import 'package:appshine/screens/add_moment_screen_media.dart';
 import 'package:appshine/screens/add_moment_screen_book.dart';
 import 'package:appshine/screens/add_moment_screen_social_event.dart';
+import 'package:appshine/screens/insights_screen.dart';
 import 'package:appshine/screens/moment_detail_screen.dart';
 import 'package:appshine/screens/settings_screen.dart';
 import 'package:appshine/widgets_extra/book_search_delegate.dart';
@@ -78,6 +79,53 @@ class HomeScreen extends StatelessWidget {
 
     // --- MAIN STRUCTURE OF THE SCREEN ---
     return Scaffold(
+      // --- DRAWER ---
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+              ),
+              child: const Text(
+                'Appshine',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insights),
+              title: Text(loc.translate('insights')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const InsightsScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: Text(loc.translate('settings')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       // --- APP BAR ---
       appBar: AppBar(
         title: const Text('Appshine'),
@@ -108,15 +156,6 @@ class HomeScreen extends StatelessWidget {
               }
               return const SizedBox.shrink();
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SettingsScreen(),
-              ),
-            ),
           ),
         ],
       ),
@@ -304,7 +343,7 @@ class HomeScreen extends StatelessWidget {
 
   /// Shows a modal bottom sheet menu for adding different types of moments.
   ///
-  /// Displays three options: Movies/TV shows, books, and social events.
+  /// Displays three options: Movies/TV shows, Books, and Social events.
   /// Once the user selects an option, navigates to the corresponding
   /// input screen or closes the menu if tap outside.
   ///
