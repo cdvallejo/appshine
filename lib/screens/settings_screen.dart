@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/main.dart';
-import 'package:appshine/screens/insights_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -111,25 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const Divider(height: 32),
-
-          // INSIGHTS SECTION
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ListTile(
-              leading: Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.primary),
-              title: Text(loc.translate('insights')),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InsightsScreen()),
-                );
-              },
-            ),
-          ),
-
-          const Divider(height: 32),
-
+  
           // LOGOUT SECTION
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
