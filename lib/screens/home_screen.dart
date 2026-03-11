@@ -24,7 +24,7 @@ import 'package:appshine/data/database_service.dart';
 ///
 /// This screen serves as the main hub for viewing and managing moments
 /// (movies, TV shows, books, and social events). It provides role-based
-/// content: admins see a welcome message, while regular users see their
+/// content: admins see quick access buttons, while regular users see their
 /// moments organized by date in descending order.
 ///
 /// **Features:**
@@ -32,24 +32,24 @@ import 'package:appshine/data/database_service.dart';
 ///   * Moments grouped and sorted by date (newest first)
 ///   * Locale-aware date formatting (Spanish and English)
 ///   * Image handling for local (social events) and network sources
-///   * Floating action button to quickly add new moments
-///   * Admin panel access for administrators
+///   * Floating action button to quickly add new moments (non-admin users)
+///   * Admin panel with user management capabilities
+///   * No drawer for admin users, settings icon on AppBar
 ///
 /// **Dependencies:**
 ///   * FirebaseAuth: User authentication and role checking
 ///   * Firestore: User and moment data storage
 ///   * AppLocalizations: Multi-language support
 ///
-/// ## Main screen of the app displaying user's moments or admin welcome screen.
-///
 /// Shows different content based on user roles:
-///   * Admins: See a welcome message
-///   * Regular users: See a grouped list of their moments organized by date
+///   * Admins: Admin Dashboard and Create Admin User buttons, settings icon on AppBar
+///   * Regular users: Grouped list of moments with drawer navigation
 ///
 /// The screen includes:
-///   * App bar with admin button (if user is admin) and settings menu
-///   * Body with moments list or admin message
-///   * Floating action button to add new moments (media, books, or events)
+///   * App bar with settings icon (for admins)
+///   * Drawer navigation (for regular users only)
+///   * Body with moments list or admin buttons
+///   * Floating action button to add new moments (non-admin users only)
 class HomeScreen extends StatelessWidget {
   /// Creates a HomeScreen widget.
   ///
@@ -59,13 +59,14 @@ class HomeScreen extends StatelessWidget {
   /// Builds the home screen widget.
   ///
   /// Constructs a Scaffold with:
-  ///   * An app bar with navigation and admin controls
-  ///   * A body that shows admin message or moments list
-  ///   * A floating action button to add moments
+  ///   * An app bar with settings icon (for admins)
+  ///   * A drawer for navigation (non-admin users only)
+  ///   * A body that shows admin buttons or a grouped list of moments
+  ///   * A floating action button to add moments (non-admin users only)
   ///
   /// The screen fetches user role from Firestore and displays
-  /// appropriate content. Non-admin users see a grouped list of moments
-  /// organized by date with newest first.
+  /// appropriate content. Admins see quick-access buttons to the admin panel.
+  /// Non-admin users see a grouped list of moments organized by date with newest first.
   ///
   /// Parameters:
   ///   * [context] - The build context
@@ -78,25 +79,275 @@ class HomeScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context);
 
     // --- MAIN STRUCTURE OF THE SCREEN ---
-    return Scaffold(
-      // --- DRAWER ---
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-              ),
-              child: const Text(
-                'Appshine',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+    return FutureBuilder<bool>(
+      future: _getIsAdmin(user?.uid),
+      builder: (context, snapshot) {
+        final isAdmin = snapshot.data ?? false;
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return Scaffold(
+          // --- DRAWER ---
+          drawer: !isAdmin ? _buildDrawer(context, isAdmin, loc) : null,
+          // --- APP BAR ---
+          appBar: AppBar(
+            title: const Text('Appshine'),
+            actions: [
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  ),
                 ),
+            ],
+          ),
+          // --- BODY OF THE SCREEN ---
+          body: isAdmin
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        loc.translate('welcome'),
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: 250,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.supervised_user_circle),
+                          label: const Text('Admin Dashboard'),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminScreen(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: 250,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.admin_panel_settings),
+                          label: const Text('Create Admin User'),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminScreen(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : StreamBuilder<QuerySnapshot>(
+                  stream: DatabaseService().getMomentsStream(),
+                  builder: (context, momentSnapshot) {
+                    if (momentSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    var docs = (momentSnapshot.data?.docs ?? []).toList();
+
+                    if (docs.isEmpty) {
+                      return const Center(
+                        child: Text('No moments added yet. Tap + to add one!'),
+                      );
+                    }
+
+                    // Sort docs by date (ascending)
+                    docs.sort((a, b) {
+                      final dateA = (a['date'] as Timestamp).toDate();
+                      final dateB = (b['date'] as Timestamp).toDate();
+                      return dateA.compareTo(dateB);
+                    });
+
+                    // --- GROUPED LIST VIEW BY DATE ---
+                    return GroupedListView<dynamic, DateTime>(
+                      elements: docs,
+                      groupBy: (doc) {
+                        // Extract date without time
+                        DateTime date = (doc.data()['date'] as Timestamp)
+                            .toDate();
+                        return DateTime(date.year, date.month, date.day);
+                      },
+                      // --- GROUP HEADER DESIGN ---
+                      groupSeparatorBuilder: (DateTime date) => Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.05),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Left side: weekday name
+                              Text(
+                                _getWeekdayName(context, date.weekday),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.8),
+                                ),
+                              ),
+                              // Right side: full date
+                              Text(
+                                _formatDate(context, date),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 1.1,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      itemBuilder: (context, dynamic doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        // Moment item design
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.2),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: ListTile(
+                            visualDensity: VisualDensity.compact,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            leading: _buildMomentImage(
+                              data['type'],
+                              data['imageNames'],
+                              data['imageUrl'],
+                              data['subtype'],
+                            ),
+                            title: Text(
+                              data['title'] ?? loc.translate('untitled'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 1),
+                                Text(
+                                  loc.translate(
+                                    AppLocalizations.getSubtypeKey(
+                                      data['type'],
+                                      data['subtype'],
+                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Traiing with icon moment and onTap for future detail
+                            trailing: Icon(
+                              _getMomentIcon(data['type'], data['subtype']),
+                              size: 20,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.5),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MomentDetailScreen(
+                                    momentData: data,
+                                    momentId: doc.id,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      useStickyGroupSeparators: true,
+                      stickyHeaderBackgroundColor:
+                          AppTheme.getStickyHeaderColor(context),
+                      floatingHeader: false,
+                      order: GroupedListOrder.DESC,
+                    );
+                  },
+                ),
+
+          // --- FLOATING BUTTON TO ADD MOMENT ---
+          floatingActionButton:
+              !isAdmin // Only show floating button for non-admin users
+              ? FloatingActionButton(
+                  backgroundColor: AppTheme.primaryColor,
+                  child: const Icon(Icons.add, color: Colors.white),
+                  onPressed: () => _showAddMomentMenu(context),
+                )
+              : null,
+        );
+      },
+    );
+  }
+
+  /// Builds the drawer widget with different content for admins and regular users.
+  Widget _buildDrawer(
+    BuildContext context,
+    bool isAdmin,
+    AppLocalizations loc,
+  ) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: AppTheme.primaryColor),
+            child: const Text(
+              'Appshine',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+          if (!isAdmin)
             ListTile(
               leading: const Icon(Icons.insights),
               title: Text(loc.translate('insights')),
@@ -110,233 +361,31 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
+          if (isAdmin)
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: Text(loc.translate('settings')),
+              leading: const Icon(Icons.supervised_user_circle),
+              title: const Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const AdminScreen()),
                 );
               },
             ),
-          ],
-        ),
-      ),
-      // --- APP BAR ---
-      appBar: AppBar(
-        title: const Text('Appshine'),
-        actions: [
-          // AppBar admin button visibility based on user role
-          FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('users')
-                .doc(user?.uid)
-                .get(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox.shrink();
-              }
-              if (snapshot.hasData && snapshot.data!.exists) {
-                final userData = snapshot.data!.data() as Map<String, dynamic>;
-                if (userData['isAdmin'] == true) {
-                  return IconButton(
-                    icon: const Icon(Icons.admin_panel_settings),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AdminScreen(),
-                      ),
-                    ),
-                  );
-                }
-              }
-              return const SizedBox.shrink();
+
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(loc.translate('settings')),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
           ),
         ],
-      ),
-
-      // --- BODY OF THE SCREEN ---
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(user?.uid)
-            .get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          bool isAdmin = false;
-          if (snapshot.hasData && snapshot.data!.exists) {
-            final userData = snapshot.data!.data() as Map<String, dynamic>;
-            isAdmin = userData['isAdmin'] == true;
-          }
-          // If the user is an admin, show a special message
-          if (isAdmin) {
-            return Center(
-              child: Text(loc.translate('welcome'), style: const TextStyle(fontSize: 24)),
-            );
-          }
-
-          /* If USER is NOT ADMIN, show their moments
-            StreamBuilder watches Firestore and auto-rebuilds.
-            But when EDITING a moment in moment_detail_screen, to see changes immediately (without leaving the screen),
-            we use setState() to update widget.momentData after saving to Firestore. */
-          return StreamBuilder<QuerySnapshot>(
-            stream: DatabaseService().getMomentsStream(),
-            builder: (context, momentSnapshot) {
-              if (momentSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              var docs = (momentSnapshot.data?.docs ?? []).toList();
-
-              if (docs.isEmpty) {
-                return const Center(
-                  child: Text('No moments added yet. Tap + to add one!'),
-                );
-              }
-
-              // Sort docs by date (ascending)
-              docs.sort((a, b) {
-                final dateA = (a['date'] as Timestamp).toDate();
-                final dateB = (b['date'] as Timestamp).toDate();
-                return dateA.compareTo(dateB);
-              });
-
-              // --- GROUPED LIST VIEW BY DATE ---
-              return GroupedListView<dynamic, DateTime>(
-                elements: docs,
-                groupBy: (doc) {
-                  // Extract date without time
-                  DateTime date = (doc.data()['date'] as Timestamp).toDate();
-                  return DateTime(date.year, date.month, date.day);
-                },
-                // --- GROUP HEADER DESIGN ---
-                groupSeparatorBuilder: (DateTime date) => Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 6,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Left side: weekday name
-                        Text(
-                          _getWeekdayName(context, date.weekday),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-                          ),
-                        ),
-                        // Right side: full date
-                        Text(
-                          _formatDate(context, date),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 1.1,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                itemBuilder: (context, dynamic doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  // Moment item design
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 0,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: ListTile(
-                      visualDensity: VisualDensity.compact,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      leading: _buildMomentImage(
-                        data['type'],
-                        data['imageNames'],
-                        data['imageUrl'],
-                        data['subtype'],
-                      ),
-                      title: Text(
-                        data['title'] ?? loc.translate('untitled'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 1),
-                          Text(
-                            loc.translate(AppLocalizations.getSubtypeKey(data['type'], data['subtype'])),
-                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ],
-                      ),
-                      // Traiing with icon moment and onTap for future detail
-                      trailing: Icon(
-                        _getMomentIcon(data['type'], data['subtype']),
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MomentDetailScreen(
-                              momentData: data,
-                              momentId: doc
-                                  .id, // Pass the document ID for future reference (e.g., deletion)
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-                useStickyGroupSeparators:
-                    true, // Enable sticky headers for group separators
-                stickyHeaderBackgroundColor: AppTheme.getStickyHeaderColor(context),
-                floatingHeader:
-                    false, // No floating header for no transparency between DateTime
-                order: GroupedListOrder.DESC,
-              );
-            },
-          );
-        },
-      ),
-
-      // --- FLOATING BUTTON TO ADD MOMENT ---
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () =>
-            _showAddMomentMenu(context), // Call the Moment menu function
       ),
     );
   }
@@ -374,13 +423,18 @@ class HomeScreen extends StatelessWidget {
 
             // MEDIA OPTION
             ListTile(
-              leading: Icon(Icons.movie, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.movie,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: Text(loc.translate('movieOrTv')),
               onTap: () async {
                 // 1. Launch the search FIRST (using the current context)
                 final result = await showSearch<Media?>(
                   context: context,
-                  delegate: MediaSearchDelegate(searchLabel: loc.translate('searchByTitle')),
+                  delegate: MediaSearchDelegate(
+                    searchLabel: loc.translate('searchByTitle'),
+                  ),
                 );
 
                 // 2. If the user pressed back (result is null), also close the menu
@@ -408,12 +462,17 @@ class HomeScreen extends StatelessWidget {
 
             // BOOK OPTION
             ListTile(
-              leading: Icon(Icons.book, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.book,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: Text(loc.translate('bookOrComic')),
               onTap: () async {
                 final result = await showSearch<Book?>(
                   context: context,
-                  delegate: BookSearchDelegate(searchLabel: loc.translate('searchByTitle')),
+                  delegate: BookSearchDelegate(
+                    searchLabel: loc.translate('searchByTitle'),
+                  ),
                 );
 
                 if (result == null) {
@@ -437,7 +496,10 @@ class HomeScreen extends StatelessWidget {
 
             // SOCIAL EVENT OPTION
             ListTile(
-              leading: Icon(Icons.people, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.people,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: Text(loc.translate('socialEvent')),
               onTap: () {
                 Navigator.pop(context);
@@ -458,6 +520,29 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Gets whether the current user is an admin.
+  /// Checks the 'isAdmin' field in the user's Firestore document.
+  ///
+  /// Parameters:
+  ///  * [uid] - The user ID to check (can be null)
+  /// Returns:
+  /// * A Future that resolves to true if the user is an admin, false otherwise
+  Future<bool> _getIsAdmin(String? uid) async {
+    if (uid == null) return false;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (doc.exists) {
+        return doc.data()?['isAdmin'] == true;
+      }
+    } catch (e) {
+      // Error handling
+    }
+    return false;
   }
 
   /// Gets the localized month name for the given month number.
@@ -517,7 +602,8 @@ class HomeScreen extends StatelessWidget {
         }
         return Icons.people;
       default:
-        return Icons.question_mark_outlined; // Just in case there is an error with the type / subtype
+        return Icons
+            .question_mark_outlined; // Just in case there is an error with the type / subtype
     }
   }
 
@@ -571,7 +657,7 @@ class HomeScreen extends StatelessWidget {
   ///   A formatted date string appropriate for the current locale
   String _formatDate(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context);
-    
+
     if (locale.languageCode == 'en') {
       // English format: "February 26, 2026"
       return "${_getMonthName(context, date.month)} ${date.day}, ${date.year}";
@@ -608,32 +694,34 @@ class HomeScreen extends StatelessWidget {
   ) {
     /* For social events, reconstruct path from filename and show local image.
     Not null and empty list check */
-     if (type == 'socialEvent' &&
+    if (type == 'socialEvent' &&
         imageNames != null &&
         (imageNames as List).isNotEmpty) {
       return FutureBuilder<String>(
-        future: _getImagePath(imageNames[0]), // Get the full path of the first image
-        builder: (context, snapshot) { // Check if the file exists at the path, the result of the future is in snapshot.data
+        future: _getImagePath(
+          imageNames[0],
+        ), // Get the full path of the first image
+        builder: (context, snapshot) {
+          // Check if the file exists at the path, the result of the future is in snapshot.data
           // Show loading indicator while waiting for path
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(
               width: 50,
               height: 75,
-              child: Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             );
           }
-    
+
           if (snapshot.hasData && File(snapshot.data!).existsSync()) {
             return Image.file(
               File(snapshot.data!),
               width: 50,
               height: 75,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Icon(_getMomentIconBig(type, subtype), size: 50), // Fallback to icon if file can't be loaded
-             
+              errorBuilder: (context, error, stackTrace) => Icon(
+                _getMomentIconBig(type, subtype),
+                size: 50,
+              ), // Fallback to icon if file can't be loaded
             );
           }
           return Icon(_getMomentIconBig(type, subtype), size: 50);
@@ -651,9 +739,7 @@ class HomeScreen extends StatelessWidget {
         placeholder: (context, url) => const SizedBox(
           width: 50,
           height: 75,
-          child: Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
         errorWidget: (context, url, error) =>
             Icon(_getMomentIconBig(type, subtype), size: 50),

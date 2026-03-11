@@ -9,6 +9,26 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Validates that the current user exists in Firebase Auth.
+  /// Reloads user data from server to detect if account was deleted.
+  /// 
+  /// Throws:
+  ///   * Exception if user is not authenticated
+  ///   * Exception if user was deleted from Firebase Auth
+  Future<void> _validateUserExists() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    try {
+      await user.reload();
+      if (_auth.currentUser == null) {
+        throw Exception('User account was deleted');
+      }
+    } catch (e) {
+      throw Exception('User authentication invalid: $e');
+    }
+  }
+
   // Function to add a media moment to Firestore
   Future<void> addMomentMedia({
     required Media media,
@@ -17,7 +37,9 @@ class DatabaseService {
     required String notes,
     required String subtype,
   }) async {
-    // Checking if user is logged in
+    // Validate user exists and is authenticated
+    await _validateUserExists();
+    
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not identified');
 
@@ -57,7 +79,9 @@ class DatabaseService {
     required String notes,
     required String subtype,
   }) async {
-    // Checking if user is logged in
+    // Validate user exists and is authenticated
+    await _validateUserExists();
+    
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not identified');
 
@@ -95,7 +119,9 @@ class DatabaseService {
     required String notes,
     required String subtype,
   }) async {
-    // Checking if user is logged in
+    // Validate user exists and is authenticated
+    await _validateUserExists();
+    
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not identified');
 
@@ -123,7 +149,14 @@ class DatabaseService {
   // Function to get a stream of moments for the current user
   Stream<QuerySnapshot> getMomentsStream() {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not identified');
+    if (user == null) throw Exception('User not authenticated');
+
+    // Validate user exists before returning stream
+    _validateUserExists().then((_) {
+      // User is valid
+    }).catchError((e) {
+      debugPrint('User validation error in getMomentsStream: $e');
+    });
 
     // Query to get moments for the current user, ordered by event date
     return _db
@@ -135,6 +168,9 @@ class DatabaseService {
 
   // Function to update a moment's notes
   Future<void> updateMoment(String momentId, Map<String, dynamic> data) async {
+    // Validate user exists and is authenticated
+    await _validateUserExists();
+    
     try {
       await _db.collection('moments').doc(momentId).update(data).timeout(
         const Duration(seconds: 5),
@@ -149,6 +185,9 @@ class DatabaseService {
 
   // Function to delete a moment by its ID
   Future<void> deleteMoment(String momentId) async {
+    // Validate user exists and is authenticated
+    await _validateUserExists();
+    
     try {
       await _db.collection('moments').doc(momentId).delete().timeout(
         const Duration(seconds: 5),
