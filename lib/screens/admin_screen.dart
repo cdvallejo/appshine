@@ -28,26 +28,117 @@ class AdminScreen extends StatelessWidget {
 
           // 3. Final State: If we reach here, the snapshot was successfully updated with the real-time list of users from Firestore.
           final users = snapshot.data!.docs;
+          final totalUsers = users.length;
 
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              // Extract data from the current document
-              final userData = users[index].data() as Map<String, dynamic>;
-              
-              return ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Colors.indigo,
-                  child: Icon(Icons.person, color: Colors.white),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // --- STATISTICS HEADER ---
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Total Users:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '$totalUsers',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Total moments stream
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('moments')
+                            .snapshots(),
+                        builder: (context, momentSnapshot) {
+                          if (momentSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Total Moments:'),
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          final totalMoments =
+                              momentSnapshot.data?.docs.length ?? 0;
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Moments:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '$totalMoments',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                title: Text(userData['email'] ?? 'No email provided'),
-                subtitle: Text('Admin status: ${userData['isAdmin'] ?? false}'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  // Future task: Add user details or management options
-                },
-              );
-            },
+                const Divider(height: 30, thickness: 2),
+                // --- USERS LIST ---
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    // Extract data from the current document
+                    final userData =
+                        users[index].data() as Map<String, dynamic>;
+
+                    return ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.indigo,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(userData['email'] ?? 'No email provided'),
+                      subtitle:
+                          Text('Admin status: ${userData['isAdmin'] ?? false}'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        // Future task: ADMIN can tap to delete user and his moments
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           );
         },
       ),
