@@ -76,7 +76,7 @@ class Book {
     String? editionKey = json['cover_edition_key'] as String?;
 
     return Book(
-      id: (json['key'] as String).trim(),
+      id: (json['key'] as String).split('/').last.trim(), // Extract just the code from the key (no "/works/OL45883W", only the code)
       title: (json['title'] as String).trim(),
       imageUrl: coverUrl,
       isbn: isbn,
