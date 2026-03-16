@@ -38,8 +38,12 @@ class Media {
   /// Throws [FormatException] if required fields are missing
   factory Media.fromJson(Map<String, dynamic> json) {
     // Validate required fields
-    if (json['id'] == null) {
+    final rawId = json['id'];
+    if (rawId == null) {
       throw FormatException('Missing required field: id');
+    }
+    if (rawId is! num) {
+      throw FormatException('Invalid field: id must be numeric');
     }
     if (json['media_type'] == null) {
       throw FormatException('Missing required field: media_type');
@@ -52,7 +56,7 @@ class Media {
     }
 
     return Media(
-      id: (json['id'] as num).toInt(),
+      id: rawId.toInt(),
       title: title.toString(),
       imageUrl: json['poster_path'] != null
           ? 'https://image.tmdb.org/t/p/w500${json['poster_path']}'

@@ -22,7 +22,7 @@ class Moment {
     required this.title,
     required this.date,
     this.notes,
-    this.status,
+    this.status, // For future use: 'watched', 'reading', 'attended', etc.
     this.location,
     this.imageUrl,
   });

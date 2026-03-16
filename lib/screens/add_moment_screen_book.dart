@@ -138,8 +138,10 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                       if (_titleController.text.isEmpty) {
                         _titleController.text = book.title;
                         _yearController.text = book.releaseYear;
-                        _publisherController.text = '...'; // Placeholder, as Open Library doesn't provide publisher in search results
-                        _authorsController.text = book.authors?.join(', ') ?? loc.translate('unknown');
+                        _publisherController.text = (book.publisher != null && book.publisher!.trim().isNotEmpty)
+                            ? book.publisher!
+                            : loc.translate('unknown');
+                        _authorsController.text = book.authors.isEmpty ? loc.translate('unknown') : book.authors.join(', ');
                         _pagesController.text = book.formattedPageCount;
                       }
                       // Always update the ISBN (in case it arrives from API)

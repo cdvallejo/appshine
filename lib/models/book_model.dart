@@ -16,19 +16,20 @@ class Book {
   final String? publisher;
   final String? editionKey; // Open Library ID for direct edition API access
   final String subtype; // 'Novel', 'Manga', 'Comic', 'Essay', 'Technical', 'Sheet music'
-  List<String>? authors;
+  List<String> authors; //
 
   Book({
     required this.id,
     required this.title,
+    required this.authors,
+    required this.subtype,
     this.publishedDate,
     this.imageUrl,
     this.pageCount,
     this.isbn,
     this.publisher,
     this.editionKey, // Open Library ID for direct edition API access
-    this.authors,
-    required this.subtype,
+    
   });
 
   /// Factory method to create a Book from Open Library API JSON data
@@ -59,6 +60,8 @@ class Book {
       authors = (json['author_name'] as List<dynamic>)
           .map((author) => author.toString())
           .toList();
+    } else {
+      authors = []; // Empty list if no authors provided, to avoid null issues in UI
     }
 
     String? publishedDate;
@@ -75,15 +78,31 @@ class Book {
     // Extract edition key (OLID) for direct API access
     String? editionKey = json['cover_edition_key'] as String?;
 
+    // Extract page count (if available)
+    int? pageCount;
+    final rawPageCount = json['number_of_pages_median'];
+    if (rawPageCount is num) {
+      pageCount = rawPageCount.toInt();
+    }
+
+    // Extract publisher (if available)
+    String? publisher;
+    if (json['publisher'] is List && (json['publisher'] as List).isNotEmpty) {
+      publisher = (json['publisher'] as List).first.toString();
+    } else if (json['publisher'] is String && (json['publisher'] as String).trim().isNotEmpty) {
+      publisher = (json['publisher'] as String).trim();
+    }
+
     return Book(
       id: (json['key'] as String).split('/').last.trim(), // Extract just the code from the key (no "/works/OL45883W", only the code)
       title: (json['title'] as String).trim(),
       imageUrl: coverUrl,
       isbn: isbn,
       editionKey: editionKey,
+      publisher: publisher,
       authors: authors,
       publishedDate: publishedDate,
-      pageCount: null,
+      pageCount: pageCount,
       subtype: 'Novel', // Default subtype, can be updated later
     );
   }
@@ -128,6 +147,7 @@ class Book {
     return '$pageCount';
   }
 
+  // Method to create a copy of the Book with updated fields (for immutability)
   Book copyWith({
     String? id,
     String? title,
