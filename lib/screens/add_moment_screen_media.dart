@@ -145,7 +145,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // PART MEDIA DETAILS SECTION: EDITABLE
-                  FutureBuilder(
+                  FutureBuilder<Media>(
                     future: _mediaRepository.getMovieDetails(
                       widget.media,
                       languageCode,

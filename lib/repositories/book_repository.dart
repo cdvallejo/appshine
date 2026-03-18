@@ -2,10 +2,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/book_model.dart';
 
-// Repository using Open Library API - free, unlimited, no API key needed
+/// Repository for searching and enriching book data from Open Library.
 class BookRepository {
   final String _searchBaseUrl = 'https://openlibrary.org/search.json';
 
+  /// Searches books using Open Library `search.json`.
+  ///
+  /// Parameters:
+  /// * [query]: User search text.
+  ///
+  /// Returns:
+  /// * A list of normalized [Book] items.
+  /// * An empty list when query is empty, request fails, or parsing fails.
   Future<List<Book>> searchBooks(String query) async {
     if (query.isEmpty) return [];
     try {
@@ -15,16 +23,20 @@ class BookRepository {
           'q': query,
           'limit': '20',
           // Ask Open Library explicitly for the fields we use in the model.
-          'fields': 'key,title,author_name,first_publish_year,isbn,cover_edition_key,cover_i,number_of_pages_median,publisher',
+          'fields':
+              'key,title,author_name,first_publish_year,isbn,cover_edition_key,cover_i,number_of_pages_median,publisher',
         },
       );
-      
+
       // HTTP GET request with timeout
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () =>
-            throw Exception('Timeout while fetching books from Open Library'),
-      );
+      final response = await http
+          .get(url)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception(
+              'Timeout while fetching books from Open Library',
+            ),
+          );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -33,13 +45,22 @@ class BookRepository {
       } else {
         return [];
       }
-    } catch (e) {
-      // If there was an error, return an empty list
-      return [];
+    } catch (_) {
+      return []; // If there was an error, return an empty list
     }
   }
 
-  // Fetch additional details for a book using edition key
+  /// Fetches additional details for a [book].
+  ///
+  /// It tries `api/books` when [Book.editionKey] exists, and falls back to
+  /// work editions when it does not.
+  ///
+  /// Parameters:
+  /// * [book]: Base book instance to enrich.
+  ///
+  /// Returns:
+  /// * An enriched [Book] when detail data is available.
+  /// * The original [book] when detail lookup fails.
   Future<Book> getBookDetails(Book book) async {
     // If we don't have an edition key, try a fallback using work editions.
     if (book.editionKey == null || book.editionKey!.isEmpty) {
@@ -56,15 +77,17 @@ class BookRepository {
         },
       );
 
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Timeout fetching book details'),
-      );
+      final response = await http
+          .get(url)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Timeout fetching book details'),
+          );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final key = 'OLID:${book.editionKey}';
-        
+
         if (data[key] is Map) {
           final bookData = data[key] as Map<String, dynamic>;
           int? pageCount = bookData['number_of_pages'] as int?;
@@ -80,18 +103,20 @@ class BookRepository {
               publisher = first.toString();
             }
           }
-          
+
           // Extract ISBN from identifiers
           String? isbn = book.isbn;
           if (bookData['identifiers'] is Map) {
             final identifiers = bookData['identifiers'] as Map<String, dynamic>;
-            if (identifiers['isbn_13'] is List && (identifiers['isbn_13'] as List).isNotEmpty) {
+            if (identifiers['isbn_13'] is List &&
+                (identifiers['isbn_13'] as List).isNotEmpty) {
               isbn = (identifiers['isbn_13'] as List)[0].toString();
-            } else if (identifiers['isbn_10'] is List && (identifiers['isbn_10'] as List).isNotEmpty) {
+            } else if (identifiers['isbn_10'] is List &&
+                (identifiers['isbn_10'] as List).isNotEmpty) {
               isbn = (identifiers['isbn_10'] as List)[0].toString();
             }
           }
-          
+
           return Book(
             id: book.id,
             title: book.title,
@@ -106,27 +131,34 @@ class BookRepository {
           );
         }
       }
-      
-      // If Books API fails, return the book as-is
+
       return book;
-    } catch (e) {
-      return book;
+    } catch (_) {
+      return book; // If Books API fails in lazy loading, return the book as-is
     }
   }
 
-  // Fallback details when editionKey is missing.
+  /// Fallback detail lookup using work editions endpoint.
+  ///
+  /// Parameters:
+  /// * [book]: Base book instance to enrich.
+  ///
+  /// Returns:
+  /// * A partially enriched [Book] using edition fields when available.
+  /// * The original [book] when fallback lookup fails.
   Future<Book> _getBookDetailsFromWorkEditions(Book book) async {
     try {
-      final url = Uri.parse('https://openlibrary.org/works/${book.id}/editions.json').replace(
-        queryParameters: {
-          'limit': '1',
-        },
-      );
+      final url = Uri.parse(
+        'https://openlibrary.org/works/${book.id}/editions.json',
+      ).replace(queryParameters: {'limit': '1'});
 
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Timeout fetching editions fallback'),
-      );
+      final response = await http
+          .get(url)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () =>
+                throw Exception('Timeout fetching editions fallback'),
+          );
 
       if (response.statusCode != 200) {
         return book;
@@ -151,11 +183,9 @@ class BookRepository {
         publisher = publishers.first.toString();
       }
 
-      return book.copyWith(
-        pageCount: pageCount,
-        publisher: publisher,
-      );
+      return book.copyWith(pageCount: pageCount, publisher: publisher);
     } catch (_) {
+      // If fallback also fails, return the original book.
       return book;
     }
   }

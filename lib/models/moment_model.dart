@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Enum representing the type of moment (media, book, social event).
 enum MomentType { media, book, socialEvent }
 
-// Model class for a Moment
+/// Base model representing a saved moment
+///
+/// It stores common fields for all moment types (media, book, socialEvent).
+/// Type-specific fields are stored in Firestore documents depending on `type`.
 class Moment {
   final String? id;
   final String userId;
@@ -13,12 +17,28 @@ class Moment {
   final String? status;
   final String? location;
   final String? imageUrl;
-  // Future ADD - hashtags, states, rating, etc.
+  // TODO:  - Raíz: Datos de identidad.
+  //        - ExtraInfo: Datos técnicos (específicos por tipo).
+  //        - History: date y notes aquí para adminitir repeticiones.
+  //        - Campos de rango para viajes.
+  //        - Future extension: hashtags, mood/state, rating, etc.
 
+  /// Creates a [Moment] with common data for media, book or social events.
+  ///
+  /// Parameters:
+  /// * [id]: Optional Firestore document ID (`doc.id`).
+  /// * [userId]: ID of the user who owns this moment.
+  /// * [type]: Moment category ([MomentType.media], [MomentType.book], or [MomentType.socialEvent]).
+  /// * [title]: Main title shown for the moment.
+  /// * [date]: Date associated with the moment.
+  /// * [notes]: Optional user notes.
+  /// * [status]: Optional status value (e.g. watched, reading, attended).
+  /// * [location]: Optional location text.
+  /// * [imageUrl]: Optional cover/image URL.
   Moment({
-    this.id,
+    this.id, // Firestore document ID (doc.id). Generated automatically by Firestore.
     required this.userId,
-    required this.type, // Enum for type
+    required this.type, // media | book | socialEvent
     required this.title,
     required this.date,
     this.notes,
@@ -27,8 +47,13 @@ class Moment {
     this.imageUrl,
   });
 
-  /// Factory constructor to create a Moment instance from a Firestore document
-  /// Throws [FormatException] if required fields are missing or invalid
+  /// Creates a [Moment] from Firestore document fields and its document ID.
+  ///
+  /// Parameters:
+  /// * [map]: Firestore document fields.
+  /// * [docId]: Firestore document identifier (`doc.id`).
+  ///
+  /// Throws [FormatException] if required fields are missing or invalid.
   factory Moment.fromMap(Map<String, dynamic> map, String docId) {
     // Validate required fields
     if (map['userId'] == null || (map['userId'] is String && (map['userId'] as String).isEmpty)) {
@@ -75,7 +100,9 @@ class Moment {
     );
   }
 
-  // Method to convert a Moment instance to a map for Firestore storage
+  /// Converts this model to a map for Firestore document fields.
+  ///
+  /// Note: [id] is not included because it belongs to the document metadata.
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,

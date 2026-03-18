@@ -3,14 +3,21 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/media_model.dart';
 
-// Repository is the engine that fetches data from TMDB API to models.
-/* TMDB API Repository is much HARDER
-it's needed to make multiple requests to get all the details. */
+/// Repository for searching and enriching media data from TMDB.
 class MediaRepository {
   // TMDB API Key and base URL
   final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
   final String _baseUrl = 'https://api.themoviedb.org/3';
 
+  /// Searches TMDB multi-endpoint and returns only movies and TV series.
+  ///
+  /// Parameters:
+  /// * [query]: Text entered by the user.
+  /// * [languageCode]: Language code for localized TMDB responses (e.g. `es-ES`, `en-US`).
+  ///
+  /// Returns:
+  /// * A list of normalized [Media] results.
+  /// * An empty list when query is empty, request fails, or parsing fails.
   Future<List<Media>> searchMedia(String query, String languageCode) async {
     if (query.isEmpty) return [];
     try {
@@ -24,54 +31,66 @@ class MediaRepository {
         },
       );
       // HTTP GET request with timeout
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () =>
-            throw Exception('Timeout while searching for media from TMDB API'),
-      );
+      final response = await http
+          .get(url)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception(
+              'Timeout while searching for media from TMDB API',
+            ),
+          );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final results = data['results'] as List? ?? [];
         // Filter to only include movies and TV shows, exclude people
         final filtered = results
-            .where((item) => item['media_type'] == 'movie' || item['media_type'] == 'tv')
+            .where(
+              (item) =>
+                  item['media_type'] == 'movie' || item['media_type'] == 'tv',
+            )
             .toList();
         return filtered.map((json) => Media.fromJson(json)).toList();
       } else {
         return [];
       }
-    } catch (e) {
-      return [];
+    } catch (_) {
+      return []; // If there was an error, return an empty list
     }
   }
 
-  // Fetch extra details for a specific movie or TV show with two more requests
-  Future<void> getMovieDetails(Media media, String languageCode) async {
+  /// Fetches and fills extra details for a specific [media] item.
+  ///
+  /// The method performs two parallel TMDB requests:
+  /// * Main details endpoint (country, genres, creators for TV).
+  /// * Credits endpoint (directors, writers, cast).
+  ///
+  /// Parameters:
+  /// * [media]: Base [Media] instance to enrich.
+  /// * [languageCode]: Language code for localized TMDB responses.
+  ///
+  /// Returns:
+  /// * An enriched [Media] when detail data is available.
+  /// * The original [media] when detail lookup fails.
+  Future<Media> getMovieDetails(Media media, String languageCode) async {
     try {
       // Determine the correct endpoint based on media type
       final String mediaType = media.type == 'tv' ? 'tv' : 'movie';
-      
+
       // Faster in parallel requests
       final results = await Future.wait([
         http.get(
           Uri.parse(_baseUrl).replace(
             // Country info - results[0]
             path: '/3/$mediaType/${media.id}',
-            queryParameters: {
-              'api_key': _apiKey,
-              'language': languageCode,
-            },
+            queryParameters: {'api_key': _apiKey, 'language': languageCode},
           ),
         ),
         http.get(
           Uri.parse(_baseUrl).replace(
             // Credits info - results[1]
             path: '/3/$mediaType/${media.id}/credits',
-            queryParameters: {
-              'api_key': _apiKey,
-              'language': languageCode,
-            },
+            queryParameters: {'api_key': _apiKey, 'language': languageCode},
           ),
         ),
       ]);
@@ -82,13 +101,13 @@ class MediaRepository {
         // In TMDB production_countries has the full country name (United States) refered in origin_country (US).
         final countries = data['production_countries'] as List?;
         final originCountries = data['origin_country'] as List?;
-        
+
         // Get the first origin country code from the root level
         String countryCode = '';
         if (originCountries?.isNotEmpty ?? false) {
           countryCode = originCountries![0] as String? ?? '';
         }
-        
+
         // Find the country name from production_countries that matches the country code
         if (countryCode.isNotEmpty && countries!.isNotEmpty) {
           final country = countries.firstWhere(
@@ -102,24 +121,19 @@ class MediaRepository {
         } else {
           media.country = 'Unknown country';
         }
-        
+
         // Get genres from the main endpoint
         final genres = data['genres'] as List? ?? [];
         media.genres = genres.isEmpty
             ? []
-            : genres
-                  .map((g) => g['name'] as String)
-                  .toList();
-        
+            : genres.map((g) => g['name'] as String).toList();
+
         // For TV shows, also get creators from here
         if (mediaType == 'tv') {
           final createdBy = data['created_by'] as List? ?? [];
           media.creators = createdBy.isEmpty
               ? []
-              : createdBy
-                    .take(4)
-                    .map((c) => c['name'] as String)
-                    .toList();
+              : createdBy.take(4).map((c) => c['name'] as String).toList();
         }
       } else {
         media.country = 'N/A';
@@ -139,17 +153,12 @@ class MediaRepository {
               .where((p) => p['known_for_department'] == 'Directing')
               .toList();
         } else {
-          directorsList = crew
-              .where((p) => p['job'] == 'Director')
-              .toList();
+          directorsList = crew.where((p) => p['job'] == 'Director').toList();
         }
 
         media.directors = directorsList.isEmpty
             ? []
-            : directorsList
-                  .take(4)
-                  .map((d) => d['name'] as String)
-                  .toList();
+            : directorsList.take(4).map((d) => d['name'] as String).toList();
 
         // Get writers (screenplay authors or writers)
         final writersList = crew
@@ -157,30 +166,16 @@ class MediaRepository {
             .toList();
         media.screenwriters = writersList.isEmpty
             ? []
-            : writersList
-                  .take(4)
-                  .map((w) => w['name'] as String)
-                  .toList();
+            : writersList.take(4).map((w) => w['name'] as String).toList();
 
         media.cast = cast.isEmpty
             ? []
-            : cast
-                  .take(3)
-                  .map((a) => a['name'] as String)
-                  .toList();
-      } else {
-        media.directors = [];
-        media.creators ??= [];
-        media.screenwriters = [];
-        media.cast = [];
+            : cast.take(3).map((a) => a['name'] as String).toList();
       }
-    } catch (e) {
-      media.country = 'Error loading';
-      media.directors = ['Error loading'];
-      media.creators = ['Error loading'];
-      media.screenwriters = ['Error loading'];
-      media.cast = ['Error loading'];
-      media.genres = ['Error loading'];
+
+      return media;
+    } catch (_) { // If TMDB API fails in lazy loading, return the media as-is
+      return media;
     }
   }
 }

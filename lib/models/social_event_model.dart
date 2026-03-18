@@ -1,3 +1,4 @@
+/// Social event model representing social events.
 class SocialEvent {
   static const List<String> subtypes = [
     'Cultural',
@@ -7,7 +8,7 @@ class SocialEvent {
     'Other',
   ];
 
-  // TODO: User suggestions for tags based on subtype
+  // TODO: Future user suggestions for tags based on subtype
   static const Map<String, List<String>> tagLibrary = {
   'Cultural': [
     'Cinema',
@@ -62,16 +63,33 @@ class SocialEvent {
   final List<String>?
   imageNames; // Filenames of saved images (for future backup with drive!)
 
+  /// Creates a [SocialEvent] model.
+  /// 
+  /// Parameters:
+  /// * [title]: Display title of the event.
+  /// * [subtype]: Event subtype (e.g., Cultural, Gaming, Social, Sport, Other).
+  /// * [imageNames]: Optional list of image filenames associated with the event.
   SocialEvent({required this.title, required this.subtype, this.imageNames});
 
+  /// Converts this [SocialEvent] into a Firestore-friendly map.
+  ///
+  /// Returns:
+  /// * A [Map<String, dynamic>] containing [title], [subtype], and [imageNames].
   Map<String, dynamic> toMap() => {
     'title': title,
     'subtype': subtype,
     'imageNames': imageNames,
   };
 
-  /// Factory method to create a SocialEvent from Firestore map data
-  /// Throws [FormatException] if required fields are missing or invalid
+  /// Creates a [SocialEvent] from Firestore document fields.
+  ///
+  /// Parameters:
+  /// * [map]: Firestore document fields.
+  ///
+  /// Returns:
+  /// * A validated [SocialEvent] instance.
+  ///
+  /// Throws [FormatException] if required fields are missing or invalid.
   factory SocialEvent.fromMap(Map<String, dynamic> map) {
     // Validate required fields
     if (map['title'] == null ||

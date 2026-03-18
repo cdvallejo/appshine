@@ -34,7 +34,7 @@ void main() {
       expect(book.id, equals('OL45883W'));
     });
 
-    /// Test 2: Book sin autores
+    /// Test 2: Book válido sin autores
     test('Book.fromJson() - debería manejar JSON sin autores', () {
       final json = {
         'key': 'OL123456W',
@@ -92,7 +92,7 @@ void main() {
       expect(media.subtype, equals('TV Series'));
     });
 
-    /// Test 5: Media con id null (debería lanzar excepción)
+    /// Test 5: Media con id vacío (debe lanzar excepción)
     test('Media.fromJson() - debería lanzar excepción si id es no es numérico', () {
       final json = {
         'id': '',

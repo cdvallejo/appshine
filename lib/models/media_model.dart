@@ -1,7 +1,4 @@
-/* Generic model for both movies, TV shows, etc, with common fields and some optional ones for details
-Audiovisual type - subtypes: Movie, TV Series
-FUTURE: Videogame type */
-
+/// Media model representing movies and TV series from TMDB.
 class Media {
   static const List<String> subtypes = ['Movie', 'TV Series'];
 
@@ -19,6 +16,17 @@ class Media {
   List<String>? genres;
   String? country;
 
+  /// Creates a [Media] model.
+  ///
+  /// Parameters:
+  /// * [id]: TMDB numeric identifier.
+  /// * [title]: Display title (`title` for movies, `name` for TV).
+  /// * [imageUrl]: Optional poster URL.
+  /// * [releaseDate]: Optional release/first air date.
+  /// * [type]: Raw media type from API (`movie` or `tv`).
+  /// * [subtype]: UI subtype label (`Movie` or `TV Series`).
+  /// * [directors], [creators], [screenwriters], [cast], [genres]: Optional people/genre lists.
+  /// * [country]: Optional production country.
   Media({
     required this.id,
     required this.title,
@@ -34,8 +42,15 @@ class Media {
     required this.subtype,
   });
 
-  /// Factory method to create a Media from TMDB API JSON data
-  /// Throws [FormatException] if required fields are missing
+  /// Creates a [Media] from TMDB API fields.
+  ///
+  /// Parameters:
+  /// * [json]: TMDB map payload.
+  ///
+  /// Returns:
+  /// * A normalized [Media] instance.
+  ///
+  /// Throws [FormatException] if required fields are missing or invalid.
   factory Media.fromJson(Map<String, dynamic> json) {
     // Validate required fields
     final rawId = json['id'];
@@ -78,6 +93,7 @@ class Media {
     );
   }
 
+  /// Returns the 4-digit year extracted from [releaseDate], or `N/A`.
   String get releaseYear {
     final date = releaseDate;
     if (date != null && date.length >= 4) {
@@ -86,11 +102,15 @@ class Media {
     return 'N/A';
   }
 
-  // Getter to obtain the full poster URL
+  /// Returns the full poster URL, or a placeholder if no image exists.
   String get fullPosterUrl => imageUrl != null
       ? 'https://image.tmdb.org/t/p/w500$imageUrl'
       : 'https://via.placeholder.com/500x750?text=No+Image';
 
+  /// Creates a copy of this [Media] overriding only provided fields.
+  ///
+  /// Returns:
+  /// * A new [Media] with overridden values when provided, preserving others.
   Media copyWith({
     int? id,
     String? title,

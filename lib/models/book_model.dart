@@ -1,3 +1,4 @@
+/// Book model representing a book retrieved from the Open Library API.
 class Book {
   static const List<String> subtypes = [
     'Novel',
@@ -14,10 +15,23 @@ class Book {
   final int? pageCount;
   final String? isbn;
   final String? publisher;
-  final String? editionKey; // Open Library ID for direct edition API access
-  final String subtype; // 'Novel', 'Manga', 'Comic', 'Essay', 'Technical', 'Sheet music'
-  List<String> authors; //
+  final String? editionKey;
+  final String subtype;
+  List<String> authors;
 
+  /// Creates a [Book] model.
+  ///
+  /// Parameters:
+  /// * [id]: Open Library work identifier (normalized code only).
+  /// * [title]: Display title.
+  /// * [authors]: List of authors (empty list when unknown).
+  /// * [subtype]: Book subtype/category.
+  /// * [publishedDate]: Optional publication date/year as text.
+  /// * [imageUrl]: Optional cover URL.
+  /// * [pageCount]: Optional page count.
+  /// * [isbn]: Optional ISBN.
+  /// * [publisher]: Optional publisher name.
+  /// * [editionKey]: Optional Open Library edition key (OLID).
   Book({
     required this.id,
     required this.title,
@@ -28,12 +42,19 @@ class Book {
     this.pageCount,
     this.isbn,
     this.publisher,
-    this.editionKey, // Open Library ID for direct edition API access
+    this.editionKey,
     
   });
 
-  /// Factory method to create a Book from Open Library API JSON data
-  /// Throws [FormatException] if required fields are missing
+  /// Creates a [Book] from Open Library API fields.
+  ///
+  /// Parameters:
+  /// * [json]: Open Library map (`search.json` doc object).
+  ///
+  /// Returns:
+  /// * A normalized [Book] instance with safe defaults for missing optional fields.
+  ///
+  /// Throws [FormatException] if required fields are missing.
   factory Book.fromJson(Map<String, dynamic> json) {
     // Validate required fields
     if (json['key'] == null || (json['key'] is String && (json['key'] as String).isEmpty)) {
@@ -61,7 +82,7 @@ class Book {
           .map((author) => author.toString())
           .toList();
     } else {
-      authors = []; // Empty list if no authors provided, to avoid null issues in UI
+      authors = []; // Empty list avoids null checks in UI code.
     }
 
     String? publishedDate;
@@ -94,7 +115,7 @@ class Book {
     }
 
     return Book(
-      id: (json['key'] as String).split('/').last.trim(), // Extract just the code from the key (no "/works/OL45883W", only the code)
+      id: (json['key'] as String).split('/').last.trim(),
       title: (json['title'] as String).trim(),
       imageUrl: coverUrl,
       isbn: isbn,
@@ -103,43 +124,46 @@ class Book {
       authors: authors,
       publishedDate: publishedDate,
       pageCount: pageCount,
-      subtype: 'Novel', // Default subtype, can be updated later
+      subtype: 'Novel',
     );
   }
 
+  /// Returns the 4-digit year extracted from [publishedDate], or `N/A`.
   String get releaseYear {
     if (publishedDate != null && publishedDate!.length >= 4) {
-      return publishedDate!.substring(
-        0,
-        4,
-      ); // Extract the year from the published date
+      return publishedDate!.substring(0, 4);
     }
     return 'N/A';
   }
 
-  // Getter to obtain the full cover URL in large size (for Firebase storage)
+  /// Returns the large cover URL variant for storage/use in detail views.
   String get fullCoverUrl {
     if (imageUrl == null || imageUrl!.isEmpty) {
       return 'https://via.placeholder.com/150x200?text=No+Cover';
     }
-    // Convert M size to L size for better quality when storing in Firebase
     return imageUrl!.replaceAll('-M.jpg', '-L.jpg');
   }
 
-  // Getter to obtain the cover URL in medium size (for search results)
+  /// Returns the medium cover URL variant for search/result cards.
   String get searchCoverUrl {
     return imageUrl ?? 'https://via.placeholder.com/150x200?text=No+Cover';
   }
 
-  // Method to get cover URL in specific size (S, M, L)
+  /// Returns the cover URL with the requested Open Library size (`S`, `M`, `L`).
+  ///
+  /// Parameters:
+  /// * [size]: Requested cover size code (`S`, `M`, or `L`).
+  ///
+  /// Returns:
+  /// * The cover URL in the requested size, or a placeholder URL when no cover exists.
   String getCoverUrl(String size) {
     if (imageUrl == null || imageUrl!.isEmpty) {
       return 'https://via.placeholder.com/150x200?text=No+Cover';
     }
-    // Replace M with the desired size
     return imageUrl!.replaceAll('-M.jpg', '-$size.jpg');
   }
 
+  /// Returns a display-ready page count, or `N/A` when unavailable.
   String get formattedPageCount {
     if (pageCount == null || pageCount! <= 0) {
       return 'N/A';
@@ -147,7 +171,10 @@ class Book {
     return '$pageCount';
   }
 
-  // Method to create a copy of the Book with updated fields (for immutability)
+  /// Creates a copy of this [Book] overriding only provided fields.
+  ///
+  /// Returns:
+  /// * A new [Book] with overridden values when provided, preserving others.
   Book copyWith({
     String? id,
     String? title,
