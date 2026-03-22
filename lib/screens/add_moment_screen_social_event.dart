@@ -1,14 +1,28 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/models/social_event_model.dart';
+import 'package:appshine/widgets_extra/social_event_image_gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:flutter/services.dart';
 
+/// Screen for adding a new moment associated with a social event.
+///
+/// Allows the user to record a specific moment at a social event, including:
+/// * Event title and subtype (Culture, Meeting, Sport...).
+/// * Date and location of the event.
+/// * Personal notes about the moment.
+/// * Multiple images captured from camera or gallery.
+///
+/// Images are saved locally to the device's Pictures folder, not to cloud storage.
+/// Only image filenames are stored in Firestore for backup compatibility.
 class AddMomentScreenSocialEvent extends StatefulWidget {
+  /// The social event for which the moment will be recorded.
   final SocialEvent socialEvent;
+
+  /// Creates a new instance of [AddMomentScreenSocialEvent].
+  ///
+  /// Parameters:
+  /// * [socialEvent]: The social event data for this moment.
   const AddMomentScreenSocialEvent({super.key, required this.socialEvent});
 
   @override
@@ -16,117 +30,48 @@ class AddMomentScreenSocialEvent extends StatefulWidget {
       _AddMomentScreenSocialEventState();
 }
 
+/// State for [AddMomentScreenSocialEvent].
+///
+/// Manages event details, date, location, notes, and image uploads.
+/// Coordinates image selection, local storage, and data persistence
+/// via [DatabaseService].
 class _AddMomentScreenSocialEventState
     extends State<AddMomentScreenSocialEvent> {
+  /// Controller for personal notes about the social event moment.
   final _notesController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _titleController = TextEditingController();
-  final _imagePicker = ImagePicker();
-  final List<XFile> _selectedImageFiles = [];
-  final List<String> _selectedImageNames =
-      []; // Only filenames (for backup compatibility)
 
+  /// Controller for the location where the event took place.
+  final _locationController = TextEditingController();
+
+  /// Controller for the editable event title.
+  final _titleController = TextEditingController();
+
+  /// Global key to access the image gallery widget methods
+  final _imageGalleryKey = GlobalKey<SocialEventImageGalleryState>();
+
+  /// The selected date for the social event. Defaults to today.
   DateTime _selectedDate = DateTime.now();
+
+  /// The selected event subtype (Culture, Meeting, Sport...).
+  /// Required before saving the moment.
   String? _selectedSubtype;
+
+  /// Used to display a loading indicator in the save button.
   bool _isSaving = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _titleController.text = widget
-        .socialEvent
-        .title; // Here receive the title from the previous screen!
-  }
-
-  // Let user pick multiple images from camera or gallery, and add them to the pending list (_selectedImageFiles)
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final List<XFile> pickedFiles;
-      if (source == ImageSource.gallery) {
-        pickedFiles = await _imagePicker.pickMultiImage();
-      } else {
-        final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
-        pickedFiles = image != null ? [image] : [];
-      }
-      if (pickedFiles.isNotEmpty) {
-        setState(() {
-          _selectedImageFiles.addAll(pickedFiles);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
-      }
-    }
-  }
-
-  Future<void> _uploadImages(AppLocalizations loc) async {
-    // Saves selected images to Pictures folder (gallery-accessible)
-    // Images are NOT uploaded to Firebase Storage, only their names. Saved locally on the device.
-    if (_selectedImageFiles.isEmpty) return;
-
-    try {
-      // Save to Pictures folder so images appear in gallery
-      const picturesPath = '/storage/emulated/0/Pictures';
-      final appshineImagesDir = Directory('$picturesPath/Appshine Images');
-
-      if (!await appshineImagesDir.exists()) {
-        // If the directory doesn't exist, create it (recursive: true to create any intermediate folders if needed)
-        await appshineImagesDir.create(recursive: true);
-      }
-
-      // For each selected image file, copy it to the new location and save its local path
-      for (XFile imageFile in _selectedImageFiles) {
-        // Obtén el archivo original desde galería/cámara
-        final File sourceFile = File(imageFile.path);
-
-        // Create a unique file name using timestamp and original name to avoid conflicts
-        final String fileName =
-            '${DateTime.now().millisecondsSinceEpoch}_${imageFile.name}';
-
-        // Define local path where the image will be saved
-        final String localPath = '${appshineImagesDir.path}/$fileName';
-
-        // Copy the file to the new location
-        await sourceFile.copy(localPath);
-
-        // Trigger media scanner so the image appears in gallery
-        const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
-        try {
-          await platform.invokeMethod('scanFile', {'path': localPath});
-        } catch (e) {
-          // Fall back: just try to scan the directory
-          try {
-            await platform.invokeMethod('scanFile', {
-              'path': appshineImagesDir.path,
-            });
-          } catch (_) {
-            // If method channel fails, it's okay, app will still work
-          }
-        }
-
-        // Add local path and filename to lists
-        // _selectedImageNames: only filename for Firestore (backup compatible)
-        setState(() {
-          _selectedImageNames.add(fileName);
-        });
-      }
-
-      // Clean the pending list of selected image files since they are now saved
-      setState(() {
-        _selectedImageFiles.clear();
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${loc.translate('errorSavingImages')}: $e')),
-        );
-      }
-    }
-  }
-
+  /// Builds the UI for adding a social event moment.
+  ///
+  /// Returns a [Scaffold] containing:
+  /// * Editable event title and subtype dropdown.
+  /// * Image picker buttons (camera and gallery).
+  /// * Preview of selected images with removal option.
+  /// * Date picker with calendar.
+  /// * Location field.
+  /// * Multi-line notes area.
+  ///
+  /// Validates that a subtype has been selected before allowing save.
+  /// Orchestrates image upload and moment data persistence via [DatabaseService].
+  /// Handles validation, error display, and screen closure.
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -146,7 +91,7 @@ class _AddMomentScreenSocialEventState
                   )
                 : const Icon(Icons.save),
             onPressed: _isSaving ? null : () async {
-              // 1. Validate subtype is selected
+              // 1. Validate that a subtype has been selected
               if (_selectedSubtype == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(loc.translate('selectEventSubtype'))),
@@ -156,23 +101,23 @@ class _AddMomentScreenSocialEventState
 
               setState(() => _isSaving = true);
 
-              // 2. If there are new images pending to save, save them first to local cache and update the image names list
-              if (_selectedImageFiles.isNotEmpty) {
-                try {
-                  await _uploadImages(loc);
-                } catch (e) {
-                  setState(() => _isSaving = false);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${loc.translate('errorSavingImages')}: $e',
-                        ),
+              // 2. Upload any pending images to local cache
+              List<String> uploadedImageNames = [];
+              try {
+                final imageNames = await _imageGalleryKey.currentState?.uploadNewImages();
+                uploadedImageNames = imageNames ?? [];
+              } catch (e) {
+                setState(() => _isSaving = false);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${loc.translate('errorSavingImages')}: $e',
                       ),
-                    );
-                  }
-                  return;
+                    ),
+                  );
                 }
+                return;
               }
 
               // 3. Async function to save the moment
@@ -181,8 +126,8 @@ class _AddMomentScreenSocialEventState
                 final socialEventWithImages = SocialEvent(
                   title: _titleController.text,
                   subtype: _selectedSubtype!,
-                  imageNames: _selectedImageNames.isNotEmpty
-                      ? _selectedImageNames
+                  imageNames: uploadedImageNames.isNotEmpty
+                      ? uploadedImageNames
                       : null,
                 );
 
@@ -194,7 +139,7 @@ class _AddMomentScreenSocialEventState
                   subtype: _selectedSubtype!,
                 );
 
-                // 5. If everything goes well, notify the user and close
+                // 4. If successful, notify the user and close the screen
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(loc.translate('momentSaved'))),
@@ -202,7 +147,7 @@ class _AddMomentScreenSocialEventState
                   Navigator.pop(context);
                 }
               } catch (error) {
-                // 6. If there was an error, show it
+                // 5. If an error occurs, show it to the user
                 if (context.mounted) {
                   setState(() => _isSaving = false);
                   final String message = error.toString().contains('timed out') 
@@ -233,7 +178,8 @@ class _AddMomentScreenSocialEventState
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  hintText: loc.translate('newEvent'),
                   isDense: true,
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
@@ -241,7 +187,7 @@ class _AddMomentScreenSocialEventState
               ),
               const SizedBox(height: 8),
 
-              // Subtype dropdown
+              // Event subtype dropdown selector
               DropdownButton<String>(
                 isExpanded: true,
                 hint: Text(loc.translate('selectEventSubtype')),
@@ -268,116 +214,15 @@ class _AddMomentScreenSocialEventState
               const SizedBox(height: 4),
               const Divider(height: 40),
 
-              /* PART IMAGES SECTION:
-              1. User press "Camera" or "Gallery" → _pickImage()
-              XFile is added to _selectedImageFiles (pending files to save)
-              2. XFile is displayed in "Selected files" section (not yet saved, just preview)
-              3. User press "Save moment" en appbar
-              4. Calls _uploadImages() via SocialEventImageGallery:
-              - Save each XFile to local cache and get its filename
-              - Add filename to _selectedImageNames (which is saved to Firestore)
-              - Clean _selectedImageFiles (pending list) because its now saved
-              5. Finally, save the data moment to Firestore. No Firebase storage involved for images, only local cache */
-              Text(
-                loc.translate('images'),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              // Image gallery widget for selecting and managing images
+              SocialEventImageGallery(
+                key: _imageGalleryKey,
+                onImagesChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 8),
-
-              // Buttons to pick images (camera/gallery)
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(loc.translate('camera')),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.image),
-                      label: Text(loc.translate('gallery')),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // IMAGES PENDING TO SAVE (just picked, not saved yet)
-              if (_selectedImageFiles.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _selectedImageFiles.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(_selectedImageFiles[index].path),
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedImageFiles.removeAt(index);
-                                      });
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                )
-              else
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.grey[200],
-                  child: Text(
-                    loc.translate('noImagesAdded'),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ),
 
               const SizedBox(height: 4),
               const Divider(height: 40),
+              // Date and location fields
               Row(
                 children: [
                   // Date field (flex 1)
@@ -423,7 +268,7 @@ class _AddMomentScreenSocialEventState
                     ),
                   ),
                   const SizedBox(width: 20),
-                  // Location field (flex 2)
+                  // Location field with icon (flex 2)
                   Expanded(
                     flex: 2,
                     child: Column(
@@ -463,7 +308,7 @@ class _AddMomentScreenSocialEventState
                   ),
                 ],
               ),
-              // PART BOTTOM SECTION: NOTES
+              // Bottom section: Personal notes
               const SizedBox(height: 20),
               Text(
                 loc.translate('myNotes'),
