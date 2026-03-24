@@ -29,7 +29,19 @@ class DatabaseService {
     }
   }
 
-  // Function to add a media moment to Firestore
+  /// Adds a media moment to Firestore for the current user.
+  /// Validates that the user exists and is authenticated before attempting to save.
+  /// 
+  /// Parameters:
+  /// * [media]: The media object containing details about the movie or TV show
+  /// * [date]: The date of the moment
+  /// * [location]: The location where the moment took place
+  /// * [notes]: User's notes about the moment
+  /// * [subtype]: The subtype of the media (e.g., "movie", "tv_show")
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Future<void> addMomentMedia({
     required Media media,
     required DateTime date,
@@ -72,6 +84,19 @@ class DatabaseService {
     }
   }
 
+  /// Adds a book moment to Firestore for the current user.
+  /// Validates that the user exists and is authenticated before attempting to save.
+  /// 
+  /// Parameters:
+  /// * [book]: The book object containing details about the book
+  /// * [date]: The date of the moment
+  /// * [location]: The location where the moment took place
+  /// * [notes]: User's notes about the moment
+  /// * [subtype]: The subtype of the book moment
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Future<void> addMomentBook({
     required Book book,
     required DateTime date,
@@ -112,6 +137,19 @@ class DatabaseService {
     }
   }
 
+  /// Adds a social event moment to Firestore for the current user.
+  /// Validates that the user exists and is authenticated before attempting to save.
+  /// 
+  /// Parameters:
+  /// * [socialEvent]: The social event object containing details about the event
+  /// * [date]: The date of the moment
+  /// * [location]: The location where the moment took place
+  /// * [notes]: User's notes about the moment
+  /// * [subtype]: The subtype of the social event moment
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Future<void> addMomentSocialEvent({
     required SocialEvent socialEvent,
     required DateTime date,
@@ -141,12 +179,20 @@ class DatabaseService {
         const Duration(seconds: 5),
         onTimeout: () => throw Exception('Save operation timed out. Data saved offline and will sync when connection is restored.'),
       );
-    } catch (e) {
-      rethrow; // Throws the error so the screen can show a message
+    } catch (_) {
+      rethrow;
     }
   }
 
-  // Function to get a stream of moments for the current user
+  /// Retrieves a stream of moments for the current user, ordered by date.
+  /// Validates that the user exists and is authenticated before returning the stream.
+  /// 
+  /// Returns:
+  /// * [Stream<QuerySnapshot>]: A stream of moments for the current user, ordered by date
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Stream<QuerySnapshot> getMomentsStream() {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
@@ -166,7 +212,16 @@ class DatabaseService {
         .snapshots();
   }
 
-  // Function to update a moment's notes
+  /// Updates a moment's details in Firestore.
+  /// Validates that the user exists and is authenticated before attempting to update.
+  /// 
+  /// Parameters:
+  /// * [momentId]: The ID of the moment to update
+  /// * [data]: The updated data for the moment
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Future<void> updateMoment(String momentId, Map<String, dynamic> data) async {
     // Validate user exists and is authenticated
     await _validateUserExists();
@@ -177,13 +232,20 @@ class DatabaseService {
         onTimeout: () => throw Exception('Update operation timed out. Changes saved offline and will sync when connection is restored.'),
       );
       
-    } catch (e) {
-      debugPrint("Error al actualizar: $e");
+    } catch (_) {
       rethrow;
     }
   }
 
-  // Function to delete a moment by its ID
+  /// Deletes a moment by its ID.
+  /// Validates that the user exists and is authenticated before attempting to delete.
+  /// 
+  /// Parameters:
+  /// * [momentId]: The ID of the moment to delete
+  /// 
+  /// Throws:
+  /// * [Exception] if user is not authenticated or account was deleted
+  /// * [Exception] if Firestore operation fails or times out
   Future<void> deleteMoment(String momentId) async {
     // Validate user exists and is authenticated
     await _validateUserExists();
@@ -194,8 +256,7 @@ class DatabaseService {
         onTimeout: () => throw Exception('Delete operation timed out. Changes saved offline and will sync when connection is restored.'),
       );
       
-    } catch (e) {
-      debugPrint("Error deleting moment: $e");
+    } catch (_) { 
       rethrow;
     }
   }
