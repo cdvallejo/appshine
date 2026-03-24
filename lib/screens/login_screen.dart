@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/auth_repository.dart'; // Importamos la lógica de autenticación
+import '../l10n/app_localizations.dart'; // Importamos las traducciones
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -59,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    
     return Scaffold(
       // El título cambia según el modo
       appBar: AppBar(
@@ -68,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const Text('Appshine', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Text(
-              isLogin ? 'Iniciar Sesión' : 'Registro',
+              isLogin ? loc.translate('login') : loc.translate('registerMode'),
               style: const TextStyle(fontSize: 22),
             ),
           ],
@@ -83,12 +86,12 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: loc.translate('email')),
               keyboardType: TextInputType.emailAddress,
             ),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Contraseña'),
+              decoration: InputDecoration(labelText: loc.translate('password')),
               obscureText: true,
             ),
             const SizedBox(height: 20),
@@ -98,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity, // Para que ocupe todo el ancho
               child: ElevatedButton(
                 onPressed: submit,
-                child: Text(isLogin ? 'Entrar' : 'Registrarse'),
+                child: Text(isLogin ? loc.translate('enterButton') : loc.translate('registerButton')),
               ),
             ),
 
@@ -110,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: OutlinedButton.icon(
                 onPressed: signInWithGoogle,
                 icon: const Icon(Icons.login),
-                label: const Text('Continuar con Google'),
+                label: Text(loc.translate('continueWithGoogle')),
               ),
             ),
 
@@ -126,8 +129,8 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               child: Text(
                 isLogin
-                    ? '¿No tienes cuenta? Regístrate aquí'
-                    : '¿Ya tienes cuenta? Inicia sesión',
+                    ? loc.translate('noAccount')
+                    : loc.translate('hasAccount'),
               ),
             ),
           ],

@@ -52,10 +52,12 @@ class AppLocalizations {
       // Login Screen
       'login': 'Iniciar Sesión',
       'register': 'Registro Appshine',
+      'registerMode': 'Registro',
       'email': 'Email',
       'password': 'Contraseña',
       'enterButton': 'Entrar',
       'registerButton': 'Registrarse',
+      'continueWithGoogle': 'Continuar con Google',
       'noAccount': '¿No tienes cuenta? Regístrate aquí',
       'hasAccount': '¿Ya tienes cuenta? Inicia sesión',
 
@@ -205,10 +207,12 @@ class AppLocalizations {
       // Login Screen
       'login': 'Login',
       'register': 'Appshine Sign Up',
+      'registerMode': 'Sign Up',
       'email': 'Email',
       'password': 'Password',
       'enterButton': 'Enter',
       'registerButton': 'Register',
+      'continueWithGoogle': 'Continue with Google',
       'noAccount': 'Don\'t have an account? Register here',
       'hasAccount': 'Already have an account? Login',
 

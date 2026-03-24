@@ -24,9 +24,17 @@ void main() async {
   imageCache.maximumSize = 250;        // 250 imágenes en memoria
   imageCache.maximumSizeBytes = 250 * 1024 * 1024; // 250 MB
   
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Initialize Firebase with error handling for duplicate-app scenarios
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Ignore duplicate-app errors - Firebase is already initialized
+    if (!e.toString().contains('duplicate-app')) {
+      rethrow;
+    }
+  }
   await dotenv.load(fileName: ".env");
   runApp(const MainApp());
 }
@@ -60,17 +68,7 @@ class MainApp extends StatefulWidget {
     state?.setLocale(newLocale);
   }
 
-  /// Changes the application theme mode dynamically using the Static Accessor Pattern.
-  ///
-  /// This public static method provides a clean interface for other widgets to change
-  /// the app theme. It finds the nearest [_MainAppState] ancestor and delegates to
-  /// its private `setThemeMode()` method, which handles the actual implementation.
-  ///
-  /// **Static Accessor Pattern**:
-  /// - Public static method: Simple, clean interface for external access
-  /// - Private instance method: Encapsulates implementation and persistence logic
-  /// - Separation of concerns: Theme state management separate from usage
-  /// - Single responsibility: Delegate pattern keeps code maintainable
+  /// Changes the application theme mode dynamically.
   ///
   /// Parameters:
   /// * [context]: The [BuildContext] used to find the [_MainAppState]
@@ -86,7 +84,7 @@ class MainApp extends StatefulWidget {
 
 /// State for [MainApp].
 ///
-/// Manages the current locale and theme mode using the **Static Accessor Pattern**:
+/// Manages the current locale and theme mode:
 /// - Public static methods in [MainApp] provide the external interface
 /// - Private methods in this state handle the actual implementation
 /// - Always provides localization delegates to support Spanish and English
@@ -160,9 +158,9 @@ class _MainAppState extends State<MainApp> {
   /// Builds the [MaterialApp] with localization and theme support.
   ///
   /// Configures:
-  /// * **Localization**: Supports Spanish and English via custom and built-in delegates
-  /// * **Theme**: Light and dark themes with indigo as primary color
-  /// * **Home**: Displays [AuthGate] widget, which manages authentication flow:
+  /// * Localization: Supports Spanish and English via custom and built-in delegates
+  /// * Theme: Light and dark themes with indigo as primary color
+  /// * Home: Displays [AuthGate] widget, which manages authentication flow:
   ///   - If user is logged in: shows the main app screens
   ///   - If user is not logged in: shows login/signup screens
   ///

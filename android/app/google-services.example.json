@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "114097855392",
+    "project_id": "appshine",
+    "storage_bucket": "appshine.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114097855392:android:67c8b5582b997e383ca2c5",
+        "android_client_info": {
+          "package_name": "com.carlosvallejo.appshine"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "114097855392-l73r5e41915h66gk4r1p0h54c0qi7erq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.carlosvallejo.appshine",
+            "certificate_hash": "6cc323e0c3ab120e0b89aa4caf121610f11006db"
+          }
+        },
+        {
+          "client_id": "114097855392-ak3ac7h3rkdnonhp815f1juo6hnihj5u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "REEMPLAZA_CON_TU_API_KEY_REAL"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "enabled": true
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
