@@ -5,49 +5,53 @@ import 'package:flutter/services.dart';
 
 /// Widget to manage image gallery for social events.
 ///
-/// Allows users to:
-/// - Select multiple images from camera or gallery simultaneously
-/// - Preview existing images saved locally on the device
-/// - Preview newly selected images before saving
-/// - Delete both existing and new images
-/// - Upload new images to local device storage (/storage/emulated/0/Pictures/Appshine Images)
+/// Allows users to select multiple images from camera or gallery, preview existing
+/// and newly selected images, and delete images. Images are stored locally on the device,
+/// not on Firebase Storage. Only image filenames are saved to Firestore for reference.
 ///
-/// Images are stored locally on the device, not on Firebase Storage.
-/// Only image filenames are saved to Firestore for reference.
-///
-/// **Key features:**
-/// - Automatic validation: filters out deleted image files on load
-/// - Multi-select support: pick multiple images in one action
-/// - Dual view: shows existing images separately from newly added ones
-/// - File deletion: removes physical files when images are deleted
-/// - Media scanner: notifies Android that new files were added
-///
-/// **Usage:**
+/// Usage (editing moment):
 /// ```dart
 /// SocialEventImageGallery(
-///   initialImageNames: event.imageNames,
+///   initialImageNames: event.imageNames ?? [],
+///   onImagesChanged: () => setState(() {}),
+/// )
+/// ```
+///
+/// Usage (creating new moment):
+/// ```dart
+/// SocialEventImageGallery(
 ///   onImagesChanged: () => setState(() {}),
 /// )
 /// ```
 class SocialEventImageGallery extends StatefulWidget {
-  /// List of existing image filenames saved in this moment
-  final List<String> initialImageNames;
+  /// List of existing image filenames saved in this moment (optional).
+  /// If not provided, defaults to empty list.
+  final List<String>? initialImageNames;
   
   /// Callback fired when images are added, removed, or filtered
   final VoidCallback? onImagesChanged;
 
+  /// Creates a new instance of [SocialEventImageGallery].
+  ///
+  /// Parameters:
+  /// * [initialImageNames]: Optional list of existing image filenames saved in this moment.
+  /// * [onImagesChanged]: Callback fired when images are added, removed, or filtered.
   const SocialEventImageGallery({
     super.key,
-    required this.initialImageNames,
+    this.initialImageNames,
     this.onImagesChanged,
   });
 
   @override
   State<SocialEventImageGallery> createState() =>
-      _SocialEventImageGalleryState();
+      SocialEventImageGalleryState();
 }
 
-class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
+/// State for [SocialEventImageGallery].
+///
+/// Manages the list of existing image filenames and newly selected images,
+/// including image picking, saving, and deletion logic.
+class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// List of validated image names that physically exist on the device
   /// Updated after filtering out deleted files
   late List<String> _currentImageNames;
@@ -61,12 +65,12 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// Image picker plugin instance for selecting images
   final ImagePicker _imagePicker = ImagePicker();
 
+  /// Initializes the state by validating existing image files and setting up the current image list.
   @override
   void initState() {
     super.initState();
-    // Initialize immediately with initial names to prevent late initialization error
-    // This ensures _currentImageNames is always accessible from the start
-    _currentImageNames = List.from(widget.initialImageNames);
+    // Initialize _currentImageNames, always accessible from the start
+    _currentImageNames = List.from(widget.initialImageNames ?? []);
     
     // Then validate image files asynchronously in the background
     // This filters out any images whose files were deleted manually
@@ -83,9 +87,10 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// Only triggers a rebuild if the list actually changed.
   Future<void> _filterExistingImages() async {
     final List<String> existingImages = [];
+    final initialNames = widget.initialImageNames ?? [];
     
     // Check each image filename to see if the file still exists
-    for (String imageName in widget.initialImageNames) {
+    for (String imageName in initialNames) {
       final imagePath = await _getImagePath(imageName);
       final imageFile = File(imagePath);
       if (await imageFile.exists()) {
@@ -113,22 +118,29 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   List<XFile> getNewImageFiles() => _newImageFiles;
 
   /// Opens image picker to select multiple images from camera or gallery.
+  /// 
+  /// Behavior:
+  /// * Gallery: allows selecting multiple images at once.
+  /// * Camera: captures a single photo.
+  /// * Selected images are stored in [_newImageFiles] and [_newImageFileNames].
+  /// * Notifies parent via [onImagesChanged] callback.
   ///
-  /// **Parameters:**
-  /// - [source]: ImageSource.camera for camera, ImageSource.gallery for gallery
-  ///
-  /// **Behavior:**
-  /// - Gallery: allows selecting multiple images at once
-  /// - Camera: uses pickMultipleMedia for batch photos
-  /// - Selected images are stored in [_newImageFiles] and [_newImageFileNames]
-  /// - Notifies parent when images are added
+  /// Parameters:
+  /// * [source]: The image source (camera or gallery).
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final List<XFile> pickedFiles = source == ImageSource.gallery
-          ? await _imagePicker.pickMultiImage()
-          : (await _imagePicker.pickImage(source: ImageSource.camera) != null
-              ? [await _imagePicker.pickImage(source: ImageSource.camera)]
-              : []).whereType<XFile>().toList();
+      final List<XFile> pickedFiles;
+      if (source == ImageSource.gallery) {
+        pickedFiles = await _imagePicker.pickMultiImage();
+      } else {
+        // Camera: call pickImage once and wrap result in list if not null
+        final XFile? pickedFile = await _imagePicker.pickImage(
+          source: ImageSource.camera,
+          requestFullMetadata: false,
+        );
+        pickedFiles = pickedFile != null ? [pickedFile] : [];
+      }
+      
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _newImageFiles.addAll(pickedFiles);
@@ -147,22 +159,19 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
   /// Saves newly selected images to local device storage.
   ///
-  /// **Process:**
-  /// 1. Creates the Appshine Images directory if it doesn't exist
-  /// 2. Copies each selected image file to the directory
-  /// 3. Triggers Android media scanner so images appear in gallery app
-  /// 4. Returns the updated complete list of image names
+  /// Process:
+  /// * Creates the Appshine Images directory if it doesn't exist.
+  /// * Copies each selected image file to the directory.
+  /// * Triggers Android media scanner so images appear in gallery app.
+  /// * Returns the updated complete list of image names.
   ///
-  /// **Important:**
-  /// - Images are saved to: /storage/emulated/0/Pictures/Appshine Images/
-  /// - Only filenames are stored in Firestore, not actual file data
-  /// - Media scanner broadcast ensures images are visible in Android gallery
+  /// Returns:
+  /// * A [List<String>] of all image filenames (existing + newly saved).
   ///
-  /// **Returns:**
-  /// Complete list of all image names (existing + newly saved)
-  ///
-  /// **Throws:**
-  /// Rethrows exceptions for parent to handle
+  /// Notes:
+  /// * Images are saved to: `/storage/emulated/0/Pictures/Appshine Images/`.
+  /// * Only filenames are stored in Firestore, not actual file data.
+  /// * Media scanner broadcast ensures images are visible in Android gallery.
   Future<List<String>> uploadNewImages() async {
     if (_newImageFiles.isEmpty) return _currentImageNames;
 
@@ -230,12 +239,13 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
   /// Builds the gallery UI with image pickers and preview sections.
   ///
-  /// **UI Structure:**
-  /// 1. Title "Images"
-  /// 2. Camera and Gallery buttons (side by side)
-  /// 3. Existing Images section (if any exist)
-  /// 4. New Images section (if any selected)
-  /// 5. Empty state message (if no images)
+  /// Returns:
+  /// * A [Column] widget containing:
+  ///   * Title "Images"
+  ///   * Camera and Gallery buttons (side by side)
+  ///   * Existing Images section (if any exist)
+  ///   * New Images section (if any selected)
+  ///   * Empty state message (if no images)
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -440,20 +450,15 @@ class _SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
   /// Converts an image filename to its full device file path.
   ///
-  /// **Path structure:** /storage/emulated/0/Pictures/Appshine Images/{fileName}
+  /// Parameters:
+  /// * [fileName]: The image filename (e.g., \"1234567890_0_photo.jpg\").
   ///
-  /// This method is used to:
-  /// - Load image files for preview
-  /// - Check if image files still exist
-  /// - Delete image files when requested by user
+  /// Returns:
+  /// * The complete absolute file path to the image.
   ///
-  /// **Parameters:**
-  /// - [fileName]: The image filename (e.g., "1234567890_0_photo.jpg")
+  /// Path structure: `/storage/emulated/0/Pictures/Appshine Images/{fileName}`
   ///
-  /// **Returns:**
-  /// The complete absolute file path to the image
-  ///
-  /// **Example:**
+  /// Example:
   /// ```dart
   /// final path = await _getImagePath('1234567890_0_photo.jpg');
   /// // Returns: /storage/emulated/0/Pictures/Appshine Images/1234567890_0_photo.jpg

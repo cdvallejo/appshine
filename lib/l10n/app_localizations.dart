@@ -227,7 +227,9 @@ class AppLocalizations {
       'country': 'Country',
       'momentSaved': 'Moment saved!',
       'savingError': 'Error saving the moment: ',
-      'saveLocally': 'Moment saved only locally. Check your Internet connection to sync data',      'deleteLocally': 'Moment deleted only locally. Check your Internet connection to sync data',      'pleaseSelectSubtype': 'Please select a subtype',
+      'saveLocally': 'Moment saved only locally. Check your Internet connection to sync data',      
+      'deleteLocally': 'Moment deleted only locally. Check your Internet connection to sync data',      
+      'pleaseSelectSubtype': 'Please select a subtype',
       'changesSaved': 'Changes saved successfully',
       'unknownCountry': 'Unknown country',
       'unknown': 'Unknown',
@@ -441,7 +443,7 @@ class AppLocalizations {
   /// Gets the translation key for a book subtype.
   ///
   /// Parameters:
-  ///   * [subtype] - The subtype of the book (e.g., Novel, Comic, Essay).
+  ///   * [subtype] - The subtype of the book (Novel, Comic, Essay).
   ///
   /// Returns:
   ///   The translation key for the subtype.
@@ -458,7 +460,7 @@ class AppLocalizations {
   /// Gets the translation key for a media subtype.
   ///
   /// Parameters:
-  ///   * [subtype] - The subtype of the media (e.g., Movie, TV Series).
+  ///   * [subtype] - The subtype of the media (Movie, TV Series).
   ///
   /// Returns:
   ///   The translation key for the subtype.
@@ -472,7 +474,7 @@ class AppLocalizations {
   /// Gets the translation key for a social event subtype.
   ///
   /// Parameters:
-  ///   * [subtype] - The subtype of the social event (e.g., Cultural, Gaming, Sport).
+  ///   * [subtype] - The subtype of the social event (Cultural, Gaming, Sport).
   ///
   /// Returns:
   ///   The translation key for the subtype.

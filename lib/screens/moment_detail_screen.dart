@@ -47,7 +47,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   late String _selectedSubtype;
 
   // For editing social event images
-  final GlobalKey _imageGalleryKey = GlobalKey();
+  final GlobalKey<SocialEventImageGalleryState> _imageGalleryKey = GlobalKey<SocialEventImageGalleryState>();
 
   @override
   void initState() {
