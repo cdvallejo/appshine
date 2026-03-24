@@ -18,6 +18,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isLogin = true;
 
+  // Función para registrarse/iniciar sesión con Google
+  void signInWithGoogle() async {
+    try {
+      await authRepository.signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   // Función para registrarse
   void submit() async {
     try {
@@ -49,12 +62,22 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       // El título cambia según el modo
       appBar: AppBar(
-        title: Text(isLogin ? 'Iniciar Sesión' : 'Registro Appshine'),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Appshine', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Text(
+              isLogin ? 'Iniciar Sesión' : 'Registro',
+              style: const TextStyle(fontSize: 22),
+            ),
+          ],
+        ),
         centerTitle: true,
         toolbarHeight: 200,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(45.0),
+        padding: const EdgeInsets.all(55.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -76,6 +99,18 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 onPressed: submit,
                 child: Text(isLogin ? 'Entrar' : 'Registrarse'),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Botón de Google Sign In
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: signInWithGoogle,
+                icon: const Icon(Icons.login),
+                label: const Text('Continuar con Google'),
               ),
             ),
 
