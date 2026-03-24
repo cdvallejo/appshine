@@ -123,3 +123,10 @@ app.*.symbols
 # IDE files
 .idea/
 *.iml
+
+# Sensitive files - MUST NOT BE COMMITTED
+google-services.json
+android/app/google-services.json
+*.env
+.env.local
+firebase.json
