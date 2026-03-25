@@ -9,6 +9,7 @@ import 'package:appshine/models/media_model.dart';
 import 'package:appshine/models/social_event_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 class MomentDetailScreen extends StatefulWidget {
@@ -171,6 +172,16 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
           // No new images, get current ones
           finalImageNames =
               (galleryState as dynamic).getCurrentImageNames() as List<String>;
+        }
+        
+        // 2. Delete images that were removed by user
+        final originalImageNames = (widget.momentData['imageNames'] as List<dynamic>?)?.cast<String>() ?? [];
+        final deletedImages = (galleryState as dynamic).getDeletedImageNames(originalImageNames) as List<String>;
+        
+        if (deletedImages.isNotEmpty) {
+          for (String imageName in deletedImages) {
+            await (galleryState as dynamic).deleteImageFile(imageName);
+          }
         }
       }
     }
@@ -1005,7 +1016,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   builder: (context) => DeleteConfirmDialog(
                     onConfirm: () async {
                       try {
-                        await DatabaseService().deleteMoment(widget.momentId);
+                        await DatabaseService().deleteMoment(
+                          widget.momentId,
+                          imageNames: widget.momentData['type'] == 'socialEvent'
+                              ? (widget.momentData['imageNames'] as List<dynamic>?)?.cast<String>()
+                              : null,
+                          momentType: widget.momentData['type'],
+                        );
                         if (context.mounted) {
                           Navigator.pop(
                             context,
@@ -1137,8 +1154,8 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
   }
 
   Future<String> _getImagePath(String fileName) async {
-    const picturesPath = '/storage/emulated/0/Pictures';
-    return '$picturesPath/Appshine Images/$fileName';
+    final appDocDir = await getApplicationDocumentsDirectory();
+    return '${appDocDir.path}/Appshine Images/$fileName';
   }
 
   @override
@@ -1226,7 +1243,8 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
 }
 
 // Helper method to get image path for gallery
+// Images are stored primarily in app documents directory
 Future<String> _getImagePathForGallery(String fileName) async {
-  const picturesPath = '/storage/emulated/0/Pictures';
-  return '$picturesPath/Appshine Images/$fileName';
+  final appDocDir = await getApplicationDocumentsDirectory();
+  return '${appDocDir.path}/Appshine Images/$fileName';
 }

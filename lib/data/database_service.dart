@@ -4,6 +4,8 @@ import 'package:appshine/models/social_event_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -239,18 +241,27 @@ class DatabaseService {
 
   /// Deletes a moment by its ID.
   /// Validates that the user exists and is authenticated before attempting to delete.
+  /// If it's a social event with images, also deletes image files from disk.
   /// 
   /// Parameters:
   /// * [momentId]: The ID of the moment to delete
+  /// * [imageNames]: Optional list of image filenames to delete (for social events)
+  /// * [momentType]: Optional type of moment ('socialEvent' etc)
   /// 
   /// Throws:
   /// * [Exception] if user is not authenticated or account was deleted
   /// * [Exception] if Firestore operation fails or times out
-  Future<void> deleteMoment(String momentId) async {
+  Future<void> deleteMoment(String momentId, {List<String>? imageNames, String? momentType}) async {
     // Validate user exists and is authenticated
     await _validateUserExists();
     
     try {
+      // Delete image files from disk if it's a social event
+      if (momentType == 'socialEvent' && imageNames != null && imageNames.isNotEmpty) {
+        await _deleteImageFilesFromAppDirectory(imageNames);
+      }
+      
+      // Then delete from Firestore
       await _db.collection('moments').doc(momentId).delete().timeout(
         const Duration(seconds: 5),
         onTimeout: () => throw Exception('Delete operation timed out. Changes saved offline and will sync when connection is restored.'),
@@ -258,6 +269,29 @@ class DatabaseService {
       
     } catch (_) { 
       rethrow;
+    }
+  }
+
+  /// Deletes image files from app's primary storage directory only.
+  /// This frees up app storage while keeping a copy in the Pictures folder for recovery.
+  /// 
+  /// Parameters:
+  /// * [imageNames]: List of image filenames to delete from app directory
+  Future<void> _deleteImageFilesFromAppDirectory(List<String> imageNames) async {
+    try {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      
+      for (String imageName in imageNames) {
+        // Delete ONLY from primary location (app documents directory)
+        final primaryPath = '${appDocDir.path}/Appshine Images/$imageName';
+        final primaryFile = File(primaryPath);
+        if (await primaryFile.exists()) {
+          await primaryFile.delete();
+        }
+        // NOTE: Pictures folder copy is intentionally kept for recovery purposes
+      }
+    } catch (e) {
+      // Don't rethrow - continue with Firestore deletion even if file deletion fails
     }
   }
 }

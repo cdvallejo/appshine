@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Widget to manage image gallery for social events.
 ///
@@ -113,8 +114,12 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// (existing images that are saved to Firestore)
   List<String> getCurrentImageNames() => _currentImageNames;
 
-  /// Returns the list of newly selected image files
-  /// (not yet saved to device or Firestore)
+  /// Returns images that were deleted (exist in past list but not in current list)
+  List<String> getDeletedImageNames(List<String> originalNames) {
+    return originalNames.where((name) => !_currentImageNames.contains(name)).toList();
+  }
+
+  /// Returns newly selected image files (not yet saved to device)
   List<XFile> getNewImageFiles() => _newImageFiles;
 
   /// Opens image picker to select multiple images from camera or gallery.
@@ -160,8 +165,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// Saves newly selected images to local device storage.
   ///
   /// Process:
-  /// * Creates the Appshine Images directory if it doesn't exist.
-  /// * Copies each selected image file to the directory.
+  /// * Saves the primary copy to app's documents directory (safe, no special permissions needed).
+  /// * Creates a secondary copy in Pictures folder for visibility in Android gallery.
   /// * Triggers Android media scanner so images appear in gallery app.
   /// * Returns the updated complete list of image names.
   ///
@@ -169,20 +174,36 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// * A [List<String>] of all image filenames (existing + newly saved).
   ///
   /// Notes:
-  /// * Images are saved to: `/storage/emulated/0/Pictures/Appshine Images/`.
+  /// * Primary storage: `getApplicationDocumentsDirectory/Appshine Images/`
+  /// * Gallery copy: `/storage/emulated/0/Pictures/Appshine Images/`
   /// * Only filenames are stored in Firestore, not actual file data.
   /// * Media scanner broadcast ensures images are visible in Android gallery.
+  /// * In the future, backup will be done from the app's documents directory to Drive.
   Future<List<String>> uploadNewImages() async {
     if (_newImageFiles.isEmpty) return _currentImageNames;
 
     try {
-      // Save to Pictures folder so images appear in Android gallery app
-      const picturesPath = '/storage/emulated/0/Pictures';
-      final appshineImagesDir = Directory('$picturesPath/Appshine Images');
+      // Get app's documents directory for primary storage
+      final appDocDir = await getApplicationDocumentsDirectory();
+      debugPrint('📁 PRIMARY STORAGE PATH: ${appDocDir.path}');
+      
+      final appshineImagesDir = Directory('${appDocDir.path}/Appshine Images');
+      debugPrint('📁 PRIMARY IMAGES DIR: ${appshineImagesDir.path}');
 
       if (!await appshineImagesDir.exists()) {
         // Create directory with recursive flag (creates parent folders if needed)
         await appshineImagesDir.create(recursive: true);
+        debugPrint('✅ PRIMARY IMAGES DIR CREATED');
+      }
+
+      // Also prepare Pictures directory for gallery visibility
+      const picturesPath = '/storage/emulated/0/Pictures';
+      final galleryImagesDir = Directory('$picturesPath/Appshine Images');
+      debugPrint('📁 GALLERY IMAGES DIR: ${galleryImagesDir.path}');
+      
+      if (!await galleryImagesDir.exists()) {
+        await galleryImagesDir.create(recursive: true);
+        debugPrint('✅ GALLERY IMAGES DIR CREATED');
       }
 
       final List<String> newFileNames = [];
@@ -196,24 +217,35 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         // Create unique filename using timestamp + counter + original name
         // This prevents collisions if multiple images selected at same millisecond
         final String fileName = '${baseTimestamp}_${i}_${imageFile.name}';
-        final String localPath = '${appshineImagesDir.path}/$fileName';
-
-        // Copy file from temporary gallery location to permanent storage
-        await sourceFile.copy(localPath);
+        debugPrint('🖼️  Processing image: $fileName');
+        
+        // Save PRIMARY copy to app's documents directory
+        final String appDocPath = '${appshineImagesDir.path}/$fileName';
+        await sourceFile.copy(appDocPath);
+        debugPrint('✅ SAVED PRIMARY: $appDocPath');
         newFileNames.add(fileName);
         
-        // Notify Android media scanner that new file was added
+        // Save SECONDARY copy to Pictures folder for gallery visibility
+        final String galleryPath = '${galleryImagesDir.path}/$fileName';
+        await sourceFile.copy(galleryPath);
+        debugPrint('✅ SAVED GALLERY COPY: $galleryPath');
+        
+        // Notify Android media scanner that new file was added to gallery
         // This makes the image appear immediately in Android Gallery app
         const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
         try {
-          await platform.invokeMethod('scanFile', {'path': localPath});
+          await platform.invokeMethod('scanFile', {'path': galleryPath});
+          debugPrint('🔄 MEDIA SCANNER TRIGGERED: $galleryPath');
         } catch (e) {
           // Fall back: try to scan the entire directory if individual file fails
+          debugPrint('⚠️  Media scanner failed for file, trying directory: $e');
           try {
-            await platform.invokeMethod('scanFile', {'path': appshineImagesDir.path});
+            await platform.invokeMethod('scanFile', {'path': galleryImagesDir.path});
+            debugPrint('🔄 MEDIA SCANNER TRIGGERED (DIR): ${galleryImagesDir.path}');
           } catch (_) {
             // If method channel fails completely, it's okay - app will still work
             // Images will appear in gallery on next rescan
+            debugPrint('⚠️  Media scanner completely failed');
           }
         }
       }
@@ -225,9 +257,11 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         _newImageFileNames.clear();
       });
       
+      debugPrint('✅ UPLOAD COMPLETE. Total images: ${_currentImageNames.length}');
       // Return the complete updated list for parent to store in Firestore
       return _currentImageNames;
     } catch (e) {
+      debugPrint('❌ ERROR SAVING IMAGES: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error saving images: $e')),
@@ -334,15 +368,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
                               top: 0,
                               right: 0,
                               child: GestureDetector(
-                                onTap: () async {
-                                  // Delete the physical file from device storage first
-                                  final imagePath = await _getImagePath(_currentImageNames[index]);
-                                  final imageFile = File(imagePath);
-                                  if (await imageFile.exists()) {
-                                    await imageFile.delete();
-                                  }
-                                  // Then remove filename from list
-                                  // This will be saved to Firestore when user saves the event
+                                onTap: () {
+                                  // Just remove from list - actual file deletion happens when user saves (checks)
                                   setState(() {
                                     _currentImageNames.removeAt(index);
                                   });
@@ -448,23 +475,52 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     );
   }
 
+  /// Deletes an image file from both storage locations.
+  ///
+  /// Removes the image from:
+  /// * Primary: app's documents directory (`getApplicationDocumentsDirectory`)
+  /// * Secondary: Pictures folder (`/storage/emulated/0/Pictures/Appshine Images/`)
+  ///
+  /// Parameters:
+  /// * [fileName]: The image filename to delete.
+  Future<void> deleteImageFile(String fileName) async {
+    try {
+      // Delete from primary location (app documents directory)
+      final primaryPath = await _getImagePath(fileName);
+      final primaryFile = File(primaryPath);
+      
+      if (await primaryFile.exists()) {
+        await primaryFile.delete();
+      }
+
+      // Delete from secondary location (Pictures folder)
+      const picturesPath = '/storage/emulated/0/Pictures';
+      final galleryPath = '$picturesPath/Appshine Images/$fileName';
+      final galleryFile = File(galleryPath);
+      
+      if (await galleryFile.exists()) {
+        await galleryFile.delete();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting image: $e')),
+        );
+      }
+    }
+  }
+
   /// Converts an image filename to its full device file path.
   ///
   /// Parameters:
-  /// * [fileName]: The image filename (e.g., \"1234567890_0_photo.jpg\").
+  /// * [fileName]: The image filename (\"1234_0_photo.jpg\").
   ///
   /// Returns:
-  /// * The complete absolute file path to the image.
+  /// * The complete absolute file path to the primary image location in app documents.
   ///
-  /// Path structure: `/storage/emulated/0/Pictures/Appshine Images/{fileName}`
-  ///
-  /// Example:
-  /// ```dart
-  /// final path = await _getImagePath('1234567890_0_photo.jpg');
-  /// // Returns: /storage/emulated/0/Pictures/Appshine Images/1234567890_0_photo.jpg
-  /// ```
+  /// Path structure: `getApplicationDocumentsDirectory/Appshine Images/{fileName}`
   Future<String> _getImagePath(String fileName) async {
-    const picturesPath = '/storage/emulated/0/Pictures';
-    return '$picturesPath/Appshine Images/$fileName';
+    final appDocDir = await getApplicationDocumentsDirectory();
+    return '${appDocDir.path}/Appshine Images/$fileName';
   }
 }
