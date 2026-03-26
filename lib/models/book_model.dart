@@ -149,10 +149,10 @@ class Book {
     return imageUrl ?? 'https://via.placeholder.com/150x200?text=No+Cover';
   }
 
-  /// Returns the cover URL with the requested Open Library size (`S`, `M`, `L`).
+  /// Returns the cover URL with the requested Open Library size (`M`).
   ///
   /// Parameters:
-  /// * [size]: Requested cover size code (`S`, `M`, or `L`).
+  /// * [size]: Requested cover size code (`M`).
   ///
   /// Returns:
   /// * The cover URL in the requested size, or a placeholder URL when no cover exists.

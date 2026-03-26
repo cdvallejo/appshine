@@ -3,27 +3,13 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:appshine/utils/image_thumbnail_service.dart';
 
 /// Widget to manage image gallery for social events.
 ///
 /// Allows users to select multiple images from camera or gallery, preview existing
 /// and newly selected images, and delete images. Images are stored locally on the device,
 /// not on Firebase Storage. Only image filenames are saved to Firestore for reference.
-///
-/// Usage (editing moment):
-/// ```dart
-/// SocialEventImageGallery(
-///   initialImageNames: event.imageNames ?? [],
-///   onImagesChanged: () => setState(() {}),
-/// )
-/// ```
-///
-/// Usage (creating new moment):
-/// ```dart
-/// SocialEventImageGallery(
-///   onImagesChanged: () => setState(() {}),
-/// )
-/// ```
 class SocialEventImageGallery extends StatefulWidget {
   /// List of existing image filenames saved in this moment (optional).
   /// If not provided, defaults to empty list.
@@ -54,7 +40,6 @@ class SocialEventImageGallery extends StatefulWidget {
 /// including image picking, saving, and deletion logic.
 class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// List of validated image names that physically exist on the device
-  /// Updated after filtering out deleted files
   late List<String> _currentImageNames;
   
   /// Filenames of newly selected images (not yet saved to device)
@@ -110,8 +95,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     }
   }
 
-  /// Returns the current list of validated existing image names
-  /// (existing images that are saved to Firestore)
+  /// Returns the current list of validated existing image names that are saved to Firestore
   List<String> getCurrentImageNames() => _currentImageNames;
 
   /// Returns images that were deleted (exist in past list but not in current list)
@@ -178,32 +162,32 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// * Gallery copy: `/storage/emulated/0/Pictures/Appshine Images/`
   /// * Only filenames are stored in Firestore, not actual file data.
   /// * Media scanner broadcast ensures images are visible in Android gallery.
-  /// * In the future, backup will be done from the app's documents directory to Drive.
+
   Future<List<String>> uploadNewImages() async {
     if (_newImageFiles.isEmpty) return _currentImageNames;
 
     try {
       // Get app's documents directory for primary storage
       final appDocDir = await getApplicationDocumentsDirectory();
-      debugPrint('📁 PRIMARY STORAGE PATH: ${appDocDir.path}');
       
       final appshineImagesDir = Directory('${appDocDir.path}/Appshine Images');
-      debugPrint('📁 PRIMARY IMAGES DIR: ${appshineImagesDir.path}');
 
       if (!await appshineImagesDir.exists()) {
-        // Create directory with recursive flag (creates parent folders if needed)
         await appshineImagesDir.create(recursive: true);
-        debugPrint('✅ PRIMARY IMAGES DIR CREATED');
       }
 
-      // Also prepare Pictures directory for gallery visibility
+      // Prepare Pictures directory for gallery visibility
       const picturesPath = '/storage/emulated/0/Pictures';
       final galleryImagesDir = Directory('$picturesPath/Appshine Images');
-      debugPrint('📁 GALLERY IMAGES DIR: ${galleryImagesDir.path}');
       
       if (!await galleryImagesDir.exists()) {
         await galleryImagesDir.create(recursive: true);
-        debugPrint('✅ GALLERY IMAGES DIR CREATED');
+      }
+
+      // Create thumbnails directory
+      final thumbnailsDir = Directory('${appDocDir.path}/Appshine Thumbnails');
+      if (!await thumbnailsDir.exists()) {
+        await thumbnailsDir.create(recursive: true);
       }
 
       final List<String> newFileNames = [];
@@ -211,41 +195,44 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
       // Process each newly selected image
       for (int i = 0; i < _newImageFiles.length; i++) {
-        final XFile imageFile = _newImageFiles[i];
-        final File sourceFile = File(imageFile.path);
-        
-        // Create unique filename using timestamp + counter + original name
-        // This prevents collisions if multiple images selected at same millisecond
-        final String fileName = '${baseTimestamp}_${i}_${imageFile.name}';
-        debugPrint('🖼️  Processing image: $fileName');
-        
-        // Save PRIMARY copy to app's documents directory
-        final String appDocPath = '${appshineImagesDir.path}/$fileName';
-        await sourceFile.copy(appDocPath);
-        debugPrint('✅ SAVED PRIMARY: $appDocPath');
-        newFileNames.add(fileName);
-        
-        // Save SECONDARY copy to Pictures folder for gallery visibility
-        final String galleryPath = '${galleryImagesDir.path}/$fileName';
-        await sourceFile.copy(galleryPath);
-        debugPrint('✅ SAVED GALLERY COPY: $galleryPath');
-        
-        // Notify Android media scanner that new file was added to gallery
-        // This makes the image appear immediately in Android Gallery app
-        const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
         try {
-          await platform.invokeMethod('scanFile', {'path': galleryPath});
-          debugPrint('🔄 MEDIA SCANNER TRIGGERED: $galleryPath');
-        } catch (e) {
-          // Fall back: try to scan the entire directory if individual file fails
-          debugPrint('⚠️  Media scanner failed for file, trying directory: $e');
+          final XFile imageFile = _newImageFiles[i];
+          final File sourceFile = File(imageFile.path);
+          
+          final String fileName = '${baseTimestamp}_${i}_${imageFile.name}';
+          
+          // Save PRIMARY copy to app's documents directory
+          final String appDocPath = '${appshineImagesDir.path}/$fileName';
+          await sourceFile.copy(appDocPath);
+          newFileNames.add(fileName);
+          
+          // Generate and save thumbnail (150×150px square for social events)
+          final String thumbnailPath = '${thumbnailsDir.path}/$fileName';
+          await ImageThumbnailService.generateThumbnail(appDocPath, thumbnailPath, width: 150, height: 150);
+          
+          // Save SECONDARY copy to Pictures folder for gallery visibility
+          final String galleryPath = '${galleryImagesDir.path}/$fileName';
+          await sourceFile.copy(galleryPath);
+          
+          // Notify Android media scanner
+          const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
           try {
-            await platform.invokeMethod('scanFile', {'path': galleryImagesDir.path});
-            debugPrint('🔄 MEDIA SCANNER TRIGGERED (DIR): ${galleryImagesDir.path}');
-          } catch (_) {
-            // If method channel fails completely, it's okay - app will still work
-            // Images will appear in gallery on next rescan
-            debugPrint('⚠️  Media scanner completely failed');
+            await platform.invokeMethod('scanFile', {'path': galleryPath});
+          } catch (e) {
+            try {
+              await platform.invokeMethod('scanFile', {'path': galleryImagesDir.path});
+            } catch (_) {
+              // Media scanner is non-critical
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error saving image ${i + 1}: $e'),
+                duration: const Duration(seconds: 5),
+              ),
+            );
           }
         }
       }
@@ -257,11 +244,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         _newImageFileNames.clear();
       });
       
-      debugPrint('✅ UPLOAD COMPLETE. Total images: ${_currentImageNames.length}');
-      // Return the complete updated list for parent to store in Firestore
       return _currentImageNames;
     } catch (e) {
-      debugPrint('❌ ERROR SAVING IMAGES: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error saving images: $e')),

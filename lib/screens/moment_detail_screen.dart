@@ -1022,6 +1022,9 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                               ? (widget.momentData['imageNames'] as List<dynamic>?)?.cast<String>()
                               : null,
                           momentType: widget.momentData['type'],
+                          imageFileName: (widget.momentData['type'] == 'media' || widget.momentData['type'] == 'book')
+                              ? widget.momentData['imageFileName'] as String?
+                              : null,
                         );
                         if (context.mounted) {
                           Navigator.pop(

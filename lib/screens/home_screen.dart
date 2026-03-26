@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:appshine/utils/image_thumbnail_service.dart';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
@@ -56,6 +57,23 @@ class HomeScreen extends StatelessWidget {
   /// The [key] parameter is optional and used to identify this widget in the widget tree.
   const HomeScreen({super.key});
 
+  /// Builds the home screen widget.
+  ///
+  /// Constructs a Scaffold with:
+  ///   * An app bar with settings icon (for admins)
+  ///   * A drawer for navigation (non-admin users only)
+  ///   * A body that shows admin buttons or a grouped list of moments
+  ///   * A floating action button to add moments (non-admin users only)
+  ///
+  /// The screen fetches user role from Firestore and displays
+  /// appropriate content. Admins see quick-access buttons to the admin panel.
+  /// Non-admin users see a grouped list of moments organized by date with newest first.
+  ///
+  /// Parameters:
+  ///   * [context] - The build context
+  ///
+  /// Returns:
+  ///   A Scaffold widget containing the home screen layout
   /// Builds the home screen widget.
   ///
   /// Constructs a Scaffold with:
@@ -252,6 +270,7 @@ class HomeScreen extends StatelessWidget {
                               data['imageNames'],
                               data['imageUrl'],
                               data['subtype'],
+                              data['imageFileName'],
                             ),
                             title: Text(
                               data['title'] ?? loc.translate('untitled'),
@@ -283,7 +302,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                             // Traiing with icon moment and onTap for future detail
                             trailing: Icon(
-                              _getMomentIcon(data['type'], data['subtype']),
+                              _getMomentIconSmall(data['type'], data['subtype']),
                               size: 20,
                               color: Theme.of(
                                 context,
@@ -607,7 +626,7 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  /// Returns the icon for a moment type (outlined version).
+  /// Returns the icon for a moment type (outlined version - small for list trailing).
   ///
   /// Parameters:
   ///   * [type] - The moment type ('media', 'book', 'socialEvent')
@@ -615,7 +634,7 @@ class HomeScreen extends StatelessWidget {
   ///
   /// Returns:
   ///   The appropriate outlined MaterialIcon for the moment type
-  IconData _getMomentIcon(String type, String subtype) {
+  IconData _getMomentIconSmall(String type, String subtype) {
     switch (type) {
       case 'media':
         // For media, check subtype to differentiate between TV and Movies
@@ -667,112 +686,143 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  /// Builds the image widget for a moment display.
+  /// Builds the image widget for a moment display (50×75px).
   ///
-  /// Handles different image sources based on moment type:
-  ///   * Social events: Loads image from local storage using filename
-  ///   * Media/books: Loads network image from Firebase Storage URL with disk caching
-  ///   * Fallback: Shows icon if image is unavailable
-  ///
-  /// Note: Network images are cached on disk using [CachedNetworkImage], which
-  /// persists across app sessions. Local image files are checked for existence
-  /// with [File.existsSync]. Loading states show a progress indicator.
-  ///
+  /// Intelligent loading strategy:
+  /// 1. For social events: Try local thumbnail (generated at 150×150, displayed at 50×75)
+  /// 2. For media/books: Try local thumbnail (generated at 100×150, displayed at 50×75)
+  /// 3. Network URL fallback with CachedNetworkImage for disk caching
+  /// 4. Icon placeholder as last resort
+  /// 
   /// Parameters:
   ///   * [type] - The moment type ('media', 'book', 'socialEvent')
-  ///   * [imageNames] - List of filenames for social event images
-  ///   * [imageUrl] - Network URL for media/book images
-  ///   * [subtype] - The moment subtype (used for fallback icon)
-  ///
+  ///   * [imageNames] - List of local image file names (for social events)
+  ///   * [imageUrl] - The network image URL (for media/books)
+  ///   * [subtype] - The moment subtype (used for icon fallback)
+  ///   * [imageFileName] - The local image file name for media/books (if available)
   /// Returns:
-  ///   A widget displaying the moment image or an icon placeholder
+  ///  A widget displaying the moment image or the icon with intelligent loading and fallbacks
+  /// 
+  /// Notes:
+  /// - For social events, we expect `imageNames` to be a list of local file names. We use the first one for the thumbnail.
+ 
   Widget _buildMomentImage(
     String type,
     dynamic imageNames,
     String? imageUrl,
     String subtype,
+    String? imageFileName,
   ) {
-    /* For social events, reconstruct path from filename and show local image.
-    Not null and empty list check */
-    if (type == 'socialEvent' &&
-        imageNames != null &&
-        (imageNames as List).isNotEmpty) {
-      return FutureBuilder<String>(
-        future: _getImagePath(
-          imageNames[0],
-        ), // Get the full path of the first image
-        builder: (context, snapshot) {
-          // Check if the file exists at the path, the result of the future is in snapshot.data
-          // Show loading indicator while waiting for path
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(
-              width: 50,
-              height: 75,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            );
-          }
+    // Determine if we have local content (display: 50×75)
+    String? localFileName;
 
-          if (snapshot.hasData && File(snapshot.data!).existsSync()) {
-            return Image.file(
-              File(snapshot.data!),
-              width: 50,
-              height: 75,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Icon(
-                _getMomentIconBig(type, subtype),
-                size: 50,
-              ), // Fallback to icon if file can't be loaded
-            );
-          }
-          return Icon(_getMomentIconBig(type, subtype), size: 50);
-        },
-      );
+    if (type == 'socialEvent' && imageNames != null && (imageNames as List).isNotEmpty) {
+      localFileName = imageNames[0];
+    } else if ((type == 'media' || type == 'book') && imageFileName != null) {
+      localFileName = imageFileName;
     }
 
-    // For media and books, show network image from imageUrl
+    // Strategy: Try local thumbnail first, fallback to network URL, then icon
+    if (localFileName != null) {
+      return _buildLocalThumbnail(localFileName, type, subtype);
+    }
+
+    // No local file, try network URL
     if (imageUrl != null) {
-      return CachedNetworkImage(
-        imageUrl: imageUrl,
-        width: 50,
-        height: 75,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => const SizedBox(
-          width: 50,
-          height: 75,
-          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        ),
-        errorWidget: (context, url, error) =>
-            Icon(_getMomentIconBig(type, subtype), size: 50),
-      );
+      return _buildNetworkImage(imageUrl, type, subtype);
     }
 
-    // Fallback: show icon
+    // Final fallback: show icon
     return Icon(_getMomentIconBig(type, subtype), size: 50);
   }
 
-  /// Reconstructs the full file path for a social event image.
-  ///
-  /// Completes the path by combining the external storage directory
-  /// with the 'social_events' subdirectory and the provided filename.
-  ///
-  /// Note: This method assumes the file exists at the constructed path.
-  /// Always check file existence before using the returned path.
-  ///
+  /// Builds a local thumbnail (50×75).
+  /// Attempts to load a local thumbnail image. If the file doesn't exist or fails to load, shows an icon.
+  /// 
   /// Parameters:
-  ///   * [fileName] - The image filename (without directory path)
-  ///
+  /// * [fileName] - The local file name of the thumbnail image
+  /// * [type] - The moment type (used for icon fallback)
+  /// * [subtype] - The moment subtype (used for icon fallback)
+  /// 
   /// Returns:
-  ///   A Future that resolves to the complete file path string
-  ///
-  /// Example:
-  ///   ```dart
-  ///   final path = await _getImagePath('event_photo.jpg');
-  ///   if (File(path).existsSync()) {
-  ///     // Use the file
-  ///   }
-  ///   ```
-  Future<String> _getImagePath(String fileName) async {
-    const picturesPath = '/storage/emulated/0/Pictures';
-    return '$picturesPath/Appshine Images/$fileName';
+  /// A widget that displays the local thumbnail if it exists, otherwise falls back to an icon.
+  Widget _buildLocalThumbnail(
+    String fileName,
+    String type,
+    String subtype,
+  ) {
+    return FutureBuilder<String>(
+      future: ImageThumbnailService.getThumbnailPath(fileName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingWidget();
+        }
+
+        if (snapshot.hasData) {
+          final file = File(snapshot.data!);
+          if (file.existsSync()) {
+            return Image.file(
+              file,
+              width: 50,
+              height: 75,
+              fit: BoxFit.scaleDown,
+              // If local file fails to load: show icon
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(_getMomentIconBig(type, subtype), size: 50),
+            );
+          }
+        }
+
+        // TODO: Thumbnail missing - implement lazy regeneration or maintenance task
+        // If thumbnail file doesn't exist for media/book/socialEvent, could attempt to regenerate
+        // from original image using ImageThumbnailService.regenerateThumbnail()
+        // File doesn't exist → show icon
+        return Icon(_getMomentIconBig(type, subtype), size: 50);
+      },
+    );
+  }
+
+  /// Builds a network image with CachedNetworkImage (50×75).
+  /// Includes placeholder while loading and error widget fallback to icon.
+  /// 
+  /// Parameters:
+  ///  * [imageUrl] - The URL of the image to load
+  ///  * [type] - The moment type (used for icon fallback)
+  ///  * [subtype] - The moment subtype (used for icon fallback)
+  /// 
+  /// Returns:
+  /// A widget that displays the network image with caching, placeholder, and error handling
+  /// 
+  Widget _buildNetworkImage(
+    String imageUrl,
+    String type,
+    String subtype,
+  ) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: 50,
+      height: 75,
+      fit: BoxFit.scaleDown,
+      // While loading: show spinner
+      placeholder: (context, url) => _buildLoadingWidget(),
+      // If error loading: show icon
+      errorWidget: (context, url, error) => Icon(
+        _getMomentIconBig(type, subtype),
+        size: 50,
+      ),
+    );
+  }
+
+  /// Builds a loading indicator (50×75).
+  /// Used as a placeholder while loading local thumbnails or network images.
+  /// 
+  /// Returns:
+  /// A widget containing a centered CircularProgressIndicator with specified dimensions
+  Widget _buildLoadingWidget() {
+    return const SizedBox(
+      width: 50,
+      height: 75,
+      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+    );
   }
 }

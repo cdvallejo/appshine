@@ -1,6 +1,7 @@
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
 import 'package:appshine/models/social_event_model.dart';
+import 'package:appshine/utils/image_thumbnail_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -58,6 +59,17 @@ class DatabaseService {
     if (user == null) throw Exception('User not identified');
 
     try {
+      // 1. Download image from API and generate thumbnail (if imageUrl available)
+      String? fileName;
+      if (media.imageUrl != null && media.imageUrl!.isNotEmpty) {
+        final imageUrl = media.imageUrl!;
+        fileName = 'media_${media.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        await ImageThumbnailService.downloadAndGenerateThumbnail(
+          imageUrl,
+          fileName,
+        );
+      }
+
       // 2. Sending data to Firestore
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
@@ -73,6 +85,7 @@ class DatabaseService {
         'genres': media.genres,
         'cast': media.cast,
         'imageUrl': media.imageUrl,
+        'imageFileName': fileName, // Store filename for local and thumbnail
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
         'notes': notes,
@@ -113,6 +126,17 @@ class DatabaseService {
     if (user == null) throw Exception('User not identified');
 
     try {
+      // 1. Download image from API and generate thumbnail (if imageUrl available)
+      String? fileName;
+      if (book.imageUrl != null && book.imageUrl!.isNotEmpty) {
+        final imageUrl = book.fullCoverUrl; // Use fullCoverUrl which handles placeholder
+        fileName = 'book_${book.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        await ImageThumbnailService.downloadAndGenerateThumbnail(
+          imageUrl,
+          fileName,
+        );
+      }
+
       // 2. Sending data to Firestore
       await _db.collection('moments').add({
         'userId': user.uid, // Security: who saves it
@@ -125,6 +149,7 @@ class DatabaseService {
         'isbn': book.isbn,
         'publisher': book.publisher,
         'imageUrl': book.fullCoverUrl,
+        'imageFileName': fileName, // Store filename for local thumbnail
         'pageCount': book.pageCount,
         'date': Timestamp.fromDate(date), // Firebase format
         'location': location,
@@ -241,17 +266,25 @@ class DatabaseService {
 
   /// Deletes a moment by its ID.
   /// Validates that the user exists and is authenticated before attempting to delete.
-  /// If it's a social event with images, also deletes image files from disk.
+  /// Cleans up associated files:
+  /// * For social events: deletes all image files from disk
+  /// * For media/books: deletes local thumbnail files
   /// 
   /// Parameters:
   /// * [momentId]: The ID of the moment to delete
   /// * [imageNames]: Optional list of image filenames to delete (for social events)
-  /// * [momentType]: Optional type of moment ('socialEvent' etc)
+  /// * [momentType]: Optional type of moment ('socialEvent', 'media', 'book')
+  /// * [imageFileName]: Optional filename of the thumbnail (for media/books)
   /// 
   /// Throws:
   /// * [Exception] if user is not authenticated or account was deleted
   /// * [Exception] if Firestore operation fails or times out
-  Future<void> deleteMoment(String momentId, {List<String>? imageNames, String? momentType}) async {
+  Future<void> deleteMoment(
+    String momentId, {
+    List<String>? imageNames,
+    String? momentType,
+    String? imageFileName,
+  }) async {
     // Validate user exists and is authenticated
     await _validateUserExists();
     
@@ -259,6 +292,11 @@ class DatabaseService {
       // Delete image files from disk if it's a social event
       if (momentType == 'socialEvent' && imageNames != null && imageNames.isNotEmpty) {
         await _deleteImageFilesFromAppDirectory(imageNames);
+      }
+      
+      // Delete thumbnail file if it's media or book
+      if ((momentType == 'media' || momentType == 'book') && imageFileName != null) {
+        await _deleteThumbnailFile(imageFileName);
       }
       
       // Then delete from Firestore
@@ -274,6 +312,7 @@ class DatabaseService {
 
   /// Deletes image files from app's primary storage directory only.
   /// This frees up app storage while keeping a copy in the Pictures folder for recovery.
+  /// Also deletes corresponding thumbnails to keep directories clean.
   /// 
   /// Parameters:
   /// * [imageNames]: List of image filenames to delete from app directory
@@ -282,13 +321,51 @@ class DatabaseService {
       final appDocDir = await getApplicationDocumentsDirectory();
       
       for (String imageName in imageNames) {
-        // Delete ONLY from primary location (app documents directory)
+        // Delete original image from primary location (app documents directory)
         final primaryPath = '${appDocDir.path}/Appshine Images/$imageName';
         final primaryFile = File(primaryPath);
         if (await primaryFile.exists()) {
           await primaryFile.delete();
         }
+        
+        // Also delete corresponding thumbnail (social events generate thumbnails too)
+        final thumbnailPath = '${appDocDir.path}/Appshine Thumbnails/$imageName';
+        final thumbnailFile = File(thumbnailPath);
+        if (await thumbnailFile.exists()) {
+          await thumbnailFile.delete();
+        }
         // NOTE: Pictures folder copy is intentionally kept for recovery purposes
+      }
+    } catch (e) {
+      // Don't rethrow - continue with Firestore deletion even if file deletion fails
+    }
+  }
+
+  /// Deletes image and thumbnail files for media/book moments.
+  /// Removes both the original image and generated thumbnail from app's documents directory.
+  /// 
+  /// Deletes from:
+  /// * Appshine Images/{fileName} - Original downloaded image from API
+  /// * Appshine Thumbnails/{fileName} - Generated thumbnail (100×150)
+  /// 
+  /// Parameters:
+  /// * [imageFileName]: The image filename (same name used for both original and thumbnail)
+  Future<void> _deleteThumbnailFile(String imageFileName) async {
+    try {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      
+      // Delete original image from Appshine Images
+      final imagePath = '${appDocDir.path}/Appshine Images/$imageFileName';
+      final imageFile = File(imagePath);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+      }
+      
+      // Delete thumbnail from Appshine Thumbnails
+      final thumbnailPath = '${appDocDir.path}/Appshine Thumbnails/$imageFileName';
+      final thumbnailFile = File(thumbnailPath);
+      if (await thumbnailFile.exists()) {
+        await thumbnailFile.delete();
       }
     } catch (e) {
       // Don't rethrow - continue with Firestore deletion even if file deletion fails

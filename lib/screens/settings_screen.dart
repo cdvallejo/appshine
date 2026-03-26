@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const Divider(height: 32),
-  
+
           // LOGOUT SECTION
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),

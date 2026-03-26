@@ -20,10 +20,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Aumentar el image cache de Flutter para mejor rendimiento de scroll
-  imageCache.maximumSize = 250;        // 250 imágenes en memoria
-  imageCache.maximumSizeBytes = 250 * 1024 * 1024; // 250 MB
-  
   // Initialize Firebase with error handling for duplicate-app scenarios
   try {
     await Firebase.initializeApp(
