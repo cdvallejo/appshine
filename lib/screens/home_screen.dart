@@ -300,7 +300,7 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            // Traiing with icon moment and onTap for future detail
+                            // Trailing with icon moment and onTap for future detail
                             trailing: Icon(
                               _getMomentIconSmall(data['type'], data['subtype']),
                               size: 20,
@@ -613,8 +613,11 @@ class HomeScreen extends StatelessWidget {
         if (subtype.toLowerCase().contains('gaming')) {
           return Icons.diversity_1;
         }
-        if (subtype.toLowerCase().contains('social')) {
+        if (subtype.toLowerCase().contains('hangout')) {
           return Icons.people;
+        }
+        if (subtype.toLowerCase().contains('milestone')) {
+          return Icons.cake;
         }
         if (subtype.toLowerCase().contains('sport')) {
           return Icons.sports;
@@ -651,8 +654,11 @@ class HomeScreen extends StatelessWidget {
         if (subtype.toLowerCase().contains('gaming')) {
           return Icons.diversity_1_outlined;
         }
-        if (subtype.toLowerCase().contains('social')) {
+        if (subtype.toLowerCase().contains('hangout')) {
           return Icons.people_outlined;
+        }
+        if (subtype.toLowerCase().contains('milestone')) {
+          return Icons.cake_outlined;
         }
         if (subtype.toLowerCase().contains('sport')) {
           return Icons.sports_outlined;
@@ -792,7 +798,6 @@ class HomeScreen extends StatelessWidget {
   /// 
   /// Returns:
   /// A widget that displays the network image with caching, placeholder, and error handling
-  /// 
   Widget _buildNetworkImage(
     String imageUrl,
     String type,

@@ -176,7 +176,7 @@ void main() {
 
     /// Test 10: SocialEvent con subtype variado
     test('SocialEvent.fromMap() - debería aceptar diferentes subtipos', () {
-      final subtypes = ['Cultural', 'Gaming', 'Social', 'Sport', 'Other'];
+      final subtypes = ['Cultural', 'Gaming', 'Hangout', 'Milestone', 'Sport', 'Other'];
 
       for (final subtype in subtypes) {
         final map = {

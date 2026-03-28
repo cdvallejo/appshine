@@ -2,54 +2,87 @@ import 'package:flutter/material.dart';
 import '../data/auth_repository.dart'; // Importamos la lógica de autenticación
 import '../l10n/app_localizations.dart'; // Importamos las traducciones
 
+/// Login and registration screen for user authentication.
+///
+/// This screen provides a unified interface for both login and registration modes,
+/// allowing users to authenticate via email/password or Google Sign-In.
+/// Contains error handling with SnackBar notifications
+///
+/// **Dependencies:**
+///   * AuthRepository: Handles Firebase authentication logic
+///   * AppLocalizations: Provides multi-language support
 class LoginScreen extends StatefulWidget {
+  /// Creates a LoginScreen widget.
+  ///
+  /// The [key] parameter is optional and used to identify this widget in the widget tree.
   const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+/// State manager for LoginScreen.
+///
+/// Manages user input, authentication state, and mode transitions between
+/// login and registration.
 class _LoginScreenState extends State<LoginScreen> {
-  // Controladores para leer lo que escribe el usuario
+  /// Controller for the email input field.
   final emailController = TextEditingController();
+
+  /// Controller for the password input field.
   final passwordController = TextEditingController();
 
-  // Instancia de nuestro repositorio de autenticación (la lógica)
+  /// Instance of the authentication repository.
+  ///
+  /// Provides Firebase authentication methods (signIn, signUp, signInWithGoogle).
   final authRepository = AuthRepository();
 
+  /// Tracks whether user is in login mode (true) or registration mode (false).
   bool isLogin = true;
 
-  // Función para registrarse/iniciar sesión con Google
+  /// Initiates Google Sign-In authentication flow.
+  ///
+  /// Attempts to sign in using Google credentials. If authentication succeeds,
+  /// the user is redirected by Firebase (via AuthGate). If it fails, displays
+  /// an error message via SnackBar.
+  ///
+  /// This method is async and safe to call multiple times - Firebase handles
+  /// the OAuth flow and state management.
   void signInWithGoogle() async {
     try {
       await authRepository.signInWithGoogle();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          // Show error message of Firebase authentication failure
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red), 
         );
       }
     }
   }
 
-  // Función para registrarse
+  /// Submits authentication form for login or registration.
+  ///
+  /// Attempts to sign in or register using [AuthRepository]. Shows error messages
+  /// only if the screen is still visible (safe navigation when user leaves).
+  ///
+  /// Behavior: If [isLogin] is true, attempts sign-in; otherwise, attempts registration.
   void submit() async {
     try {
       if (isLogin) {
-        // Usamos el repositorio para iniciar sesión
+        // Use repository to sign in
         await authRepository.signIn(
           email: emailController.text.trim(),
           password: passwordController.text,
         );
       } else {
-        // Usamos el repositorio para registrarse
+        // Use repository to sign up
         await authRepository.signUp(
           email: emailController.text.trim(),
           password: passwordController.text,
         );
       }
     } catch (e) {
-      // Si falla, mostramos un aviso abajo (SnackBar)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
@@ -58,12 +91,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Builds the authentication UI.
+  ///
+  /// Constructs a full-screen authentication interface with all necessary controls
+  /// for login and registration.
+  ///
+  /// Returns:
+  ///   A [Scaffold] that builds the login/registration form with AppBar and body SingleChildScrollView.
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     
     return Scaffold(
-      // El título cambia según el modo
+      // AppBar with dynamic title based on current authentication mode
       appBar: AppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
@@ -84,11 +124,13 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Email input field
             TextField(
               controller: emailController,
               decoration: InputDecoration(labelText: loc.translate('email')),
               keyboardType: TextInputType.emailAddress,
             ),
+            // Password input field with obscured text
             TextField(
               controller: passwordController,
               decoration: InputDecoration(labelText: loc.translate('password')),
@@ -96,9 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Botón principal (El texto cambia)
+            // Primary action button - text changes based on authentication mode
+            // Shows "Login" or "Register" with full width
             SizedBox(
-              width: double.infinity, // Para que ocupe todo el ancho
+              width: double.infinity,
               child: ElevatedButton(
                 onPressed: submit,
                 child: Text(isLogin ? loc.translate('enterButton') : loc.translate('registerButton')),
@@ -107,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 10),
 
-            // Botón de Google Sign In
+            // Google authentication button for OAuth sign-in/sign-up
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -119,10 +162,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 10),
 
-            // Botón mágico para cambiar de modo
+            // Mode toggle button to switch between login and registration
+            // Toggles [isLogin] state and rebuilds UI with corresponding labels
             TextButton(
               onPressed: () {
-                // Al pulsar, invertimos el valor (true -> false, false -> true)
                 setState(() {
                   isLogin = !isLogin;
                 });

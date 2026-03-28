@@ -1,11 +1,12 @@
 /// Social event model representing social events.
 class SocialEvent {
   static const List<String> subtypes = [
-    'Cultural',
-    'Gaming',
-    'Social',
-    'Sport',
-    'Other',
+    'Cultural',   // Cine, teatro, museos...
+    'Gaming',     // Partidas de rol, videojuegos, mesa...
+    'Hangout',    // Cenas, cañas, quedar por quedar (la "Quedada")...
+    'Milestone',  // Graduaciones, nacimientos, hitos importantes...
+    'Sport',      // Partidos, gimnasio, rutas...
+    'Other',      // Lo que no encaje en lo anterior.
   ];
 
   // TODO: Future user suggestions for tags based on subtype
@@ -20,12 +21,12 @@ class SocialEvent {
     'Show',
     'Theater',
   ],
-  'Social & Lifestyle': [
+  'Hangout': [
     'Birthday',
     'Coffee',
     'Dance',
     'Dining',
-    'Hangout',
+    'Meeting',
     'Party',
     'Walk',
   ],
@@ -48,13 +49,14 @@ class SocialEvent {
     'Tennis',
     'Volley',      
   ],
-  'Learning & Development': [
-    'Course',
-    'Language Exchange',
-    'Meeting',
-    'Seminar',
-    'Study Session',
-    'Workshop',
+  'Milestone': [
+    'Anniversary',
+    'Graduation',
+    'Milestone',
+    'New Job',
+    'New Home',
+    'Newborn',
+    'Wedding',
   ],
 };
 
@@ -67,7 +69,7 @@ class SocialEvent {
   /// 
   /// Parameters:
   /// * [title]: Display title of the event.
-  /// * [subtype]: Event subtype (e.g., Cultural, Gaming, Social, Sport, Other).
+  /// * [subtype]: Event subtype (e.g., Cultural, Gaming, Hangout, Sport, Milestone, Other).
   /// * [imageNames]: Optional list of image filenames associated with the event.
   SocialEvent({required this.title, required this.subtype, this.imageNames});
 

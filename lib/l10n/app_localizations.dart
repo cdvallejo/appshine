@@ -134,7 +134,8 @@ class AppLocalizations {
       'selectEventSubtype': 'Selecciona un subtipo',
       'cultural': 'Cultural',
       'gaming': 'Juegos',
-      'social': 'Social',
+      'hangout': 'Quedada',
+      'milestone': 'Hito',
       'sport': 'Deporte',
       'gallery': 'Galería',
       'camera': 'Cámara',
@@ -290,7 +291,8 @@ class AppLocalizations {
       'selectEventSubtype': 'Please select a subtype',
       'cultural': 'Cultural',
       'gaming': 'Gaming',
-      'social': 'Social',
+      'hangout': 'Hangout',
+      'milestone': 'Milestone',
       'sport': 'Sport',
       'gallery': 'Gallery',
       'camera': 'Camera',
@@ -478,7 +480,7 @@ class AppLocalizations {
   /// Gets the translation key for a social event subtype.
   ///
   /// Parameters:
-  ///   * [subtype] - The subtype of the social event (Cultural, Gaming, Sport).
+  ///   * [subtype] - The subtype of the social event (Cultural, Gaming, Hangout, Sport, Milestone, Other).
   ///
   /// Returns:
   ///   The translation key for the subtype.
@@ -486,7 +488,8 @@ class AppLocalizations {
     final subtypeLower = subtype.toLowerCase();
     if (subtypeLower.contains('cultural')) return 'cultural';
     if (subtypeLower.contains('gaming')) return 'gaming';
-    if (subtypeLower.contains('social')) return 'social';
+    if (subtypeLower.contains('hangout')) return 'hangout';
+    if (subtypeLower.contains('milestone')) return 'milestone';
     if (subtypeLower.contains('sport')) return 'sport';
     if (subtypeLower.contains('other')) return 'other';
     return 'unknown';

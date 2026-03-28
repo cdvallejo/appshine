@@ -183,7 +183,7 @@ class _MainAppState extends State<MainApp> {
         Locale('es'),
         Locale('en'),
       ],
-      home: const AuthGate(),
+      home: const AuthGate(), //Checks authentication state and shows appropriate screens: home or login
     );
   }
 }
