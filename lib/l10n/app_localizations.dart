@@ -135,7 +135,7 @@ class AppLocalizations {
       'cultural': 'Cultural',
       'gaming': 'Juegos',
       'hangout': 'Quedada',
-      'milestone': 'Hito',
+      'milestone': 'Hito Vital',
       'sport': 'Deporte',
       'gallery': 'Galería',
       'camera': 'Cámara',

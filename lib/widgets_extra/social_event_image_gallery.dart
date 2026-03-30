@@ -1,3 +1,4 @@
+import 'package:appshine/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -14,7 +15,7 @@ class SocialEventImageGallery extends StatefulWidget {
   /// List of existing image filenames saved in this moment (optional).
   /// If not provided, defaults to empty list.
   final List<String>? initialImageNames;
-  
+
   /// Callback fired when images are added, removed, or filtered
   final VoidCallback? onImagesChanged;
 
@@ -41,13 +42,13 @@ class SocialEventImageGallery extends StatefulWidget {
 class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   /// List of validated image names that physically exist on the device
   late List<String> _currentImageNames;
-  
+
   /// Filenames of newly selected images (not yet saved to device)
   final List<String> _newImageFileNames = [];
-  
+
   /// File objects of newly selected images (pending save)
   final List<XFile> _newImageFiles = [];
-  
+
   /// Image picker plugin instance for selecting images
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -57,7 +58,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     super.initState();
     // Initialize _currentImageNames, always accessible from the start
     _currentImageNames = List.from(widget.initialImageNames ?? []);
-    
+
     // Then validate image files asynchronously in the background
     // This filters out any images whose files were deleted manually
     _filterExistingImages();
@@ -74,7 +75,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   Future<void> _filterExistingImages() async {
     final List<String> existingImages = [];
     final initialNames = widget.initialImageNames ?? [];
-    
+
     // Check each image filename to see if the file still exists
     for (String imageName in initialNames) {
       final imagePath = await _getImagePath(imageName);
@@ -83,13 +84,13 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         existingImages.add(imageName);
       }
     }
-    
+
     // Only update if the list changed (avoid unnecessary rebuilds)
     if (existingImages.length != _currentImageNames.length) {
       setState(() {
         _currentImageNames = existingImages;
       });
-      
+
       // Notify parent widget that images were filtered/removed
       widget.onImagesChanged?.call();
     }
@@ -100,14 +101,16 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
 
   /// Returns images that were deleted (exist in past list but not in current list)
   List<String> getDeletedImageNames(List<String> originalNames) {
-    return originalNames.where((name) => !_currentImageNames.contains(name)).toList();
+    return originalNames
+        .where((name) => !_currentImageNames.contains(name))
+        .toList();
   }
 
   /// Returns newly selected image files (not yet saved to device)
   List<XFile> getNewImageFiles() => _newImageFiles;
 
   /// Opens image picker to select multiple images from camera or gallery.
-  /// 
+  ///
   /// Behavior:
   /// * Gallery: allows selecting multiple images at once.
   /// * Camera: captures a single photo.
@@ -129,7 +132,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         );
         pickedFiles = pickedFile != null ? [pickedFile] : [];
       }
-      
+
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _newImageFiles.addAll(pickedFiles);
@@ -139,9 +142,9 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking images: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
       }
     }
   }
@@ -169,7 +172,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     try {
       // Get app's documents directory for primary storage
       final appDocDir = await getApplicationDocumentsDirectory();
-      
+
       final appshineImagesDir = Directory('${appDocDir.path}/Appshine Images');
 
       if (!await appshineImagesDir.exists()) {
@@ -179,7 +182,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
       // Prepare Pictures directory for gallery visibility
       const picturesPath = '/storage/emulated/0/Pictures';
       final galleryImagesDir = Directory('$picturesPath/Appshine Images');
-      
+
       if (!await galleryImagesDir.exists()) {
         await galleryImagesDir.create(recursive: true);
       }
@@ -198,29 +201,36 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         try {
           final XFile imageFile = _newImageFiles[i];
           final File sourceFile = File(imageFile.path);
-          
+
           final String fileName = '${baseTimestamp}_${i}_${imageFile.name}';
-          
+
           // Save PRIMARY copy to app's documents directory
           final String appDocPath = '${appshineImagesDir.path}/$fileName';
           await sourceFile.copy(appDocPath);
           newFileNames.add(fileName);
-          
+
           // Generate and save thumbnail (150×150px square for social events)
           final String thumbnailPath = '${thumbnailsDir.path}/$fileName';
-          await ImageThumbnailService.generateThumbnail(appDocPath, thumbnailPath, width: 150, height: 150);
-          
+          await ImageThumbnailService.generateThumbnail(
+            appDocPath,
+            thumbnailPath,
+            width: 150,
+            height: 150,
+          );
+
           // Save SECONDARY copy to Pictures folder for gallery visibility
           final String galleryPath = '${galleryImagesDir.path}/$fileName';
           await sourceFile.copy(galleryPath);
-          
+
           // Notify Android media scanner
           const platform = MethodChannel('com.carlosvallejo.appshine/gallery');
           try {
             await platform.invokeMethod('scanFile', {'path': galleryPath});
           } catch (e) {
             try {
-              await platform.invokeMethod('scanFile', {'path': galleryImagesDir.path});
+              await platform.invokeMethod('scanFile', {
+                'path': galleryImagesDir.path,
+              });
             } catch (_) {
               // Media scanner is non-critical
             }
@@ -243,13 +253,13 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
         _newImageFiles.clear();
         _newImageFileNames.clear();
       });
-      
+
       return _currentImageNames;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving images: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving images: $e')));
       }
       rethrow;
     }
@@ -266,13 +276,11 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
   ///   * Empty state message (if no images)
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Images',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        const Text('Images', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         // BUTTONS: Camera and Gallery pickers (allow multi-select)
         Row(
@@ -301,8 +309,10 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
             children: [
               // SECTION 1: Display already existing images (validated, file exists)
               if (_currentImageNames.isNotEmpty) ...[
-                const Text('Existing Images:',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  'Existing Images:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 100,
@@ -317,7 +327,9 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: FutureBuilder<String>(
-                                future: _getImagePath(_currentImageNames[index]),
+                                future: _getImagePath(
+                                  _currentImageNames[index],
+                                ),
                                 builder: (context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return Container(
@@ -325,7 +337,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
                                       height: 100,
                                       color: Colors.grey[200],
                                       child: const Center(
-                                          child: CircularProgressIndicator()),
+                                        child: CircularProgressIndicator(),
+                                      ),
                                     );
                                   }
                                   final imagePath = snapshot.data!;
@@ -342,7 +355,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
                                           height: 100,
                                           color: Colors.grey[200],
                                           child: const Icon(
-                                              Icons.image_not_supported),
+                                            Icons.image_not_supported,
+                                          ),
                                         );
                                 },
                               ),
@@ -384,8 +398,10 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
               // SECTION 2: Display newly selected images (pending save)
               // These are shown in a different color to indicate they're not saved yet
               if (_newImageFileNames.isNotEmpty) ...[
-                const Text('New Images:',
-                    style: TextStyle(fontSize: 12, color: Colors.green)),
+                const Text(
+                  'New Images:',
+                  style: TextStyle(fontSize: 12, color: Colors.green),
+                ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 100,
@@ -449,8 +465,8 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             color: Colors.grey[200],
-            child: const Text(
-              'No images added yet',
+            child: Text(
+              loc.translate('noImagesAdded'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -472,7 +488,7 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
       // Delete from primary location (app documents directory)
       final primaryPath = await _getImagePath(fileName);
       final primaryFile = File(primaryPath);
-      
+
       if (await primaryFile.exists()) {
         await primaryFile.delete();
       }
@@ -481,15 +497,15 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
       const picturesPath = '/storage/emulated/0/Pictures';
       final galleryPath = '$picturesPath/Appshine Images/$fileName';
       final galleryFile = File(galleryPath);
-      
+
       if (await galleryFile.exists()) {
         await galleryFile.delete();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error deleting image: $e')));
       }
     }
   }
