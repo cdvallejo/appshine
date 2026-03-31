@@ -22,7 +22,7 @@ void main() {
   group('Book Model Tests', () {
     /// Test 1: Crear un Book válido desde JSON de Open Library
     test('Book.fromJson() - debería crear un libro válido desde JSON', () {
-      // Arrange
+      // Arranque de datos de prueba
       final json = {
         'key': 'OL45883W',
         'title': '1984',
@@ -267,7 +267,6 @@ void main() {
       expect(locEn.translate('save'), equals('Save'));
       // Comprobación de palabras y sus traducciones
       expect(locEs.translate('cancel'), equals('Cancelar'));
-      expect(locEn.translate('cancel'), equals('Cancel'));
       expect(locEs.getMonthName(1), equals('Enero'));
       expect(locEn.getMonthName(1), equals('January'));
       expect(locEs.translate('clave_inexistente'), equals('clave_inexistente'));

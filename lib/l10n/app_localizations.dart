@@ -79,6 +79,14 @@ class AppLocalizations {
       'insightsComing': 'Insights - Próximamente',
       'closeSessionTitle': 'Cerrar sesión',
       'closeSessionMessage': '¿Estás seguro de que quieres cerrar sesión?',
+      'about': 'Acerca de Appshine',
+
+      // About Screen
+      'aboutDescription': 'Appshine es una aplicación diseñada como proyecto final del ciclo de Formación Profesional: Desarrollo de Aplicaciones Multiplataforma en el IES Aguadulce, presentada en el segundo trimestre de 2026.',
+      'aboutAPIs': 'Acerca de las APIs',
+      'aboutAPIsDescription': 'Appshine utiliza las siguientes APIs para obtener información de películas, series y libros.',
+      'movieOrTvs': 'Películas y Series:',
+      'bookOrComics': 'Libros y Cómic:',
 
       // General fields
       'writeNote': 'Escribe aquí una nota.',
@@ -146,8 +154,7 @@ class AppLocalizations {
       // Moment Detail Screen
       'detail': 'Detalle',
       'deleteConfirmTitle': 'Eliminar momento',
-      'deleteConfirmMessage':
-          '¿Estás seguro? Esta acción no se puede deshacer.',
+      'deleteConfirmMessage': '¿Estás seguro? Esta acción no se puede deshacer.',
 
       // Update Moment Sheet
       'editMoment': 'Editar momento',
@@ -260,6 +267,14 @@ class AppLocalizations {
       'insightsComing': 'Insights - Coming soon',
       'closeSessionTitle': 'Close session',
       'closeSessionMessage': 'Are you sure you want to close the session?',
+      'about': 'About Appshine',
+
+      // About Screen
+      'aboutDescription': 'Appshine is an application developed as a final project for the Multiplatform Application Development vocational program at IES Aguadulce, presented in the second term of 2026.',
+      'aboutAPIs': 'About APIs',
+      'aboutAPIsDescription': 'Appshine uses the following APIs to fetch information about movies, series and books.',
+      'movieOrTvs': 'Movies and TV Series:',
+      'bookOrComics': 'Books and Comics:',
 
       // Media Screen
       'addMovieMoment': 'Add Movie Moment',

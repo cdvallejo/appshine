@@ -1,3 +1,4 @@
+import 'package:appshine/screens/about_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:appshine/l10n/app_localizations.dart';
@@ -20,17 +21,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    
+
     // Update selected language from context
     _selectedLanguage = loc.locale.languageCode;
-    
+
     // Sync dark mode state with current theme
     _darkModeEnabled = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.settings),
-      ),
+      appBar: AppBar(title: Text(loc.settings)),
       body: ListView(
         children: [
           // LANGUAGE SECTION
@@ -77,7 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          // DARK MODE SECTION
+          // THEME MODE SECTION
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -106,6 +105,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   },
                 ),
+              ],
+            ),
+          ),
+          const Divider(height: 32),
+
+          // ABOUT SECTION
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  ),
+                  child: Text(
+                    loc.translate('about'),
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+          
               ],
             ),
           ),
