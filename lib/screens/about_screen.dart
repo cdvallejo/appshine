@@ -37,7 +37,7 @@ class AboutScreen extends StatelessWidget {
     ).textTheme.bodyMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
     final sectionLabelStyle = Theme.of(
       context,
-    ).textTheme.bodyMedium?.copyWith(fontSize: 14, fontWeight: FontWeight.w600);
+    ).textTheme.bodyMedium?.copyWith(fontSize: 14);
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.translate('about'))),
@@ -68,8 +68,6 @@ class AboutScreen extends StatelessWidget {
             const Divider(height: 32),
             Text(loc.translate('aboutAPIs'), style: sectionTitleStyle),
             const SizedBox(height: 16),
-            Text(loc.translate('aboutAPIsDescription'), style: bodyStyle),
-            const SizedBox(height: 26),
             Text(loc.translate('movieOrTvs'), style: sectionLabelStyle),
             const SizedBox(height: 26),
             Center(
@@ -78,8 +76,9 @@ class AboutScreen extends StatelessWidget {
                 height: 100,
               ),
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 32),
             Text(loc.translate('bookOrComics'), style: sectionLabelStyle),
+            const SizedBox(height: 26),
             Center(
               child: Image.asset(
                 'assets/images/open_library_logo.png',
