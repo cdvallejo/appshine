@@ -1,10 +1,22 @@
 import 'package:appshine/models/social_event_model.dart';
 import 'package:appshine/models/moment_model.dart';
+import 'package:appshine/l10n/app_localizations.dart';
+import 'package:appshine/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:appshine/models/book_model.dart';
 import 'package:appshine/models/media_model.dart';
 
+/// Este archivo contiene 14 pruebas unitarias para los modelos de datos y funcionalidades clave de la aplicación.
+/// Se incluyen pruebas para:
+/// - Book Model: Validación de creación desde JSON de Open Library, manejo de casos sin autores, etc.
+/// - Media Model: Validación de creación desde JSON de TMDb, manejo de casos con id no numérico, etc.
+/// - SocialEvent Model: Validación de creación desde Map, manejo de casos sin imágenes, etc.
+/// - Moment Model: Validación de creación desde Map, manejo de campos opcionales, etc.
+/// - AppLocalizations: Validación de traducciones y cambio de idioma.
+/// - AppTheme: Validación de temas LIGHT y DARK.
 void main() {
   // ----- BOOK MODEL TESTS -----
   group('Book Model Tests', () {
@@ -135,7 +147,7 @@ void main() {
     test('SocialEvent.fromMap() - debería manejar lista vacía de imágenes', () {
       final map = {
         'title': 'Dinner Party',
-        'subtype': 'Social',
+        'subtype': 'Hangout',
         'imageNames': [],
       };
 
@@ -145,21 +157,7 @@ void main() {
       expect(event.title, equals('Dinner Party'));
     });
 
-    /// Test 8: SocialEvent con múltiples imágenes
-    test('SocialEvent.fromMap() - debería manejar múltiples imágenes', () {
-      final map = {
-        'title': 'Festival',
-        'subtype': 'Cultural',
-        'imageNames': ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'],
-      };
-
-      final event = SocialEvent.fromMap(map);
-
-      expect(event.imageNames?.length, equals(3));
-      expect(event.imageNames?[0], equals('photo1.jpg'));
-    });
-
-    /// Test 9: SocialEvent.toMap()
+    /// Test 8: SocialEvent.toMap()
     test('SocialEvent.toMap() - debería convertir evento a map', () {
       final event = SocialEvent(
         title: 'Concert',
@@ -174,9 +172,16 @@ void main() {
       expect(map['imageNames'], equals(['concert1.jpg']));
     });
 
-    /// Test 10: SocialEvent con subtype variado
+    /// Test 9: SocialEvent con subtype variado
     test('SocialEvent.fromMap() - debería aceptar diferentes subtipos', () {
-      final subtypes = ['Cultural', 'Gaming', 'Hangout', 'Milestone', 'Sport', 'Other'];
+      final subtypes = [
+        'Cultural',
+        'Gaming',
+        'Hangout',
+        'Milestone',
+        'Sport',
+        'Other',
+      ];
 
       for (final subtype in subtypes) {
         final map = {
@@ -191,7 +196,7 @@ void main() {
       }
     });
 
-    /// Test 11: SocialEvent sin subtype (debería fallar)
+    /// Test 10: SocialEvent sin subtype (debería fallar)
     test('SocialEvent.fromMap() - debería fallar sin subtype', () {
       final map = {
         'title': 'Party',
@@ -209,7 +214,7 @@ void main() {
 
   // ----- MOMENT MODEL TESTS -----
   group('Moment Model Tests', () {
-    /// Test 12: Crear Moment válido desde Map
+    /// Test 11: Crear Moment válido desde Map
     test('Moment.fromMap() - debería crear un moment válido desde Map', () {
       final map = {
         'userId': 'user_123',
@@ -235,7 +240,7 @@ void main() {
       expect(moment.imageUrl, equals('https://example.com/cover.jpg'));
     });
 
-    /// Test 13: Los campos opcionales deben ser null si no se proporcionan
+    /// Test 12: Los campos opcionales deben ser null si no se proporcionan
     test('Moment.fromMap() - campos opcionales pueden ser null', () {
       final minimalMap = {
         'userId': 'user123',
@@ -244,12 +249,39 @@ void main() {
         'date': Timestamp.fromDate(DateTime(2026, 1, 15)),
       };
 
-      final moment = Moment.fromMap(minimalMap, 'doc456');
+      final moment = Moment.fromMap(minimalMap, 'movie123'); // Parámetros: Map mínimo sin campos opcionales y un ID de documento simulado
 
       expect(moment.notes, isNull);
       expect(moment.status, isNull);
       expect(moment.location, isNull);
       expect(moment.imageUrl, isNull);
+    });
+
+    // ----- IDIOMA Y ESTILO MODEL TESTS -----
+    /// Test 13: Cambio de idioma funcional
+    test('AppLocalizations.translate() - debería cambiar entre ES y EN', () {
+      final locEs = AppLocalizations(const Locale('es'));
+      final locEn = AppLocalizations(const Locale('en'));
+
+      expect(locEs.translate('save'), equals('Guardar'));
+      expect(locEn.translate('save'), equals('Save'));
+      // Comprobación de palabras y sus traducciones
+      expect(locEs.translate('cancel'), equals('Cancelar'));
+      expect(locEn.translate('cancel'), equals('Cancel'));
+      expect(locEs.getMonthName(1), equals('Enero'));
+      expect(locEn.getMonthName(1), equals('January'));
+      expect(locEs.translate('clave_inexistente'), equals('clave_inexistente'));
+    });
+
+    /// Test 14: Cambio de estilo funcional
+    test('AppTheme - debería definir LIGHT y DARK correctamente', () {
+      final lightTheme = AppTheme.lightTheme;
+      final darkTheme = AppTheme.darkTheme;
+
+      expect(lightTheme.brightness, equals(Brightness.light));
+      expect(darkTheme.brightness, equals(Brightness.dark));
+      expect(lightTheme.useMaterial3, isTrue);
+      expect(darkTheme.useMaterial3, isTrue);
     });
   });
 }

@@ -151,20 +151,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: 250,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.admin_panel_settings),
-                          label: const Text('Create Admin User'),
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AdminScreen(),
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 )
@@ -302,7 +288,10 @@ class HomeScreen extends StatelessWidget {
                             ),
                             // Trailing with icon moment and onTap for future detail
                             trailing: Icon(
-                              _getMomentIconSmall(data['type'], data['subtype']),
+                              _getMomentIconSmall(
+                                data['type'],
+                                data['subtype'],
+                              ),
                               size: 20,
                               color: Theme.of(
                                 context,
@@ -699,7 +688,7 @@ class HomeScreen extends StatelessWidget {
   /// 2. For media/books: Try local thumbnail (generated at 100×150, displayed at 50×75)
   /// 3. Network URL fallback with CachedNetworkImage for disk caching
   /// 4. Icon placeholder as last resort
-  /// 
+  ///
   /// Parameters:
   ///   * [type] - The moment type ('media', 'book', 'socialEvent')
   ///   * [imageNames] - List of local image file names (for social events)
@@ -708,10 +697,10 @@ class HomeScreen extends StatelessWidget {
   ///   * [imageFileName] - The local image file name for media/books (if available)
   /// Returns:
   ///  A widget displaying the moment image or the icon with intelligent loading and fallbacks
-  /// 
+  ///
   /// Notes:
   /// - For social events, we expect `imageNames` to be a list of local file names. We use the first one for the thumbnail.
- 
+
   Widget _buildMomentImage(
     String type,
     dynamic imageNames,
@@ -722,7 +711,9 @@ class HomeScreen extends StatelessWidget {
     // Determine if we have local content (display: 50×75)
     String? localFileName;
 
-    if (type == 'socialEvent' && imageNames != null && (imageNames as List).isNotEmpty) {
+    if (type == 'socialEvent' &&
+        imageNames != null &&
+        (imageNames as List).isNotEmpty) {
       localFileName = imageNames[0];
     } else if ((type == 'media' || type == 'book') && imageFileName != null) {
       localFileName = imageFileName;
@@ -744,19 +735,15 @@ class HomeScreen extends StatelessWidget {
 
   /// Builds a local thumbnail (50×75).
   /// Attempts to load a local thumbnail image. If the file doesn't exist or fails to load, shows an icon.
-  /// 
+  ///
   /// Parameters:
   /// * [fileName] - The local file name of the thumbnail image
   /// * [type] - The moment type (used for icon fallback)
   /// * [subtype] - The moment subtype (used for icon fallback)
-  /// 
+  ///
   /// Returns:
   /// A widget that displays the local thumbnail if it exists, otherwise falls back to an icon.
-  Widget _buildLocalThumbnail(
-    String fileName,
-    String type,
-    String subtype,
-  ) {
+  Widget _buildLocalThumbnail(String fileName, String type, String subtype) {
     return FutureBuilder<String>(
       future: ImageThumbnailService.getThumbnailPath(fileName),
       builder: (context, snapshot) {
@@ -790,19 +777,15 @@ class HomeScreen extends StatelessWidget {
 
   /// Builds a network image with CachedNetworkImage (50×75).
   /// Includes placeholder while loading and error widget fallback to icon.
-  /// 
+  ///
   /// Parameters:
   ///  * [imageUrl] - The URL of the image to load
   ///  * [type] - The moment type (used for icon fallback)
   ///  * [subtype] - The moment subtype (used for icon fallback)
-  /// 
+  ///
   /// Returns:
   /// A widget that displays the network image with caching, placeholder, and error handling
-  Widget _buildNetworkImage(
-    String imageUrl,
-    String type,
-    String subtype,
-  ) {
+  Widget _buildNetworkImage(String imageUrl, String type, String subtype) {
     return CachedNetworkImage(
       imageUrl: imageUrl,
       width: 50,
@@ -811,16 +794,14 @@ class HomeScreen extends StatelessWidget {
       // While loading: show spinner
       placeholder: (context, url) => _buildLoadingWidget(),
       // If error loading: show icon
-      errorWidget: (context, url, error) => Icon(
-        _getMomentIconBig(type, subtype),
-        size: 50,
-      ),
+      errorWidget: (context, url, error) =>
+          Icon(_getMomentIconBig(type, subtype), size: 50),
     );
   }
 
   /// Builds a loading indicator (50×75).
   /// Used as a placeholder while loading local thumbnails or network images.
-  /// 
+  ///
   /// Returns:
   /// A widget containing a centered CircularProgressIndicator with specified dimensions
   Widget _buildLoadingWidget() {
