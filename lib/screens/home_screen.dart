@@ -18,6 +18,7 @@ import 'package:grouped_list/grouped_list.dart';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:appshine/utils/image_thumbnail_service.dart';
+import 'package:appshine/utils/tutorial_manager.dart';
 import 'admin_screen.dart';
 import 'package:appshine/data/database_service.dart';
 
@@ -36,11 +37,13 @@ import 'package:appshine/data/database_service.dart';
 ///   * Floating action button to quickly add new moments (non-admin users)
 ///   * Admin panel with user management capabilities
 ///   * No drawer for admin users, settings icon on AppBar
+///   * Tutorial/onboarding flow for new non-admin users (managed by [TutorialManager])
 ///
 /// **Dependencies:**
 ///   * FirebaseAuth: User authentication and role checking
 ///   * Firestore: User and moment data storage
 ///   * AppLocalizations: Multi-language support
+///   * TutorialManager: Handles tutorial initialization and display
 ///
 /// Shows different content based on user roles:
 ///   * Admins: Admin Dashboard and Create Admin User buttons, settings icon on AppBar
@@ -51,11 +54,51 @@ import 'package:appshine/data/database_service.dart';
 ///   * Drawer navigation (for regular users only)
 ///   * Body with moments list or admin buttons
 ///   * Floating action button to add new moments (non-admin users only)
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   /// Creates a HomeScreen widget.
   ///
   /// The [key] parameter is optional and used to identify this widget in the widget tree.
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // GlobalKeys for tutorial targets - used by TutorialManager to highlight UI elements
+  /// Key for accessing Scaffold state (used to open/close drawer during tutorial)
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  /// Key for the FAB widget in tutorial target
+  final GlobalKey fabKey = GlobalKey();
+  
+  /// Key for the Insights button in tutorial target
+  final GlobalKey insightsKey = GlobalKey();
+  
+  /// Key for the Settings button in tutorial target
+  final GlobalKey settingsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTutorial();
+  }
+
+  /// Initializes and displays the tutorial for new non-admin users.
+  /// 
+  /// Creates a [TutorialManager] instance and delegates all tutorial logic
+  /// (checking if should show, persisting state, displaying the UI).
+  /// The tutorial is only shown once per user (tracked via SharedPreferences).
+  Future<void> _initializeTutorial() async {
+    final tutorialManager = TutorialManager(
+      context: context,
+      scaffoldKey: scaffoldKey,
+      fabKey: fabKey,
+      insightsKey: insightsKey,
+      settingsKey: settingsKey,
+    );
+    await tutorialManager.checkAndShowTutorialIfFirstTime();
+  }
 
   /// Builds the home screen widget.
   ///
@@ -65,32 +108,11 @@ class HomeScreen extends StatelessWidget {
   ///   * A body that shows admin buttons or a grouped list of moments
   ///   * A floating action button to add moments (non-admin users only)
   ///
-  /// The screen fetches user role from Firestore and displays
-  /// appropriate content. Admins see quick-access buttons to the admin panel.
-  /// Non-admin users see a grouped list of moments organized by date with newest first.
+  /// The screen fetches user role from Firestore and displays appropriate content:
+  /// - Admins see quick-access buttons to the admin panel
+  /// - Non-admin users see a grouped list of moments organized by date (newest first)
   ///
-  /// Parameters:
-  ///   * [context] - The build context
-  ///
-  /// Returns:
-  ///   A Scaffold widget containing the home screen layout
-  /// Builds the home screen widget.
-  ///
-  /// Constructs a Scaffold with:
-  ///   * An app bar with settings icon (for admins)
-  ///   * A drawer for navigation (non-admin users only)
-  ///   * A body that shows admin buttons or a grouped list of moments
-  ///   * A floating action button to add moments (non-admin users only)
-  ///
-  /// The screen fetches user role from Firestore and displays
-  /// appropriate content. Admins see quick-access buttons to the admin panel.
-  /// Non-admin users see a grouped list of moments organized by date with newest first.
-  ///
-  /// Parameters:
-  ///   * [context] - The build context
-  ///
-  /// Returns:
-  ///   A Scaffold widget containing the home screen layout
+  /// Returns a [FutureBuilder] that displays a loading indicator while fetching the user's admin status.
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -109,6 +131,7 @@ class HomeScreen extends StatelessWidget {
         }
 
         return Scaffold(
+          key: scaffoldKey,
           // --- DRAWER ---
           drawer: !isAdmin ? _buildDrawer(context, isAdmin, loc) : null,
           // --- APP BAR ---
@@ -324,6 +347,7 @@ class HomeScreen extends StatelessWidget {
           floatingActionButton:
               !isAdmin // Only show floating button for non-admin users
               ? FloatingActionButton(
+                  key: fabKey,
                   backgroundColor: AppTheme.primaryColor,
                   child: const Icon(Icons.add, color: Colors.white),
                   onPressed: () => _showAddMomentMenu(context),
@@ -357,6 +381,7 @@ class HomeScreen extends StatelessWidget {
           ),
           if (!isAdmin)
             ListTile(
+              key: insightsKey,
               leading: const Icon(Icons.insights),
               title: Text(loc.translate('insights')),
               onTap: () {
@@ -383,6 +408,7 @@ class HomeScreen extends StatelessWidget {
             ),
 
           ListTile(
+            key: settingsKey,
             leading: const Icon(Icons.settings),
             title: Text(loc.translate('settings')),
             onTap: () {
@@ -393,6 +419,8 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
+          const Divider(),
+
         ],
       ),
     );
@@ -547,10 +575,11 @@ class HomeScreen extends StatelessWidget {
       if (doc.exists) {
         return doc.data()?['isAdmin'] == true;
       }
+      return false;
     } catch (e) {
       // Error handling
+      return false;
     }
-    return false;
   }
 
   /// Gets the localized month name for the given month number.

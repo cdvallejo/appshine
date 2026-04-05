@@ -90,7 +90,7 @@ class AppLocalizations {
       // General fields
       'writeNote': 'Escribe aquí una nota.',
       'myNotes': 'Mis Notas',
-      'momentSaved': 'Momento guardado!',
+      'momentSaved': 'Momento guardado',
       'savingError': 'Error guardando el momento: ',
       'saveLocally': 'Momento guardado sólo en local. Comprueba tu conexión a Internet para sincronizar datos',
       'deleteLocally': 'Momento eliminado sólo en local. Comprueba tu conexión a Internet para sincronizar datos',
@@ -198,6 +198,18 @@ class AppLocalizations {
 
       // Admin
       'admin': 'Admin',
+
+      // Tour/Tutorial
+      'tourWelcomeTitle': '¡Bienvenido a Appshine!',
+      'tourWelcomeDesc': 'Registra tu vida cultural y social para vencer a la desmemoria y convertir tus momentos en estadísticas personales. ',
+      'tourSkip': 'Saltar Tour',
+      'tourStart': 'Iniciar Tour',
+      'tourAddNewMoments': 'Añadir Nuevos Momentos',
+      'tourAddNewMomentsDesc': 'Toca este botón para añadir nuevas películas, libros o eventos sociales a tu línea de tiempo.',
+      'tourInsights': 'Insights',
+      'tourInsightsDesc': 'Consulta aquí tus estadísticas sobre tus momentos.',
+      'tourSettings': 'Ajustes',
+      'tourSettingsDesc': 'Cambia el idioma, el estilo visual, ¡y más próximamente!',
     },
 
     //  -- ENGLISH translations --
@@ -236,7 +248,7 @@ class AppLocalizations {
       'myNotes': 'My Notes',
       'year': 'Year',
       'country': 'Country',
-      'momentSaved': 'Moment saved!',
+      'momentSaved': 'Moment saved',
       'savingError': 'Error saving the moment: ',
       'saveLocally': 'Moment saved only locally. Check your Internet connection to sync data',      
       'deleteLocally': 'Moment deleted only locally. Check your Internet connection to sync data',      
@@ -360,6 +372,18 @@ class AppLocalizations {
 
       // Admin
       'admin': 'Admin',
+
+      // Tour/Tutorial
+      'tourWelcomeTitle': 'Welcome to Appshine!',
+      'tourWelcomeDesc': 'Record your cultural and social life to overcome fading memories and transform your moments into personal insights.',
+      'tourSkip': 'Skip Tour',
+      'tourStart': 'Start Tour',
+      'tourAddNewMoments': 'Add New Moments',
+      'tourAddNewMomentsDesc': 'Tap this button to add new movies, books, or social events to your timeline.',
+      'tourInsights': 'Insights',
+      'tourInsightsDesc': 'Check your statistics about your moments.',
+      'tourSettings': 'Settings',
+      'tourSettingsDesc': 'Manage language, visual style, and much more coming soon!',
     },
   };
 
