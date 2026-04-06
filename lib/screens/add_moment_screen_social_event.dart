@@ -288,7 +288,6 @@ class _AddMomentScreenSocialEventState
                               Expanded(
                                 child: TextField(
                                   controller: _locationController,
-                                  onTap: () => _locationController.clear(),
                                   decoration: InputDecoration(
                                     hintText: loc.translate('where'),
                                     isDense: true,
