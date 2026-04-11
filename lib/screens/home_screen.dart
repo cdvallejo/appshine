@@ -87,8 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Initializes and displays the tutorial for new non-admin users.
   /// 
   /// Creates a [TutorialManager] instance and delegates all tutorial logic
-  /// (checking if should show, persisting state, displaying the UI).
-  /// The tutorial is only shown once per user (tracked via SharedPreferences).
+  /// - The tutorial is only shown once per user (tracked via SharedPreferences)
+  /// - Uses async initialization to ensure it runs after the first frame is rendered and context is available.
   Future<void> _initializeTutorial() async {
     final tutorialManager = TutorialManager(
       context: context,
@@ -533,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // SOCIAL EVENT OPTION
             ListTile(
               leading: Icon(
-                Icons.people,
+                Icons.auto_awesome,
                 color: Theme.of(context).colorScheme.primary,
               ),
               title: Text(loc.translate('socialEvent')),
@@ -545,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => AddMomentScreenSocialEvent(
                       socialEvent: SocialEvent(
                         title: loc.translate('newEvent'),
-                        subtype: 'Dinner',
+                        subtype: loc.translate('cultural'),
                       ),
                     ),
                   ),
@@ -750,7 +750,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Strategy: Try local thumbnail first, fallback to network URL, then icon
     if (localFileName != null) {
-      return _buildLocalThumbnail(localFileName, type, subtype);
+      return _buildLocalThumbnail(localFileName, imageUrl, type, subtype);
     }
 
     // No local file, try network URL
@@ -763,16 +763,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Builds a local thumbnail (50×75).
-  /// Attempts to load a local thumbnail image. If the file doesn't exist or fails to load, shows an icon.
+  /// Attempts to load a local thumbnail image. If the file doesn't exist or fails to load, falls back to network image.
   ///
   /// Parameters:
   /// * [fileName] - The local file name of the thumbnail image
+  /// * [imageUrl] - Optional network URL fallback
   /// * [type] - The moment type (used for icon fallback)
   /// * [subtype] - The moment subtype (used for icon fallback)
   ///
   /// Returns:
-  /// A widget that displays the local thumbnail if it exists, otherwise falls back to an icon.
-  Widget _buildLocalThumbnail(String fileName, String type, String subtype) {
+  ///  A widget that displays the local thumbnail if it exists, otherwise tries network URL, then icon.
+  Widget _buildLocalThumbnail(String fileName, String? imageUrl, String type, String subtype) {
     return FutureBuilder<String>(
       future: ImageThumbnailService.getThumbnailPath(fileName),
       builder: (context, snapshot) {
@@ -788,17 +789,23 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 50,
               height: 75,
               fit: BoxFit.scaleDown,
-              // If local file fails to load: show icon
-              errorBuilder: (context, error, stackTrace) =>
-                  Icon(_getMomentIconBig(type, subtype), size: 50),
+              // If local file fails to load: try network image
+              errorBuilder: (context, error, stackTrace) {
+                if (imageUrl != null) {
+                  return _buildNetworkImage(imageUrl, type, subtype);
+                }
+                return Icon(_getMomentIconBig(type, subtype), size: 50);
+              },
             );
           }
         }
 
-        // TODO: Thumbnail missing - implement lazy regeneration or maintenance task
-        // If thumbnail file doesn't exist for media/book/socialEvent, could attempt to regenerate
-        // from original image using ImageThumbnailService.regenerateThumbnail()
-        // File doesn't exist → show icon
+        // Local thumbnail doesn't exist → fallback to network URL
+        if (imageUrl != null) {
+          return _buildNetworkImage(imageUrl, type, subtype);
+        }
+
+        // No local file and no network URL → show icon
         return Icon(_getMomentIconBig(type, subtype), size: 50);
       },
     );

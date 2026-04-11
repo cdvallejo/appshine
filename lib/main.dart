@@ -15,7 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 2. Sets up Firebase with platform-specific options
 /// 3. Loads environment variables from .env file
 /// 4. Runs the [MainApp] root widget
-///
+/// 
 /// Must be called as the entry point of the application.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,8 +44,7 @@ void main() async {
 /// The [setLocale] static method can be called from any [BuildContext] to
 /// change the application language at runtime.
 ///
-/// See also:
-/// * [_MainAppState], which manages the locale and provides the UI
+/// Also [_MainAppState], which manages the locale and provides the UI
 class MainApp extends StatefulWidget {
   /// Creates a [MainApp] widget.
   const MainApp({super.key});
@@ -104,6 +103,7 @@ class _MainAppState extends State<MainApp> {
   /// SharedPreferences instance for persisting settings
   late SharedPreferences _prefs;
 
+  /// Initializes the state of the widget and loads the saved theme preference.
   @override
   void initState() {
     super.initState();

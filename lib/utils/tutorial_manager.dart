@@ -11,7 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// This class handles:
 /// - Checking if a tutorial should be shown (only for non-admin users on first visit)
 /// - Persisting tutorial view state using SharedPreferences
-/// - Creating tutorial targets for different UI elements (FAB, Insights, Settings)
+/// - Context and GlobalKey management for targeting UI elements in the tutorial (FAB, Insights, Settings)
+/// - Scaffold key management for opening/closing the drawer during the tutorial
 /// - Managing the tutorial coach mark and UI interactions
 class TutorialManager {
   final BuildContext context;
@@ -39,6 +40,10 @@ class TutorialManager {
   /// Skips silently if user is admin, already saw tutorial, or Firebase auth is unavailable.
   Future<void> checkAndShowTutorialIfFirstTime() async {
     try {
+      // Skip tutorial if running in testing mode
+      const isTestingMode = bool.fromEnvironment('IS_TESTING', defaultValue: false);
+      if (isTestingMode) return;
+
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 

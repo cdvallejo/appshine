@@ -23,7 +23,7 @@ import 'package:integration_test/integration_test.dart';
 /// * Visualizacion del nuevo evento en Home.
 /// 
 /// Notas: Para ejecutar esta prueba, asegúrate de tener un emulador configurado y corre el comando:
-/// `flutter test integration_test/test_integracion.dart --dart-define=IT_EMAIL=tu_usuario --dart-define=IT_PASSWORD=tu_clave`
+/// `flutter test integration_test/test_integracion.dart --dart-define=IT_EMAIL=tu_usuario --dart-define=IT_PASSWORD=tu_clave --dart-define=IS_TESTING=true`
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -102,7 +102,7 @@ void main() {
       // Inicio: siempre arrancar en estado no autenticado.
       await FirebaseAuth.instance.signOut();
       await waitStep(1500);
-      debugPrint('[IT] Cierre de sesion forzado para comenzar desde login');
+      debugPrint('[IT] Cierre de sesión forzado para comenzar desde login');
 
       // Credenciales de usuario existente para la prueba de integración.
       // Se inyectan por dart-define para no hardcodear datos reales.
@@ -169,45 +169,37 @@ void main() {
       await tester.ensureVisible(addFab);
       await waitStep(300);
       await tester.tap(addFab, warnIfMissed: false);
-      await waitStep(900);
+      await waitStep(1200); // Espera para que se abra el modal
 
       // Seleccionar opcion de evento social en el modal.
-      var socialOption = firstVisibleText(['Evento Social', 'Social Event']);
-
-      // onPressed para abrir el modal.
-      if (socialOption == null) {
-        final fabWidget = tester.widget<FloatingActionButton>(addFab);
-        fabWidget.onPressed?.call();
-        await waitStep(900);
-        socialOption = firstVisibleText(['Evento Social', 'Social Event']);
-      }
-
       await tapFirstVisibleText(
-        ['Evento Social', 'Social Event'],
+        ['Evento | Social', 'Event | Social'],
         failMessage: 'No se pudo abrir el modal de alta de momentos.',
       );
       debugPrint('[IT] Opcion de evento social seleccionada');
-      await waitStep();
+      await waitStep(3000); // Espera para que se abra la pantalla de agregar evento
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
       // Rellenar titulo.
       final fieldsInForm = find.byType(TextField);
-      expect(fieldsInForm, findsWidgets);
+      expect(fieldsInForm, findsWidgets, reason: 'Se esperaban TextFields en la pantalla de agregar evento');
       await tester.enterText(fieldsInForm.first, eventTitle);
+      await waitStep(1200); // Espera después de rellenar el título
 
       // Seleccionar subtipo desde el desplegable (Gaming/Juegos).
       await tester.tap(find.byType(DropdownButton<String>).first);
-      await waitStep();
+      await waitStep(1500); // Espera para que se abra el dropdown
 
       await tapFirstVisibleText(
         ['Juegos', 'Gaming'],
         failMessage: 'No se encontró subtipo Gaming/Juegos en el desplegable.',
       );
-      await waitStep();
+      await waitStep(1500); // Espera después de seleccionar subtipo
 
       debugPrint('[IT] Guardando evento: $eventTitle');
       // Guardar evento y volver a home.
       await tester.tap(find.byIcon(Icons.save).first);
-      await waitStep(4500);
+      await waitStep(3000); // Espera para que se guarde y vuelva a Home
 
       debugPrint('[IT] Validando que el evento aparece en home');
       // Validar que el nuevo evento aparece en la lista de home.
@@ -216,9 +208,16 @@ void main() {
         matching: find.text(eventTitle),
       );
       expect(eventInHomeList, findsAtLeastNWidgets(1));
+      debugPrint('[IT] Validación exitosa, mostrando home durante 3 segundos');
+      
+      // Mantener visible la pantalla durante 3 segundos reales
+      for (int i = 0; i < 3; i++) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      
       debugPrint('[IT] Prueba finalizada OK');
     },
-    // Timeout extendido para dar margen al flujo completo del test, incluyendo esperas activas.
+    // Timeout extendido para dar margen al flujo completo del test
     timeout: const Timeout(Duration(minutes: 2)), 
   );
 }

@@ -66,7 +66,7 @@ class AppLocalizations {
       'untitled': 'Sin título',
       'movieOrTv': 'Película | Serie de TV',
       'bookOrComic': 'Libro | Cómic',
-      'socialEvent': 'Evento Social',
+      'socialEvent': 'Evento | Social',
       'addNewMoment': 'Añadir nuevo momento',
 
       // Settings Screen
@@ -240,7 +240,7 @@ class AppLocalizations {
       'untitled': 'Untitled',
       'movieOrTv': 'Movie | TV Series',
       'bookOrComic': 'Book | Comic',
-      'socialEvent': 'Social Event',
+      'socialEvent': 'Event | Social',
       'addNewMoment': 'Add new moment',
 
       // General fields

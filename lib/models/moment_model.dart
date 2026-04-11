@@ -17,8 +17,7 @@ class Moment {
   final String? status;
   final String? location;
   final String? imageUrl;
-  // TODO:  - Raíz: Datos de identidad.
-  //        - ExtraInfo: Datos técnicos (específicos por tipo).
+  // TODO:  - ExtraInfo: Datos técnicos (específicos por tipo).
   //        - History: date y notes aquí para adminitir repeticiones.
   //        - Campos de rango para viajes.
   //        - Future extension: hashtags, mood/state, rating, etc.
@@ -56,7 +55,7 @@ class Moment {
   /// Throws [FormatException] if required fields are missing or invalid.
   factory Moment.fromMap(Map<String, dynamic> map, String docId) {
     // Validate required fields
-    if (map['userId'] == null || (map['userId'] is String && (map['userId'] as String).isEmpty)) {
+    if (map['userId'] == null || (map['userId'] is String && (map['userId'] as String).isEmpty)) { // required and must be a non-empty string
       throw FormatException('Missing required field: userId');
     }
     if (map['type'] == null || (map['type'] is String && (map['type'] as String).isEmpty)) {
