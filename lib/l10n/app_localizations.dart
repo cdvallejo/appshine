@@ -136,7 +136,7 @@ class AppLocalizations {
       'isbn': 'ISBN',
 
       // Social Event Screen
-      'addEventMoment': 'Añadir Evento Social',
+      'addEventMoment': 'Añadir Evento | Social',
       'selectEventType': 'Seleccionar tipo de evento',
       'selectEventSubtype': 'Selecciona un subtipo',
       'cultural': 'Cultural',
@@ -311,7 +311,7 @@ class AppLocalizations {
       'isbn': 'ISBN',
 
       // Social Event Screen
-      'addEventMoment': 'Add Social Event Moment',
+      'addEventMoment': 'Add Event | Event',
       'selectEventType': 'Select event type',
       'selectEventSubtype': 'Please select a subtype',
       'cultural': 'Cultural',
