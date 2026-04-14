@@ -22,21 +22,13 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
 ### Paso 1: Instalar Flutter SDK (Windows)
 
 1. **Descargar Flutter**:
-   - Ir a [flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install)
-   - Descargar la última versión estable para Windows
-   - Extraer el ZIP en una carpeta. Ej: `C:\Flutter` o `C:\src\flutter`
+   - Ir y seguir los pasos en [flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install)
+   - En el enlace podrás instalar el SDK de Flutter y agregar Flutter al PATH
+     (Recomendamos instalar desde la opción con IDE Visual Studio)
 
-2. **Agregar Flutter a PATH**:
-   - Presionar `Win + X` → Sistema
-   - Click en "Configuración avanzada del sistema"
-   - Click en "Variables de entorno"
-   - Agregar `C:\Flutter\bin` a la variable PATH
-   - Reiniciar terminal (PowerShell/CMD)
-
-3. **Verificar instalación**:
+2. **Verificar instalación**:
 ```bash
    flutter --version
-   flutter doctor
 ```
 
    **Versión requerida de Flutter**:
@@ -98,7 +90,7 @@ flutter emulators --launch Pixel_API26
 flutter doctor
 ```
 
-✅ Todo debería mostrar checkmarks verdes
+✅ Debería mostrar checkmarks verdes en todo excepto en aquellas plataformas no descargadas para emular.
 
 ---
 
@@ -124,21 +116,28 @@ flutter pub get
 
 ### 4. Ejecutar en emulador/móvil
 
+**Emulador**
+Puedes ejecutarlo desde archivo main (en el botonado que aparece con Play, Hot restart y Cancel)
+y seleccionando el emulador del listado.
+
+También, seleccionando el emulador y, desde terminal:
+
 ```bash
 # Si tienes emulador o móvil conectado:
 flutter run
-
-# Para modo release (más rápido):
-flutter run --release
 ```
 
----
+**Dispositivo Móvil**
+```bash
+# Conecta móvil por USB en modo Debug
+flutter install
+```
 
 ## 🆘 Troubleshooting
 
 | Problema | Solución |
 |----------|----------|
-| "flutter: command not found" | Reinicia terminal o agrega Flutter a PATH (ver paso 2 de instalación inicial) |
+| "flutter: command not found" | Reinicia terminal o agrega Flutter a PATH (ver paso 1 de instalación inicial) |
 | "No devices found" | Crea emulador: `flutter emulators --create --name=Pixel_API26` o conecta móvil USB |
 | "No emulators found" | Lista disponibles: `flutter emulators` y lanza uno: `flutter emulators --launch Pixel_API26` |
 | "google-services.json not found" | Verifica que esté en `android/app/google-services.json` |
@@ -175,6 +174,7 @@ integration_test/
 - **Validación de Datos**: En modelos (factory constructors) y backend (Firebase)
 - **Imágenes**: Descarga, caché local, generación de miniaturas
 - **Localización**: Español e Inglés
+- **Guía interactiva de primeros pasos**: Ejecutada en la primera ejecución de la app
 - **Documentación**: DartDoc
 - **Niveles de acceso**: Usuarios y Administradores
 - **Temas**: Light/Dark mode con persistencia
