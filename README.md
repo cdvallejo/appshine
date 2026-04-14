@@ -38,7 +38,7 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
 ### Paso 2: Ejecutar IDE
 
 1. Instalar extensiones en IDE:
-   - **Flutter** (Dart Code)
+   - **Flutter** (Dart Code) - Si seguiste la instalación desde VS ya lo tendrás
    - **Dart** (Dart Code)
 
 ### Paso 3: Instalar Android SDK
@@ -57,6 +57,8 @@ Después:
 flutter doctor --android-licenses
 # Acepta todas las licencias escribiendo "y"
 ```
+
+Nota: si da error por command-line, consulta sección Troubleshooting
 
 ### Paso 4: Crear/Usar Emulador Android
 
@@ -114,6 +116,12 @@ Revisar notas adjuntas a la entrega.
 flutter pub get
 ```
 
+Si necesitas limpiar las dependencias, ejecuta:
+```bash
+flutter clean
+flutter pub get
+```
+
 ### 4. Ejecutar en emulador/móvil
 
 **Emulador**
@@ -138,6 +146,7 @@ flutter install
 | Problema | Solución |
 |----------|----------|
 | "flutter: command not found" | Reinicia terminal o agrega Flutter a PATH (ver paso 1 de instalación inicial) |
+| "Android sdkmanager not found" | En Android Studio, instala desde Settings - Languages & Frameworks - Android SDK - Pestaña SDK Tools: Marca Android SDK Command-line Tools (latest). Pulsa Apply y OK. |
 | "No devices found" | Crea emulador: `flutter emulators --create --name=Pixel_API26` o conecta móvil USB |
 | "No emulators found" | Lista disponibles: `flutter emulators` y lanza uno: `flutter emulators --launch Pixel_API26` |
 | "google-services.json not found" | Verifica que esté en `android/app/google-services.json` |
