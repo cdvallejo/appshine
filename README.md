@@ -81,6 +81,7 @@ flutter emulators --launch Pixel_API26
 - Selecciona Pixel 4 o 5
 - Elige API 26+ (Android 8.0+)
 - Finish
+- Desde Visual Studio u otro IDE, podrás elegir este nuevo emulador
 
 **Opción C: si prefieres simplemente conecta un móvil Android real por USB en modo debug** (sin necesidad de emulador).
 - Activar modo desarrollador
