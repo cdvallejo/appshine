@@ -127,7 +127,7 @@ Si tienes el **APK precompilado** en la carpeta `Instalable/` (entregado aparte)
 
 ---
 
-## 🚀 Descargando Appshine Setup para Desarrollo
+## 🚀 Descargando Appshine: Setup para Desarrollo
 
 ### 1. Obtener el código fuente
 
