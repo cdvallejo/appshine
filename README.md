@@ -11,9 +11,15 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
 
 ## 📋 Requisitos
 
+### Para compilar desde código:
 - Flutter 3.10.3 o superior
 - Dart 3.10.3 o superior
 - Android SDK (API 26+)
+- Git (opcional, para clonar)
+
+### Para instalar APK precompilado:
+- Android 8.0+ (API 26+)
+- Sin necesidad de Flutter ni Dart
 
 ---
 
@@ -35,11 +41,19 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
    - Appshine requiere **Flutter 3.10.3 o superior**
    - Si tienes versión anterior a 3.10.3, actualiza: `flutter upgrade`
 
-### Paso 2: Ejecutar IDE
+### Paso 2: Instalar Extensiones en tu IDE
 
-1. Instalar extensiones en IDE:
-   - **Flutter** (Dart Code) - Si seguiste la instalación desde VS ya lo tendrás
+**Visual Studio Code:**
+1. Ve a Extensions (Ctrl+Shift+X) e instala:
+   - **Flutter** (Dart Code)
    - **Dart** (Dart Code)
+
+**Android Studio / Otros IDEs:**
+1. Ve a File > Settings > Plugins
+2. Busca e instala:
+   - **Dart**
+   - **Flutter**
+3. Reinicia el IDE
 
 ### Paso 3: Instalar Android SDK
 
@@ -97,19 +111,58 @@ flutter doctor
 
 ---
 
-## 🚀 Setup e Instalación
+## ⚡ Instalación Rápida (sin compilar)
 
-### 1. Clonar el repositorio
+Si tienes el **APK precompilado** en la carpeta `Instalable/` (entregado aparte):
 
+1. Conecta tu móvil Android por USB (o copia el APK a una carpeta en el móvil)
+2. Abre el explorador, tap en el APK, instala.
+
+✅ **La app estará lista para usar en tu móvil.**
+
+---
+
+**Nota**: si no tienes el APK precompilado, sigue la sección "Setup para Desarrollo" para compilarlo.
+
+---
+
+## 🚀 Setup para Desarrollo
+
+### 1. Obtener el código fuente
+
+**Descarga desde Git**
 ```bash
 git clone https://github.com/cdvallejo/appshine.git
 cd appshine
 ```
 
-### 2. **IMPORTANTE: Configurar Firebase (REQUERIDO)**
+**Opción B: Sin Git**
+- Descarga el proyecto como ZIP desde GitHub
+- Descomprime la carpeta
+- Abre `appshine/` en tu terminal
 
-Este proyecto requiere el archivo `google-services.json` para funcionar. Por motivos de seguridad, **no está incluido en el repositorio**.
-Revisar notas adjuntas a la entrega.
+### 2. **IMPORTANTE: Configurar Firebase y Variables de Entorno (REQUERIDO)**
+
+Este proyecto necesita dos archivos de configuración (proporcionados aparte por motivos de seguridad, en la carpeta Instalable del entregable):
+
+#### a) `google-services.json`
+- Coloca en: `android/app/google-services.json`
+
+#### b) `.env` 
+- Coloca en: Raíz del proyecto (mismo nivel que `pubspec.yaml`)
+- Contiene: API keys de TMDB
+
+**Estructura esperada:**
+```
+appshine/
+├── .env                           ← Aquí (proporcionado aparte)
+├── pubspec.yaml
+├── lib/
+├── android/
+│   └── app/
+│       └── google-services.json   ← Aquí (proporcionado aparte)
+└── ...
+```
 
 ### 3. Instalar dependencias
 
@@ -242,5 +295,5 @@ Emulador: Pixel 5 o similar con mínimo 2GB RAM disponible
 
 ---
 
-**Última actualización**: 14 de abril de 2026
+**Última actualización**: 15 de abril de 2026
 
