@@ -4,10 +4,10 @@
 - Centro de estudios: IES Aguadulce
 - Curso 2025 - 2026
 
-Appshine es una aplicación móvil para registrar momentos culturales y eventos sociales. Permite al usuario evitar la desmemoria y crear estadísticas de su vida cultural y social.
+Appshine es una aplicación móvil Android para registrar momentos culturales y eventos sociales. Permite al usuario evitar la desmemoria y crear estadísticas de su vida cultural y social.
 
 - Desarrollada en Flutter 
-- Autenticación Firebase y Google Sign-In 
+- Autenticación y backend Firebase 
 
 ## 📋 Requisitos
 
@@ -19,11 +19,10 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
 
 ### Para instalar APK precompilado:
 - Android 8.0+ (API 26+)
-- Sin necesidad de Flutter ni Dart
 
 ---
 
-## 🖥️ Instalación Inicial
+## 🖥️ Pasos previos: Instalación Inicial
 
 ### Paso 1: Instalar Flutter SDK (Windows)
 
@@ -44,16 +43,19 @@ Appshine es una aplicación móvil para registrar momentos culturales y eventos 
 ### Paso 2: Instalar Extensiones en tu IDE
 
 **Visual Studio Code:**
-1. Ve a Extensions (Ctrl+Shift+X) e instala:
+1. Ve a Extensions e instala:
    - **Flutter** (Dart Code)
    - **Dart** (Dart Code)
 
-**Android Studio / Otros IDEs:**
+**Android Studio**
 1. Ve a File > Settings > Plugins
 2. Busca e instala:
    - **Dart**
    - **Flutter**
 3. Reinicia el IDE
+
+**Otros IDEs:**
+Sigue los pasos necesarios para instalar Dart y Flutter
 
 ### Paso 3: Instalar Android SDK
 
@@ -72,13 +74,15 @@ flutter doctor --android-licenses
 # Acepta todas las licencias escribiendo "y"
 ```
 
-Nota: si da error por command-line, consulta sección Troubleshooting
+📝 **Nota**: si da error por command-line, consulta sección Troubleshooting
+
+---
 
 ### Paso 4: Crear/Usar Emulador Android
 
-**Opción A: Terminal (Rápido - Recomendado)**
+**Opción A: Terminal**
 ```bash
-# Crear emulador con API 26 (mínimo soportado)
+# Crear emulador con API 26 (mínimo soportado, puede ser superior)
 flutter emulators --create --name=Pixel_API26
 
 # Listar emuladores disponibles
@@ -92,10 +96,9 @@ flutter emulators --launch Pixel_API26
 - Abre Android Studio
 - AVD Manager
 - Create Virtual Device
-- Selecciona Pixel 4 o 5
-- Elige API 26+ (Android 8.0+)
+- Selecciona Pixel 4 o superior
+- Elige API 26+ (Android 8.0+) o superior
 - Finish
-- Desde Visual Studio u otro IDE, podrás elegir este nuevo emulador
 
 **Opción C: si prefieres simplemente conecta un móvil Android real por USB en modo debug** (sin necesidad de emulador).
 - Activar modo desarrollador
@@ -120,17 +123,15 @@ Si tienes el **APK precompilado** en la carpeta `Instalable/` (entregado aparte)
 
 ✅ **La app estará lista para usar en tu móvil.**
 
----
-
-**Nota**: si no tienes el APK precompilado, sigue la sección "Setup para Desarrollo" para compilarlo.
+📝 **Nota**: si no tienes el APK precompilado, sigue la sección "Setup para Desarrollo" para compilarlo.
 
 ---
 
-## 🚀 Setup para Desarrollo
+## 🚀 Descargando Appshine Setup para Desarrollo
 
 ### 1. Obtener el código fuente
 
-**Descarga desde Git**
+**Opción A: Descarga desde Git**
 ```bash
 git clone https://github.com/cdvallejo/appshine.git
 cd appshine
@@ -179,13 +180,16 @@ flutter pub get
 ### 4. Ejecutar en emulador/móvil
 
 **Emulador**
-Puedes ejecutarlo desde archivo main (en el botonado que aparece con Play, Hot restart y Cancel)
-y seleccionando el emulador del listado.
+1. Desde Visual Studio Code: En la barra inferior, selecciona el emulador en el device selector
+2. Abre `lib/main.dart` y haz clic en **Play** button
+3. Se abrirá y compilará en el emulador elegido
 
-También, seleccionando el emulador y, desde terminal:
-
+**Desde Terminal**
 ```bash
-# Si tienes emulador o móvil conectado:
+# Lanza el emulador siguiendo el paso anterior
+flutter emulators --launch <tu_nombre_emulador>
+
+# Luego ejecuta:
 flutter run
 ```
 
