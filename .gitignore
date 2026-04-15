@@ -130,3 +130,6 @@ android/app/google-services.json
 *.env
 .env.local
 firebase.json
+
+# Build outputs - APKs (local distribution only)
+Instalable/
