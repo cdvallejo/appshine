@@ -5,6 +5,21 @@ import '../models/book_model.dart';
 /// Repository for searching and enriching book data from Open Library.
 class BookRepository {
   final String _searchBaseUrl = 'https://openlibrary.org/search.json';
+  
+  // Cover URL constants (centralized)
+  static const String _coverBaseUrl = 'https://covers.openlibrary.org/b';
+  static const String _coverPlaceholder = 'https://via.placeholder.com/150x200?text=No+Cover';
+
+  /// Builds a cover URL from cover IDs.
+  /// Tries edition key first, then internal cover ID.
+  String _buildCoverUrl(String? editionKey, String? coverId) {
+    if (editionKey != null && editionKey.isNotEmpty) {
+      return '$_coverBaseUrl/olid/$editionKey-M.jpg';
+    } else if (coverId != null && coverId.isNotEmpty) {
+      return '$_coverBaseUrl/id/$coverId-M.jpg';
+    }
+    return _coverPlaceholder;
+  }
 
   /// Searches books using Open Library `search.json`.
   ///
@@ -41,11 +56,24 @@ class BookRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final docs = data['docs'] as List? ?? [];
-        return docs.map((json) => Book.fromJson(json)).toList();
+        final books = <Book>[];
+        for (final json in docs) {
+          try {
+            final book = Book.fromJson(json);
+            // Build cover URL from IDs
+            final coverUrl = _buildCoverUrl(book.editionKey, book.coverId);
+            books.add(book.copyWith(imageUrl: coverUrl));
+          } catch (e) {
+            // Skip books that fail to parse
+            print('Failed to parse book: $e');
+          }
+        }
+        return books;
       } else {
         return [];
       }
-    } catch (_) {
+    } catch (e) {
+      print('Error searching books: $e');
       return []; // If there was an error, return an empty list
     }
   }
@@ -117,16 +145,10 @@ class BookRepository {
             }
           }
 
-          return Book(
-            id: book.id,
-            title: book.title,
-            publishedDate: book.publishedDate,
-            imageUrl: book.imageUrl,
-            pageCount: pageCount ?? book.pageCount,
+          return book.copyWith(
+            pageCount: pageCount,
             isbn: isbn,
             publisher: publisher,
-            editionKey: book.editionKey,
-            authors: book.authors,
             subtype: 'Novel',
           );
         }

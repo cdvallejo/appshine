@@ -16,6 +16,7 @@ class Book {
   final String? isbn;
   final String? publisher;
   final String? editionKey;
+  final String? coverId; // Internal Cover ID from Open Library (cover_i)
   final String subtype;
   List<String> authors;
 
@@ -43,6 +44,7 @@ class Book {
     this.isbn,
     this.publisher,
     this.editionKey,
+    this.coverId,
     
   });
 
@@ -57,24 +59,21 @@ class Book {
   /// Throws [FormatException] if required fields are missing.
   factory Book.fromJson(Map<String, dynamic> json) {
     // Validate required fields
-    if (json['key'] == null || (json['key'] is String && (json['key'] as String).isEmpty)) {
-      throw FormatException('Missing required field: key (Open Library ID)');
+    final key = json['key'];
+    if (key == null || (key is! String) || (key).isEmpty) {
+      throw FormatException('Missing or invalid required field: key (Open Library ID)');
     }
-    if (json['title'] == null || (json['title'] is String && (json['title'] as String).isEmpty)) {
-      throw FormatException('Missing required field: title');
+    
+    final title = json['title'];
+    if (title == null || (title is! String) || (title).isEmpty) {
+      throw FormatException('Missing or invalid required field: title');
     }
 
     // Open Library covers: https://covers.openlibrary.org/b/$key/$value-$size.jpg
-    String? coverUrl;
-    
-    // Priority 1: cover_edition_key (OLID - Open Library ID)
-    if (json['cover_edition_key'] != null) {
-      coverUrl = 'https://covers.openlibrary.org/b/olid/${json['cover_edition_key']}-M.jpg';
-    } 
-    // Priority 2: cover_i (Internal Cover ID)
-    else if (json['cover_i'] != null) {
-      coverUrl = 'https://covers.openlibrary.org/b/id/${json['cover_i']}-M.jpg';
-    }
+    // Repository will construct the URL from these IDs
+    // Note: cover_i may be a number, so convert to string if present
+    String? coverEditionKey = json['cover_edition_key']?.toString();
+    String? coverId = json['cover_i']?.toString();
 
     List<String>? authors;
     if (json['author_name'] is List && (json['author_name'] as List).isNotEmpty) {
@@ -95,9 +94,6 @@ class Book {
     if (json['isbn'] is List && (json['isbn'] as List).isNotEmpty) {
       isbn = (json['isbn'] as List)[0].toString();
     }
-    
-    // Extract edition key (OLID) for direct API access
-    String? editionKey = json['cover_edition_key'] as String?;
 
     // Extract page count (if available)
     int? pageCount;
@@ -115,11 +111,12 @@ class Book {
     }
 
     return Book(
-      id: (json['key'] as String).split('/').last.trim(),
-      title: (json['title'] as String).trim(),
-      imageUrl: coverUrl,
+      id: (key).split('/').last.trim(),
+      title: (title).trim(),
+      imageUrl: null, // Repository will construct the URL
       isbn: isbn,
-      editionKey: editionKey,
+      editionKey: coverEditionKey,
+      coverId: coverId,
       publisher: publisher,
       authors: authors,
       publishedDate: publishedDate,
@@ -184,6 +181,7 @@ class Book {
     String? isbn,
     String? publisher,
     String? editionKey,
+    String? coverId,
     String? subtype,
     List<String>? authors,
   }) {
@@ -196,6 +194,7 @@ class Book {
       isbn: isbn ?? this.isbn,
       publisher: publisher ?? this.publisher,
       editionKey: editionKey ?? this.editionKey,
+      coverId: coverId ?? this.coverId,
       subtype: subtype ?? this.subtype,
       authors: authors ?? this.authors,
     );

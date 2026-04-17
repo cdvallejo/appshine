@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:appshine/utils/image_thumbnail_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Widget to manage image gallery for social events.
 ///
@@ -170,6 +171,22 @@ class SocialEventImageGalleryState extends State<SocialEventImageGallery> {
     if (_newImageFiles.isEmpty) return _currentImageNames;
 
     try {
+      // Request WRITE_EXTERNAL_STORAGE permission for Android (API 26+)
+      final loc = AppLocalizations.of(context);
+      final PermissionStatus status = await Permission.photos.request();
+      
+      if (!status.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.translate('errorSavingImages')),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        return _currentImageNames;
+      }
+
       // Get app's documents directory for primary storage
       final appDocDir = await getApplicationDocumentsDirectory();
 
