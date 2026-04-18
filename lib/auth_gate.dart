@@ -26,7 +26,7 @@ class AuthGate extends StatelessWidget {
   /// Uses [StreamBuilder<User?>] to listen to Firebase authentication state changes.
   /// This approach is chosen for:
   /// - Automatic reactivity: rebuilds UI whenever auth state changes (login, logout, etc.)
-  /// - Memory efficiency: no constant polling or timers
+  /// - Memory efficiency
   /// - Native Firebase integration: direct support for auth state streams
   /// - Clean architecture: UI responds to state without manual listeners or callbacks
   ///

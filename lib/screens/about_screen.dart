@@ -9,8 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// 2. A short project description.
 /// 3. API attribution content and logos (TMDB and Open Library).
 ///
-/// The content is wrapped in a [SingleChildScrollView] to keep it usable
-/// on small screens and avoid overflow.
+/// The content is wrapped in a [SingleChildScrollView] to keep it usable on small screens and avoid overflow.
 class AboutScreen extends StatelessWidget {
   /// Creates the About screen.
   const AboutScreen({super.key});

@@ -64,6 +64,17 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// State class for HomeScreen, managing the UI and logic for displaying moments and admin features.
+/// 
+/// This state handles:
+/// * Fetching the user's admin status from Firestore
+/// * Displaying Home Screen for admin or regular users based on their role
+/// * Displaying a grouped list of moments for regular users
+/// * Managing the tutorial flow for new non-admin users using [TutorialManager]
+/// * Handling navigation to detail and add screens for moments
+/// * Providing localized date formatting and UI text using [AppLocalizations]
+/// * Managing the drawer navigation for regular users
+/// * Handling the floating action button to add new moments (non-admin users only)
 class _HomeScreenState extends State<HomeScreen> {
   // GlobalKeys for tutorial targets - used by TutorialManager to highlight UI elements
   /// Key for accessing Scaffold state (used to open/close drawer during tutorial)

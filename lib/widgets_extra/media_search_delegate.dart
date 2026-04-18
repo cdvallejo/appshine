@@ -7,8 +7,6 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
   final MediaRepository _repo = MediaRepository();
   final String searchLabel;
 
-  /// Constructor requires searchLabel parameter because the [searchFieldLabel] getter
-  /// doesn't have access to BuildContext, so we pass the localized text here
   MediaSearchDelegate({required this.searchLabel});
 
   @override

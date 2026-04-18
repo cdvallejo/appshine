@@ -201,6 +201,7 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Media details section: Editable fields
+                  // LAZY LOAD: Extra TMDB API request to fetch additional details: country, genres, directors...
                   FutureBuilder<Media>(
                     future: _mediaRepository.getMovieDetails(
                       widget.media,

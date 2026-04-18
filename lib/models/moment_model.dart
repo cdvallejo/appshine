@@ -71,7 +71,7 @@ class Moment {
     // Safe enum parsing with validation
     final typeString = map['type'] as String;
     final type = MomentType.values.cast<MomentType?>().firstWhere(
-      (e) => e?.name == typeString,
+      (e) => e?.name == typeString, // Check if the string matches any enum name
       orElse: () => null,
     );
     if (type == null) {

@@ -20,13 +20,10 @@ class DatabaseService {
   ///   * Exception if user was deleted from Firebase Auth
   Future<void> _validateUserExists() async {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
+    if (user == null) throw Exception('User not authenticated'); // Check if user is in local cache
 
     try {
-      await user.reload();
-      if (_auth.currentUser == null) {
-        throw Exception('User account was deleted');
-      }
+      await user.reload(); // Reload user data from server to detect if account was deleted
     } catch (e) {
       throw Exception('User authentication invalid: $e');
     }
@@ -55,8 +52,8 @@ class DatabaseService {
     // Validate user exists and is authenticated
     await _validateUserExists();
     
-    final user = _auth.currentUser;
-    if (user == null) throw Exception('User not identified');
+    final user = _auth.currentUser; // Get the current user after validation
+    if (user == null) throw Exception('User not identified'); // Extra check validation
 
     try {
       // 1. Download image from API and generate thumbnail (if imageUrl available)
