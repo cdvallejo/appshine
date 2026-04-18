@@ -127,7 +127,7 @@ Si tienes el **APK precompilado** en la carpeta `Instalable/` (entregado aparte)
 
 ---
 
-## 🚀 Descargando Appshine: Setup para Desarrollo
+## 🚀 Descargando el proycto de Appshine
 
 ### 1. Obtener el código fuente
 
@@ -299,5 +299,15 @@ Emulador: Pixel 5 o similar con mínimo 2GB RAM disponible
 
 ---
 
-**Última actualización**: 15 de abril de 2026
+### 🖼️ Capturas de Appshine
+
+|                                                                                                          |                                                                                                          |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| <img src="https://github.com/user-attachments/assets/aab0235b-bd57-4c5d-9bb6-b0d20df5f6ce" width="230"/> | <img src="https://github.com/user-attachments/assets/49f79fd3-c05d-4f59-be20-c8e462ee63ec" width="230"/> |
+| <img src="https://github.com/user-attachments/assets/aa498e4c-d018-4f87-8e5c-15595703a841" width="230"/> | <img src="https://github.com/user-attachments/assets/866522ea-8d2b-4597-b4d5-2239a76785e7" width="230"/> |
+| <img src="https://github.com/user-attachments/assets/258d0ffe-7f60-463d-8761-882ac902ee5f" width="230"/> | <img src="https://github.com/user-attachments/assets/1067119a-63d4-47db-944e-311aed17b1d6" width="230"/> |
+                                                                                                         |
+---
+
+**Última actualización**: 18 de abril de 2026
 
