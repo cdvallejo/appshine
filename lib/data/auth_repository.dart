@@ -2,11 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// Repository for handling user authentication and related Firestore operations.
-/// 
-/// Provides a clean interface for the rest of the app to use for
-/// signing up, signing in, signing out, and Google Sign-In functionality.
-/// 
+/// Repository for Firebase Authentication and Firestore user management.
+///
+/// Provides methods for email/password authentication, Google Sign-In, and sign-out.
 class AuthRepository {
   /// Firebase Authentication instance for handling user authentication
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -25,17 +23,13 @@ class AuthRepository {
 
   /// Creates a new user account with email and password.
   ///
-  /// Creates a Firebase Authentication user and a corresponding document in Firestore
-  /// with the user's basic information. All new users are set as non-admin by default.
+  /// Also creates a Firestore user document with basic information (all users start as non-admin).
   ///
   /// Parameters:
-  /// * [email]: The email address for the new account.
-  /// * [password]: The password for the new account.
+  /// * [email] - The email address for the new account
+  /// * [password] - The password for the new account
   ///
-  /// Returns:
-  /// * Completes when the account is created successfully.
-  ///
-  /// Throws [Exception] if account creation fails (e.g., invalid email, weak password, email already in use).
+  /// Throws [Exception] if account creation fails (invalid email, weak password, email already in use).
   Future<void> signUp({required String email, required String password}) async {
     try {
       // User creation with Firebase Auth
@@ -61,17 +55,11 @@ class AuthRepository {
 
   /// Authenticates a user with email and password.
   ///
-  /// Validates user credentials against Firebase Authentication and logs in the user
-  /// if the credentials are correct. Persists the session on the device.
-  ///
   /// Parameters:
-  /// * [email]: The user's email address.
-  /// * [password]: The user's password.
+  /// * [email] - The user's email address
+  /// * [password] - The user's password
   ///
-  /// Returns:
-  /// * Completes when authentication is successful.
-  ///
-  /// Throws [Exception] if authentication fails (e.g., incorrect credentials, user not found).
+  /// Throws [Exception] if authentication fails (incorrect credentials or user not found).
   Future<void> signIn({required String email, required String password}) async {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(
@@ -85,11 +73,7 @@ class AuthRepository {
 
   /// Signs out the currently authenticated user.
   ///
-  /// Clears the authentication session from Firebase and revokes access tokens
-  /// from Google Sign-In if the user was logged in via Google OAuth.
-  ///
-  /// Returns:
-  /// * Completes when the sign-out process is finished.
+  /// Clears the authentication session and revokes Google OAuth tokens if applicable.
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
     await _googleSignIn.signOut();
@@ -97,15 +81,10 @@ class AuthRepository {
 
   /// Authenticates a user using Google Sign-In (OAuth).
   ///
-  /// Initiates Google OAuth flow, obtains authentication tokens, and logs in the user
-  /// through Firebase. If the user is new, creates a Firestore document with their
-  /// basic information (uid, email, authProvider).
-  /// Reuses existing Firebase account if already connected to the same Google account.
+  /// Initiates Google OAuth flow and creates a Firestore user document if new.
+  /// Reuses existing account if already connected to the same Google account.
   ///
-  /// Returns:
-  /// * Completes when authentication succeeds. Returns without error if user cancels.
-  ///
-  /// Throws [Exception] if OAuth flow fails (network issues, OAuth configuration problems).
+  /// Throws [Exception] if OAuth fails (network issues or configuration problems).
   Future<void> signInWithGoogle() async {
     try {
       // Initiate the Google Sign-In flow

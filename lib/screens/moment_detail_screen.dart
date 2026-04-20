@@ -12,9 +12,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+/// A detailed view screen for displaying and editing moment data.
+///
+/// Supports viewing/editing books, movies/TV shows, and social events with
+/// mode switching between read and edit. Handles data persistence to Firestore.
 class MomentDetailScreen extends StatefulWidget {
-  // StatefulWidget to manage editing state
+  /// The moment data to display.
   final Map<String, dynamic> momentData;
+
+  /// The unique identifier of the moment document.
   final String momentId;
 
   const MomentDetailScreen({
@@ -27,9 +33,17 @@ class MomentDetailScreen extends StatefulWidget {
   State<MomentDetailScreen> createState() => _MomentDetailScreenState();
 }
 
+/// State class for [MomentDetailScreen].
+///
+/// Manages read/edit mode, form controllers, and data synchronization with Firestore.
 class _MomentDetailScreenState extends State<MomentDetailScreen> {
+  /// Whether the screen is currently in edit mode.
   bool isEditing = false;
+
+  /// Whether a save operation is in progress.
   bool _isSaving = false;
+  
+  // Form controllers for editable fields
   late TextEditingController _titleController;
   late TextEditingController _notesController;
   late TextEditingController _locationController;
@@ -131,7 +145,12 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     super.dispose();
   }
 
-  // Function to show the calendar
+  /// Shows date picker and updates [_selectedDate].
+  ///
+  /// Allows user to select a new date for the moment.
+  ///
+  /// Parameters:
+  /// * [context] - Build context for showing the date picker dialog
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -146,7 +165,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     }
   }
 
-  // Save changes to Firestore
+  /// Saves all changes to Firestore and updates local state.
+  ///
+  /// Handles:
+  /// - Uploading new social event images
+  /// - Deleting removed images
+  /// - Parsing form data into appropriate types
+  /// - Updating Firestore document
   Future<void> _saveChanges() async {
     List<String> finalImageNames = [];
 
@@ -265,7 +290,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     });
   }
 
-  // Build main image based on moment type
+  /// Builds the main image widget based on moment type.
+  ///
+  /// For social events: displays first image with count badge
+  /// For others: displays cached network image
+  ///
+  /// Returns:
+  /// * A [Widget] displaying the moment's primary image
   Widget _buildMainImage() {
     if (widget.momentData['type'] == 'socialEvent') {
       final imageNames =
@@ -397,7 +428,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     }
   }
 
-  // Build the title section (read/edit mode)
+  /// Builds the title section with read/edit mode support.
+  ///
+  /// Returns:
+  /// * A [TextField] in edit mode, or [Text] in read mode
   Widget _buildTitleSection() {
     final loc = AppLocalizations.of(context);
     if (isEditing) {
@@ -419,7 +453,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
-  // Build book details section
+  /// Builds book-specific detail fields (year, authors, pages, publisher, ISBN).
+  ///
+  /// Returns:
+  /// * A [Column] with form fields or detail rows depending on edit mode
   Widget _buildBookDetails() {
     final loc = AppLocalizations.of(context);
     if (isEditing) {
@@ -530,7 +567,12 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
-  // Build movie/TV details section
+  /// Builds movie/TV show-specific detail fields.
+  ///
+  /// Dynamically shows/hides fields based on media subtype (TV Series vs Movie).
+  ///
+  /// Returns:
+  /// * A [Column] with form fields or detail rows depending on edit mode
   Widget _buildMovieDetails() {
     final loc = AppLocalizations.of(context);
     if (isEditing) {
@@ -691,7 +733,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
-  // Build social event details section
+  /// Builds social event-specific details (event type and image gallery).
+  ///
+  /// Returns:
+  /// * A [Column] with event type dropdown and image gallery in edit mode, or empty in read mode
   Widget _buildSocialEventDetails() {
     final loc = AppLocalizations.of(context);
     if (isEditing) {
@@ -738,7 +783,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return const SizedBox.shrink();
   }
 
-  // Build type-specific details
+  /// Builds the type-specific details section with blue subtype label.
+  ///
+  /// Delegates to [_buildBookDetails], [_buildMovieDetails], or [_buildSocialEventDetails]
+  /// based on moment type.
+  ///
+  /// Returns:
+  /// * A [Column] with subtype label and appropriate detail fields
   Widget _buildTypeSpecificDetails() {
     final loc = AppLocalizations.of(context);
     // Blue Uppercase label + details below (with edit mode support)
@@ -809,7 +860,15 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     return const SizedBox.shrink();
   }
 
-  // Build date and location section
+  /// Builds date and location row with edit mode support.
+  ///
+  /// When editing, date picker is tappable and location is editable.
+  ///
+  /// Parameters:
+  /// * [loc] - App localizations for translating labels
+  ///
+  /// Returns:
+  /// * A [Row] with date and location fields
   Widget _buildDateAndLocationSection(AppLocalizations loc) {
     return Row(
       children: [
@@ -891,7 +950,13 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
-  // Build notes section
+  /// Builds the notes section with read/edit mode support.
+  ///
+  /// In edit mode: multi-line TextField
+  /// In read mode: justified text with proper contrast
+  ///
+  /// Returns:
+  /// * A [Column] with notes label and text field or display text
   Widget _buildNotesSection() {
     final loc = AppLocalizations.of(context);
     return Column(
@@ -948,7 +1013,16 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
     );
   }
 
-  // MAIN build method with Scaffold, AppBar, and body containing image and details sections
+  /// Builds the main UI with AppBar, image, and editable details.
+  ///
+  /// Provides edit/save and delete actions in AppBar.
+  /// Displays appropriate fields based on moment type.
+  ///
+  /// Parameters:
+  /// * [context] - Build context for building the widget tree
+  ///
+  /// Returns:
+  /// * A [Scaffold] with the complete moment detail UI
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -1123,8 +1197,10 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
   }
 }
 
-/* Image gallery screen (full-screen image viewer). Before was a showDialog, 
-now a full screen push for better UX and pinch-to-zoom support. */
+/// Full-screen image gallery with pinch-to-zoom support.
+///
+/// Displays network images (for books/media) or local files (for social events)
+/// in a carousel with zoom capabilities.
 class _ImageGalleryScreen extends StatefulWidget {
   // StatefulWidget to manage page controller for carousel
   final List<String> imagePathsOrUrls;
@@ -1141,6 +1217,9 @@ class _ImageGalleryScreen extends StatefulWidget {
   State<_ImageGalleryScreen> createState() => _ImageGalleryScreenState();
 }
 
+/// State class for [_ImageGalleryScreen].
+///
+/// Manages page controller for image carousel and handles both network and local images.
 class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
   late PageController _pageController;
 
@@ -1156,6 +1235,9 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
     super.dispose();
   }
 
+  /// Constructs the full image path for local gallery images.
+  ///
+  /// Images are stored in app documents directory under 'Appshine Images'.
   Future<String> _getImagePath(String fileName) async {
     final appDocDir = await getApplicationDocumentsDirectory();
     return '${appDocDir.path}/Appshine Images/$fileName';
@@ -1245,8 +1327,9 @@ class _ImageGalleryScreenState extends State<_ImageGalleryScreen> {
   }
 }
 
-// Helper method to get image path for gallery
-// Images are stored primarily in app documents directory
+/// Helper function to construct full path for local gallery images.
+///
+/// Images are stored in app documents directory at 'Appshine Images/$fileName'.
 Future<String> _getImagePathForGallery(String fileName) async {
   final appDocDir = await getApplicationDocumentsDirectory();
   return '${appDocDir.path}/Appshine Images/$fileName';

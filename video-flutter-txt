@@ -1,0 +1,61 @@
+VÍDEO FLUTTER
+
+1) Presentación
+- Idea
+- Flutter
+
+2) Flujo App completo
+- Usuario nuevo (guía + 3 eventos + drawer)
+- Usuario admin
+- Usuario carlos@test.com
+
+3) Flutter: Framework UI Google. Gran WIDGET
+
+STATEFUL - STATELESS
+
+4) PANTALLAS
+
+- PANTALLA LOGIN: 
+  AuthRepository -> Firebase Auth -> AuthGate PORTERO mapea user - StreamBuilder emite y dibuja
+
+- PANTALLA HOME SCREEN:
+  FutureBuilder (user admin check) + StreamBuilder ORDEN por fecha de momentos
+
+---- FLOATING BUTTON----
+- PANTALLA DE BÚSQUEDA (MEDIA | BOOK API) :
+  FutureBuilder SearchDelegate (CLIENTE pide datos) -> Repositorio (CAMARERO busca en la API)
+
+EXISTE RESULTADO ---> FLOTING BUTTON llama a ADD_MOMENT_SCREEN...
+  -> Retorna modelo (plato) -------> PANTALLA AÑADIR MOMENTO
+
+  - 3 TIPOS: Media, Book, SocialEvent
+  - DatabaseService.addMoment() guarda en FIRESTORE
+  - Thumbnails generados localmente (ImageThumbnailService)
+  
+- PANTALLA DETAIL:
+  Editar, Borrar
+  
+- INSIGHTS:
+  Gráficos por tipo (pie chart)
+  
+- SETTINGS:
+  Idioma (ES/EN) -> AppLocalizations
+  Tema (Light/Dark) -> AppTheme (ColorScheme.fromSeed)
+
+5) TESTING
+- Unit tests (models, repositories)
+- Integration tests (flujos)
+
+6) DESARROLLO FUTURO
+- Repeticiones de Momentos
+- Sistema de Hashtags
+- Colección de Personas y Lugares
+- Nuevos modelos (videojuegos, música)
+- Sistema de Backup
+- Mejora de interfaz de imágenes
+
+
+
+
+
+

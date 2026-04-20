@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:appshine/l10n/app_localizations.dart';
 
-/* A reusable widget to display a label and its corresponding value in a row.
-Safe data rendering for lists and null values. */
+/// Builds a detail row displaying a label and its corresponding value.
+///
+/// Safely renders null values, lists, and single values with theme-aware colors.
+/// 
+/// Parameters:
+/// * [value] - The data to display (can be a single value, list, or null)
+/// * [label] - Optional label for the value (displayed on the left side)
+/// * [context] - Optional BuildContext for localization and theme access
+///
+/// Returns:
+/// * A [Widget] containing the formatted label-value row with proper spacing and colors
 Widget buildDetailRow(dynamic value, [String? label, BuildContext? context]) {
   final loc = context != null ? AppLocalizations.of(context) : null;
   String displayValue = loc?.translate('unknown') ?? 'Unknown';
@@ -22,7 +31,7 @@ Widget buildDetailRow(dynamic value, [String? label, BuildContext? context]) {
       displayValue = value.toString();
     }
   }
-
+  
   final textColor = context != null 
       ? (Theme.of(context).brightness == Brightness.light
           ? Colors.grey[600]

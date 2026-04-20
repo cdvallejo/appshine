@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:appshine/l10n/app_localizations.dart';
 import 'package:appshine/main.dart';
 
+/// Settings screen for managing language, theme, and account preferences.
+///
+/// Provides options to:
+/// - Change app language (Spanish/English)
+/// - Toggle dark mode
+/// - View about information
+/// - Logout from the app
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -11,6 +18,9 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
+/// State class for [SettingsScreen].
+///
+/// Manages language preference and dark mode toggle state.
 class _SettingsScreenState extends State<SettingsScreen> {
   /// Currently selected language code ('en' or 'es')
   late String _selectedLanguage;
@@ -18,6 +28,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Whether dark mode is enabled
   late bool _darkModeEnabled;
 
+  /// Builds the settings UI with language, theme, about, and logout sections.
+  ///
+  /// Parameters:
+  /// * [context] - Build context for building the widget tree
+  ///
+  /// Returns:
+  /// * A [Scaffold] with settings options
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);

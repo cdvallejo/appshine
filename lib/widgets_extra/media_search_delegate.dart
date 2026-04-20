@@ -3,15 +3,30 @@ import 'package:appshine/models/media_model.dart';
 import 'package:appshine/repositories/media_repository.dart';
 import 'package:flutter/material.dart';
 
+/// Custom SearchDelegate for searching movies and TV shows using the TMDb API.
+/// Returns a [Media] object when a result is selected, or null if the search is cancelled.
 class MediaSearchDelegate extends SearchDelegate<Media?> {
+  /// Repository instance for searching media via the TMDb API.
   final MediaRepository _repo = MediaRepository();
+
+  /// The localized label text for the search field.
   final String searchLabel;
 
+  /// Creates a new [MediaSearchDelegate].
+  ///
+  /// The [searchLabel] parameter is required and should contain the localized text
+  /// for the search field hint label ("Search movies...", etc).
   MediaSearchDelegate({required this.searchLabel});
 
   @override
   String? get searchFieldLabel => searchLabel;
 
+  /// Builds the action buttons displayed on the right side of the search AppBar.
+  ///
+  /// Returns: 
+  ///  * A list containing a clear button that resets the search query to an empty string.
+  ///
+  /// Note: This method is automatically invoked by Flutter's SearchDelegate framework.
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -19,6 +34,12 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
     ];
   }
 
+  /// Builds the widget displayed on the left side of the search AppBar.
+  ///
+  /// Returns:
+  /// * A back button that closes the search and returns null.
+  ///
+  /// Note: This method is automatically invoked by Flutter's SearchDelegate framework.
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
@@ -27,11 +48,24 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
     );
   }
 
+  /// Builds the widget displayed when the user submits a search query.
+  /// Delegates to [_search] to display search results based on the current query.
+  /// 
+  /// Returns:
+  /// *A loading spinner while fetching results
+  ///
+  /// Note: This method is automatically invoked by Flutter when the user presses the search/submit button.
   @override
   Widget buildResults(BuildContext context) {
     return _search(context);
   }
 
+  /// Builds suggestions displayed as the user types in the search field.
+  ///
+  /// Returns:
+  /// * A centered message prompting the user to type to search.
+  ///
+  /// Note: This method is automatically invoked by Flutter as the user types in the search field.
   @override
   Widget buildSuggestions(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -40,6 +74,19 @@ class MediaSearchDelegate extends SearchDelegate<Media?> {
     );
   }
 
+  /// Builds the search results list from the provided query.
+  ///
+  /// Uses [FutureBuilder] to asynchronously fetch media from [MediaRepository.searchMedia].
+  /// Displays:
+  /// - A loading spinner while fetching results
+  /// - An error message if the search fails
+  /// - A "no movies found" message if the query returns no results
+  /// - A list of movies with their poster images, titles, and release years
+  /// 
+  /// Returns:
+  /// * A [ListView] of search results when the query is successful.
+  ///
+  /// When a media item is tapped, it closes the search and returns the selected [Media] object.
   Widget _search(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final languageCode = '${loc.locale.languageCode}-${(loc.locale.countryCode ?? loc.locale.languageCode).toUpperCase()}';

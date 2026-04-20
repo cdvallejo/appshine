@@ -123,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// - Admins see quick-access buttons to the admin panel
   /// - Non-admin users see a grouped list of moments organized by date (newest first)
   ///
-  /// Returns a [FutureBuilder] that displays a loading indicator while fetching the user's admin status.
+  /// Returns a [FutureBuilder] for admin status check, which then contains a [StreamBuilder]
+  /// that listens to real-time moment updates from Firestore for non-admin users.
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;

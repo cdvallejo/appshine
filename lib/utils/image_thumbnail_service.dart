@@ -9,20 +9,6 @@ import 'package:http/http.dart' as http;
 /// * Generating thumbnails with configurable dimensions
 /// * Getting image paths (primary, secondary, thumbnail)
 /// * Creating directories as needed
-///
-/// Usage:
-/// ```dart
-/// // Generate thumbnail for media/book (100×150px)
-/// await ImageThumbnailService.generateThumbnail(originalPath, thumbnailPath);
-///
-/// // Generate thumbnail for social events (150×150px)
-/// await ImageThumbnailService.generateThumbnail(
-///   originalPath,
-///   thumbnailPath,
-///   width: 150,
-///   height: 150,
-/// );
-/// ```
 class ImageThumbnailService {
   /// Returns the path to the primary image in app's documents directory.
   ///
@@ -115,7 +101,7 @@ class ImageThumbnailService {
   /// and generates a thumbnail with specified dimensions.
   ///
   /// This is used for media and book moments where the image comes from an API URL
-  /// (Firebase Storage). The process:
+  /// (Firebase). The process:
   /// 1. Downloads the image from the URL
   /// 2. Saves it to "Appshine Images" (NO gallery copy for API images)
   /// 3. Generates a thumbnail with center crop
