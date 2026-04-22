@@ -174,7 +174,7 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Book details section: Editable fields
-                  FutureBuilder(
+                  FutureBuilder<Book>(
                     future: _bookRepository.getBookDetails(widget.book),
                     builder: (context, snapshot) {
                       // 1. If the request is still in progress

@@ -11,6 +11,9 @@ import 'package:appshine/l10n/app_localizations.dart';
 /// - Displays total count of moments and breakdown by type (media, book, social event).
 /// - Shows a pie chart representing the distribution of moment types.
 /// - Handles loading, error, and empty states with localized messages.
+/// 
+/// Returns:
+///  A Scaffold widget containing the insights screen layout within a SingleChildScrollView
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
 
