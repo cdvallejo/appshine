@@ -98,14 +98,16 @@ unlinked_spec.ds
 
 # Windows
 **/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+**/windows/flutter/ephemeral/
+**/windows/.gitignore
 
 # IntelliJ / Android Studio
 .idea/
 *.iml
 *.ipr
 *.iws
-**/windows/flutter/generated_plugin_registrant.h
-**/windows/flutter/generated_plugins.cmake
 
 # Linux
 **/linux/flutter/generated_plugin_registrant.cc
@@ -122,19 +124,6 @@ unlinked_spec.ds
 # Uncomment if you're not developing for Linux
 # linux/
 
-# But ignore generated build files within those directories
-ios/Flutter/Flutter.podspec
-ios/Flutter/Flutter.framework
-ios/Flutter/Generated.xcconfig
-ios/Flutter/ephemeral/
-ios/.gitignore
-
-windows/flutter/generated_plugin_registrant.cc
-windows/flutter/generated_plugin_registrant.h
-windows/flutter/generated_plugins.cmake
-windows/flutter/ephemeral/
-windows/.gitignore
-
 # Coverage
 coverage/
 
@@ -148,10 +137,6 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
-
-# IDE files
-.idea/
-*.iml
 
 # Sensitive files - MUST NOT BE COMMITTED
 google-services.json
