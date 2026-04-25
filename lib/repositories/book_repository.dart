@@ -63,17 +63,15 @@ class BookRepository {
             // Build cover URL from IDs
             final coverUrl = _buildCoverUrl(book.editionKey, book.coverId);
             books.add(book.copyWith(imageUrl: coverUrl));
-          } catch (e) {
+          } catch (_) {
             // Skip books that fail to parse
-            print('Failed to parse book: $e');
           }
         }
         return books;
       } else {
         return [];
       }
-    } catch (e) {
-      print('Error searching books: $e');
+    } catch (_) {
       return []; // If there was an error, return an empty list
     }
   }
