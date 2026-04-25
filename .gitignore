@@ -98,6 +98,12 @@ unlinked_spec.ds
 
 # Windows
 **/windows/flutter/generated_plugin_registrant.cc
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
 **/windows/flutter/generated_plugin_registrant.h
 **/windows/flutter/generated_plugins.cmake
 
@@ -105,6 +111,16 @@ unlinked_spec.ds
 **/linux/flutter/generated_plugin_registrant.cc
 **/linux/flutter/generated_plugin_registrant.h
 **/linux/flutter/generated_plugins.cmake
+
+# Uncomment if you're not developing for iOS/macOS
+# ios/
+# macos/
+
+# Uncomment if you're not developing for Windows
+# windows/
+
+# Uncomment if you're not developing for Linux
+# linux/
 
 # Coverage
 coverage/

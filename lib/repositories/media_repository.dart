@@ -23,10 +23,10 @@ class MediaRepository {
     try {
       // Uri.parse with queryParameters to handle spaces and special characters, more secure.
       final url = Uri.parse(_baseUrl).replace(
-        path: '/3/search/multi',
+        path: '/3/search/multi', // Multi-search endpoint: movies, tv and people (but we don't filter people in the results)
         queryParameters: {
-          'api_key': _apiKey,
-          'query': query,
+          'api_key': _apiKey, // TMDB API key
+          'query': query, // User search input
           'language': languageCode,
         },
       );

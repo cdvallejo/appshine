@@ -1,6 +1,7 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/repositories/book_repository.dart';
 import 'package:appshine/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Para formatear la fecha
 import '../models/book_model.dart';
@@ -162,11 +163,31 @@ class _AddMomentScreenBookState extends State<AddMomentScreenBook> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Upper section: Book cover image
-            Image.network(
-              widget.book.fullCoverUrl,
+            CachedNetworkImage(
+              imageUrl: widget.book.fullCoverUrl,
               width: double.infinity,
               height: 250,
               fit: BoxFit.scaleDown,
+              // While loading: show spinner
+              placeholder: (context, url) => Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[200],
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              // If error loading: show placeholder icon
+              errorWidget: (context, url, error) => Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[300],
+                child: Icon(
+                  Icons.book,
+                  size: 80,
+                  color: Colors.grey[600],
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),

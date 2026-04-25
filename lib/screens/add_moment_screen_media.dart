@@ -1,5 +1,6 @@
 import 'package:appshine/data/database_service.dart';
 import 'package:appshine/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import '../models/media_model.dart';
@@ -189,11 +190,31 @@ class _AddMomentScreenState extends State<AddMomentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Upper section: Media poster image
-            Image.network(
-              widget.media.fullPosterUrl,
+            CachedNetworkImage(
+              imageUrl: widget.media.fullPosterUrl,
               width: double.infinity,
               height: 250,
               fit: BoxFit.scaleDown,
+              // While loading: show spinner
+              placeholder: (context, url) => Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[200],
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              // If error loading: show placeholder icon
+              errorWidget: (context, url, error) => Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[300],
+                child: Icon(
+                  Icons.movie,
+                  size: 80,
+                  color: Colors.grey[600],
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
