@@ -165,6 +165,9 @@ class _MainAppState extends State<MainApp> {
   /// 2. [GlobalMaterialLocalizations.delegate] - Material Design text (buttons, dialogs)
   /// 3. [GlobalCupertinoLocalizations.delegate] - iOS Cupertino style text
   /// 4. [GlobalWidgetsLocalizations.delegate] - Framework-level text
+  /// 
+  /// Returns:
+  ///   A [MaterialApp] widget configured with the current locale and theme.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

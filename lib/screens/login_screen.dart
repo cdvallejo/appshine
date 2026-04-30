@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  isLogin = !isLogin;
+                  isLogin = !isLogin; // Toggle between login and registration mode
                 });
               },
               child: Text(

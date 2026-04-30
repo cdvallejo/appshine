@@ -19,7 +19,7 @@ class AppTheme {
 
   /// Light theme configuration
   static final ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
+    useMaterial3: true, // Google's latest design system for modern UI components
     brightness: Brightness.light,
     // Seed-based color scheme generating the full Material Design palette
     // with auto-optimized contrast for light and dark modes.
