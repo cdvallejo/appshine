@@ -116,18 +116,16 @@ flutter doctor
 
 ## ⚡ Instalación Rápida (sin compilar)
 
-Si tienes el **APK precompilado** en la carpeta `Instalable/` (entregado aparte):
+Si tienes el **APK** de la carpeta `Instalable/` (entregado aparte):
 
 1. Conecta tu móvil Android por USB (o copia el APK a una carpeta en el móvil)
 2. Abre el explorador, tap en el APK, instala.
 
 ✅ **La app estará lista para usar en tu móvil.**
 
-📝 **Nota**: si no tienes el APK precompilado, sigue la sección "Setup para Desarrollo" para compilarlo.
-
 ---
 
-## 🚀 Descargando el proycto de Appshine
+## 🚀 Descargando el proyecto de Appshine
 
 ### 1. Obtener el código fuente
 
@@ -292,7 +290,7 @@ adb install build/app/outputs/flutter-apk/app-release.apk
 
 **Mínimo recomendado**:
 ```
-Android API 26+ (Android 8.0+)
+Android API 26+ (Android 8.0+). Se recomienda superior
 Flutter 3.10.3+
 Emulador: Pixel 5 o similar con mínimo 2GB RAM disponible
 ```
