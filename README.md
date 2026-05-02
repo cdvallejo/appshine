@@ -294,5 +294,5 @@ Emulador: Pixel 5 o similar con mínimo 2GB RAM disponible
                                                                                                          |
 ---
 
-**Última actualización**: 18 de abril de 2026
+**Última actualización**: 2 de mayor de 2026
 
