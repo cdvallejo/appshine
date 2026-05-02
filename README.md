@@ -114,16 +114,6 @@ flutter doctor
 
 ---
 
-## ⚡ Instalación Rápida (sin compilar)
-
-Si tienes el **APK** de la carpeta `Instalable/` (entregado aparte):
-
-1. Conecta tu móvil Android por USB (o copia el APK a una carpeta en el móvil)
-2. Abre el explorador, tap en el APK, instala.
-
-✅ **La app estará lista para usar en tu móvil.**
-
----
 
 ## 🚀 Descargando el proyecto de Appshine
 
@@ -247,6 +237,17 @@ integration_test/
 
 ## 📦 Build & Despliegue en Móvil
 
+### ⚡ Si ya tienes un APK
+
+Si tienes el **APK de release** (generado con `flutter build apk --release` o proporcionado en la carpeta`Instalable/` de la TAREA 4):
+
+1. Conecta tu móvil Android por USB (o copia el APK a una carpeta en el móvil)
+2. Abre el explorador, tap en el APK, instala y autoriza
+
+✅ **La app estará lista para usar en tu móvil.**
+
+---
+
 ### Generar APK (Release)
 
 ```bash
@@ -265,25 +266,11 @@ flutter build apk --release
 build/app/outputs/flutter-apk/app-release.apk
 ```
 
-### Instalar en Móvil
-
-**Opción 1: Automático (recomendado)**
+### Instalar en Móvil en modo Debug mediente IDE
 ```bash
 # Conecta móvil por USB en modo Debug
 flutter install
 ```
-
-**Opción 2: Manual con ADB**
-```bash
-adb install build/app/outputs/flutter-apk/app-release.apk
-```
-
-**Opción 3: Transferencia manual**
-- Copia el APK a una carpeta en tu móvil
-- Abre el explorador de archivos
-- Tap en el APK
-- Instala (autoriza si pide permisos)
-
 ---
 
 ### Recomendación para Usar
